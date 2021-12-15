@@ -44,7 +44,7 @@ public class MainClass {
 
         // TESTING
         // String query = "MATCH (n:Label:Table:Graph {prop: 'value', age: 15, date:[10.4, 20.6]}) WHERE n.prop < 50 AND n.prop > 20 AND NOT n.prop = 40 RETURN n";
-        // String query = "MATCH p=(n1:Label:Table:Graph {prop: 'value', age: 15, date:[10.4, 20.6]})-[r1:best|tmp]->(n2:Table)-[rf:best *2..3 {data:'12/12/2021'}]-(n3:Graph) WHERE (n1.prop = 10.4 AND n1.age <= 10) OR n1.age IS NOT NULL  RETURN n1.prop AS c1";
+        // String query = "MATCH p=(n1:Label:Table:Graph {prop: 'value', age: 15, date:[10.4, 20.6]})-[r1:best|tmp]->(n2:Table)-[rf:introduction *2..3 {number_of_citation:4}]-(n3:Graph) WHERE (n1.prop = 10.4 AND n1.age <= 10) OR n1.age IS NOT NULL  RETURN n1.prop AS c1";
 
         // QueryStructure parsed_query = new QueryStructure();
         // parsed_query.parser(query, idx_label);

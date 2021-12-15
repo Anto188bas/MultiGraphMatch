@@ -1,5 +1,8 @@
 import cypher.models.QueryStructure;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
+
+import java.util.HashMap;
 
 
 public class query_reading_for_ordering {
@@ -10,6 +13,12 @@ public class query_reading_for_ordering {
         labels.createEdgeLabelIdx("grn");
         labels.createEdgeLabelIdx("org");
         labels.createEdgeLabelIdx("brw");
+    }
+
+    public static Int2ObjectOpenHashMap<Integer> domain_configuration(){
+        Int2ObjectOpenHashMap<Integer> domain = new Int2ObjectOpenHashMap<>();
+        //domain.put((int) 1, 100);
+        return null;
     }
 
     public static void main(String[] args) {
@@ -23,5 +32,7 @@ public class query_reading_for_ordering {
 
         System.out.println(query_structure.getQuery_pattern().getIn_edges());
         System.out.println(query_structure.getQuery_pattern().getOut_edges());
+        //System.out.println(query_structure.getQuery_edges());
+        System.out.println(node_edge_labels.getIdxToLabelEdge());
     }
 }
