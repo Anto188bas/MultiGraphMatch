@@ -1,6 +1,7 @@
 package cypher.models;
 
 import cypher.controller.PropertiesUtility;
+import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import org.opencypher.v9_0.expressions.*;
 import scala.Option;
@@ -46,6 +47,24 @@ public class QueryNode {
     private void configure_node_properties(NodePattern nodePattern){
         Option<Expression> node_properties = nodePattern.properties();
         PropertiesUtility.configure_properties(node_properties, properties);
+    }
+
+    // TODO handler the duplicate code
+    // EQUIVALENT TO
+    public boolean equivalent_to(QueryNode other_node) {
+        // LABELS CHECK
+        if (!labels.equals(other_node.getLabels()))         return false;
+        // PROPERTIES CHECK
+        HashMap<String, Object> other_node_props = other_node.getProperties();
+        if (properties.size() != other_node_props.size())   return false;
+        // TODO check me
+        for (String key: properties.keySet()){
+            if (
+                 !other_node_props.containsKey(key) ||
+                 !properties.get(key).equals(other_node_props.get(key))
+            ) return false;
+        }
+        return true;
     }
 
     // GETTER METHOD

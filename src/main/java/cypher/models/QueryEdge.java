@@ -74,8 +74,27 @@ public class QueryEdge {
     public long getMax_deep()                      {return max_deep;   }
     public HashMap<String, Object> getProperties() {return properties; }
 
-    // TO STRING
+    // EQUIVALENT TO
+    public boolean equivalent_to(QueryEdge other_edge) {
+        // DEEP CHECK
+        if (max_deep != 1 || other_edge.getMax_deep() != 1) return false;
+        IntArrayList other_edge_types = other_edge.getEdge_label();
+        // TYPE CHECK
+        if (!edge_label.equals(other_edge_types))           return false;
+        HashMap<String, Object> other_edge_props = other_edge.getProperties();
+        // PROPERTIES CHECK
+        if (properties.size() != other_edge_props.size())   return false;
+        // TODO check me
+        for (String key: properties.keySet()){
+            if (
+                 !other_edge_props.containsKey(key) ||
+                 !properties.get(key).equals(other_edge_props.get(key))
+            ) return false;
+        }
+        return true;
+    }
 
+    // TO STRING
     @Override
     public String toString() {
         return "QueryEdge{"      +

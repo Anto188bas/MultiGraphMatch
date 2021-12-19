@@ -34,13 +34,16 @@ public class QueryEdgeAggregation {
         switch (dir) {
             case "OUTGOING" -> {
                 put_nodes_edge_association(node_1, node_2, edge_id, out_edges);
-                put_nodes_edge_association(node_2, node_1, edge_id, in_edges);
+                put_nodes_edge_association(node_2, node_1, edge_id, in_edges );
             }
             case "INCOMING" -> {
-                put_nodes_edge_association(node_1, node_2, edge_id, in_edges);
+                put_nodes_edge_association(node_1, node_2, edge_id, in_edges );
                 put_nodes_edge_association(node_2, node_1, edge_id, out_edges);
             }
-            default -> put_nodes_edge_association(node_1, node_2, edge_id, in_out_edges);
+            default -> {
+                put_nodes_edge_association(node_1, node_2, edge_id, in_out_edges);
+                put_nodes_edge_association(node_2, node_1, edge_id, in_out_edges);
+            }
         }
     }
 
@@ -61,7 +64,22 @@ public class QueryEdgeAggregation {
         }
     }
 
+    // GETTER
     public Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> getIn_edges()     {return in_edges;    }
     public Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> getOut_edges()    {return out_edges;   }
     public Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> getIn_out_edges() {return in_out_edges;}
+
+    // IS FUNCTION
+    public boolean  isIn(int node1, int node2) {return  in_edges.get(node1).containsKey(node2);}
+    public boolean isOut(int node1, int node2) {return out_edges.get(node1).containsKey(node2);}
+    public boolean isRev(int node1, int node2) {return in_out_edges.get(node1).containsKey(node2);}
+
+    // GET NEIGHBOURS OF A NODES
+    public IntArrayList get_node_neighbours(int node_1, int total_nodes){
+        IntArrayList vNei = new IntArrayList();
+        for (int node_2 = 0; node_2 < total_nodes; node_2++)
+            if (isOut(node_1, node_2) || isIn(node_1, node_2) || isRev(node_1, node_2))
+                vNei.add(node_2);
+        return vNei;
+    }
 }
