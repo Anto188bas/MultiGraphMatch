@@ -1,17 +1,18 @@
-import cypher.models.QueryNode;
 import cypher.models.QueryStructure;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenCustomHashMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import ordering.EdgeOrdering;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 
-import java.util.HashMap;
-
 
 public class query_reading_for_ordering {
-    public static final String query = "MATCH p=(n1)<-[a:blk]-(n2), (n2)-[b:ylw]->(n3), (n3)-[c:blue]->(n4), " +
+    public static final String directedQuery = "MATCH p=(n1)<-[a:blk]-(n2), (n2)-[b:ylw]->(n3), (n3)-[c:blue]->(n4), " +
             "(n2)<-[d:grn]-(n5), (n2)-[e:org]->(n6), (n6)-[f:brw]->(n5) RETURN count(n1)";
+
+    public static final String undirectedQuery = "MATCH p=(n1)-[a:blk]-(n2), (n2)-[b:ylw]-(n3), (n3)-[c:blue]-(n4), " +
+            "(n2)-[d:grn]-(n5), (n2)-[e:org]-(n6), (n6)-[f:brw]-(n5) RETURN count(n1)";
+
+    public static final String hybridQuery = "MATCH p=(n1)<-[a:blk]-(n2), (n2)-[b:ylw]->(n3), (n3)-[c:blue]-(n4), " +
+            "(n2)-[d:grn]-(n5), (n2)-[e:org]-(n6), (n6)<-[f:brw]-(n5) RETURN count(n1)";
 
 
     public static void color_matching_configuration(NodesEdgesLabelsMaps labels) {
@@ -34,20 +35,31 @@ public class query_reading_for_ordering {
         return domain;
     }
 
-    public static QueryStructure getToyQuery() {
+    protected static QueryStructure _getToyQuery(String _query) {
         QueryStructure query_structure = new QueryStructure();
         NodesEdgesLabelsMaps node_edge_labels = new NodesEdgesLabelsMaps();
         Int2IntOpenHashMap domain = domain_configuration();
 
         color_matching_configuration(node_edge_labels);
-        query_structure.parser(query, node_edge_labels);
+        query_structure.parser(_query, node_edge_labels);
 
         return query_structure;
     }
 
+    public static QueryStructure getDirectedToyQuery() {
+        return _getToyQuery(directedQuery);
+    }
+
+    public static QueryStructure getUndirectedToyQuery() {
+        return _getToyQuery(undirectedQuery);
+    }
+
+    public static QueryStructure getHybridToyQuery() {
+        return _getToyQuery(hybridQuery);
+    }
+
     public static void main(String[] args) {
-        String query = "MATCH p=(n1)<-[a:blk]-(n2), (n2)-[b:ylw]->(n3), (n3)-[c:blue]->(n4), " +
-                "(n2)<-[d:grn]-(n5), (n2)-[e:org]->(n6), (n6)-[f:brw]->(n5) RETURN count(n1)";
+        String query = directedQuery;
 
         QueryStructure query_structure = new QueryStructure();
         NodesEdgesLabelsMaps node_edge_labels = new NodesEdgesLabelsMaps();
@@ -56,11 +68,5 @@ public class query_reading_for_ordering {
         query_structure.parser(query, node_edge_labels);
 
         EdgeOrdering.computeEdgeOrdering(query_structure, domains);
-
-//        System.out.println(query_structure.getQuery_pattern().getIn_edges());
-//        System.out.println(query_structure.getQuery_pattern().getOut_edges());
-//        System.out.println(query_structure.getQuery_edges());
-//        System.out.println(node_edge_labels.getIdxToLabelEdge());
-//
     }
 }

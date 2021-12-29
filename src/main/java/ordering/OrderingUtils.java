@@ -7,7 +7,7 @@ import java.util.Arrays;
 
 public class OrderingUtils {
 
-    public static int[] getEdgeEndpoints(Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> edges, int edgeId) {
+    public static NodesPair getEdgeEndpoints(Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> edges, int edgeId) {
 
         for (int firstEndpoint : edges.keySet()) {
             Int2ObjectOpenHashMap<IntArrayList> adjList = edges.get(firstEndpoint);
@@ -16,7 +16,7 @@ public class OrderingUtils {
                 int _edgeId = adjList.get(secondEndpoint).getInt(0);
 
                 if (_edgeId == edgeId) {
-                    return new int[]{firstEndpoint, secondEndpoint};
+                    return new NodesPair(firstEndpoint, secondEndpoint);  // Endpoints are lexicographically ordered
                 }
             }
         }
@@ -24,22 +24,18 @@ public class OrderingUtils {
         return null;
     }
 
-    public static int[] intArrayIntersection(int[] a, int[] b) {
-        return Arrays.stream(a).distinct().filter(x -> Arrays.stream(b).anyMatch(y -> y == x)).toArray();
-    }
-
-    public static IntArraySet getEdgeNeighborhood(Int2ObjectOpenHashMap<int[]> mapEdgeToEndpoints, int edge) {
+    public static IntArraySet getEdgeNeighborhood(Int2ObjectOpenHashMap<NodesPair> mapEdgeToEndpoints, int edge) {
         IntArraySet neighborhood = new IntArraySet();
-        int[] edgeEndpoints = mapEdgeToEndpoints.get(edge);
+        NodesPair edgeEndpoints = mapEdgeToEndpoints.get(edge);
 
         for (int currentEdge : mapEdgeToEndpoints.keySet()) {
             if (currentEdge != edge) {
-                int[] currentEdgeEndpoints = mapEdgeToEndpoints.get(currentEdge);
+                NodesPair currentEdgeEndpoints = mapEdgeToEndpoints.get(currentEdge);
 
-                if (edgeEndpoints[0] == currentEdgeEndpoints[0] ||
-                        edgeEndpoints[0] == currentEdgeEndpoints[1] ||
-                        edgeEndpoints[1] == currentEdgeEndpoints[0] ||
-                        edgeEndpoints[1] == currentEdgeEndpoints[1]) {
+                if (edgeEndpoints.getFirstEndpoint().equals(currentEdgeEndpoints.getFirstEndpoint()) ||
+                        edgeEndpoints.getFirstEndpoint().equals(currentEdgeEndpoints.getSecondEndpoint()) ||
+                        edgeEndpoints.getSecondEndpoint().equals(currentEdgeEndpoints.getFirstEndpoint()) ||
+                        edgeEndpoints.getSecondEndpoint().equals(currentEdgeEndpoints.getSecondEndpoint())) {
                     neighborhood.add(currentEdge);
                 }
             }
@@ -51,7 +47,7 @@ public class OrderingUtils {
     public static Double computeSetWeight(IntArraySet edgeSet, Int2IntOpenHashMap domains) {
         double w = 0d;
 
-        for(int edge: edgeSet) {
+        for (int edge : edgeSet) {
             int domain_size = domains.get(edge);
             w += 1d / domain_size;
         }
@@ -59,44 +55,52 @@ public class OrderingUtils {
         return w;
     }
 
-    public static Int2IntOpenHashMap computeDegrees(Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> edges) {
-        Int2IntOpenHashMap degrees = new Int2IntOpenHashMap();
+    public static IntArraySet getNodeNeighborhood(int nodeKey, Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> inEdges, Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> outEdges, Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> inOutEdges) {
+        IntArraySet neighborhood = new IntArraySet();
 
-        for (int firstEndpoint : edges.keySet()) {
-            Int2ObjectOpenHashMap<IntArrayList> adjList = edges.get(firstEndpoint);
-
-            degrees.put(firstEndpoint, adjList.size());
+        if (inEdges.containsKey(nodeKey)) {
+            neighborhood.addAll(inEdges.get(nodeKey).keySet());
         }
 
-        return degrees;
-    }
-
-    public static IntArraySet getNodeNeighborhood(Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> edges, int nodeKey) {
-        if (edges.containsKey(nodeKey)) {
-            return new IntArraySet(edges.get(nodeKey).keySet());
+        if (outEdges.containsKey(nodeKey)) {
+            neighborhood.addAll(outEdges.get(nodeKey).keySet());
         }
-        return new IntArraySet();
+
+        if (inOutEdges.containsKey(nodeKey)) {
+            neighborhood.addAll(inOutEdges.get(nodeKey).keySet());
+        }
+
+        return neighborhood;
     }
 
     public static IntArraySet intArraySetUnion(IntArraySet a, IntArraySet b) {
         IntArraySet result = a.clone();
-        for (int val : b) {
-            result.add(val);
-        }
+        result.addAll(b);
 
         return result;
     }
 
-    public static Double computeJaccardSimilarity(int node, IntArraySet nodeNeighborhood, int currentNeighbour, Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> inEdges, Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> outEdges, int domainSize) {
+    public static IntArraySet intArraySetIntersection(IntArraySet a, IntArraySet b) {
+        IntArraySet result = a.clone();
+        result.retainAll(b);
+
+        return result;
+    }
+
+    public static Double computeJaccardSimilarity(int node, int neighbour, Int2ObjectOpenHashMap<IntArraySet> mapNodeToNeighborhood, int domainSize) {
+        // Node's neighborhood
+        IntArraySet nodeNeighborhood = mapNodeToNeighborhood.get(node);
+
         // Neighbor's neighborhood
-        IntArraySet currentNeighbourNeighborhood = OrderingUtils.intArraySetUnion(OrderingUtils.getNodeNeighborhood(outEdges, currentNeighbour),  // out-neighborhood
-                OrderingUtils.getNodeNeighborhood(inEdges, currentNeighbour)    // in-neighborhood
-        );
+        IntArraySet neighbourNeighborhood = mapNodeToNeighborhood.get(neighbour);
 
         // Cardinality of the intersection between neighborhoods
-        int neighborhoodsIntersectionCardinality = OrderingUtils.intArrayIntersection(currentNeighbourNeighborhood.toIntArray(), nodeNeighborhood.toIntArray()).length;
+        int neighborhoodsIntersectionCardinality = OrderingUtils.intArraySetIntersection(nodeNeighborhood, neighbourNeighborhood).size();
 
-        return ((neighborhoodsIntersectionCardinality + 0.5d) / (nodeNeighborhood.size() + 0.5d)) * (1d / domainSize);
+        // Cardinality of the union between neighborhoods
+        int neighborhoodsUnionCardinality = OrderingUtils.intArraySetUnion(nodeNeighborhood, neighbourNeighborhood).size();
+
+        return ((neighborhoodsIntersectionCardinality + 0.5d) / (neighborhoodsUnionCardinality + 0.5d)) * (1d / domainSize);
     }
 
 }

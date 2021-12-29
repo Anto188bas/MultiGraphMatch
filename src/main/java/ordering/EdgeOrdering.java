@@ -4,8 +4,8 @@ package ordering;
 import cypher.models.QueryEdge;
 import cypher.models.QueryNode;
 import cypher.models.QueryStructure;
+import it.unimi.dsi.fastutil.doubles.Double2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.*;
-
 
 public class EdgeOrdering {
     public static void computeEdgeOrdering(QueryStructure queryStructure, Int2IntOpenHashMap domains) {
@@ -48,17 +48,22 @@ public class EdgeOrdering {
 
         // AUXILIARY INFO
         System.out.println("AUXILIARY INFO");
-        Int2ObjectOpenHashMap<int[]> mapEdgeToEndpoints = new Int2ObjectOpenHashMap<>();// N.B. endpoints are not ordered!
+        Int2ObjectOpenHashMap<NodesPair> mapEdgeToEndpoints = new Int2ObjectOpenHashMap<>(); // Endpoints are lexicographically ordered.
+        Double2IntOpenHashMap mapEndpointsToEdge = new Double2IntOpenHashMap();
 
         for (int edgeKey : unusedEdgeKeys) {
-            int[] endpoints = OrderingUtils.getEdgeEndpoints(outEdges, edgeKey);
+            NodesPair endpoints = OrderingUtils.getEdgeEndpoints(outEdges, edgeKey);
 
-            if (endpoints != null) {
-                mapEdgeToEndpoints.put(edgeKey, endpoints);
+            if (endpoints == null) { // Undirected edge
+                endpoints = OrderingUtils.getEdgeEndpoints(inOutEdges, edgeKey);
+            } // Else is a directed edge
 
-                System.out.println("EDGE: " + edgeKey + "\tENDPOINTS: [" + endpoints[0] + ", " + endpoints[1] + "]");
-            }
+            mapEdgeToEndpoints.put(edgeKey, endpoints);
+            mapEndpointsToEdge.put(endpoints.getId().doubleValue(), edgeKey);
+
+            System.out.println("EDGE: " + edgeKey + "\tENDPOINTS: " + endpoints);
         }
+
         System.out.println();
 
         Int2ObjectOpenHashMap<IntArraySet> mapEdgeToNeighborhood = new Int2ObjectOpenHashMap<>();
@@ -70,15 +75,23 @@ public class EdgeOrdering {
         }
         System.out.println();
 
+        Int2ObjectOpenHashMap<IntArraySet> mapNodeToNeighborhood = new Int2ObjectOpenHashMap<>();
+
+        for (int node : nodeKeys) {
+            IntArraySet nodeNeighborhood = OrderingUtils.getNodeNeighborhood(node, inEdges, outEdges, inOutEdges);
+            mapNodeToNeighborhood.put(node, nodeNeighborhood);
+            System.out.println("NODE: " + node + "\tNEIGHBORHOOD: " + nodeNeighborhood);
+        }
+        System.out.println();
+
         // First edge of the ordering
 
         // We search the node with the higher degree
-        Int2IntOpenHashMap degrees = OrderingUtils.computeDegrees(outEdges);
         IntArrayList maxNodes = new IntArrayList();
         int maxDegree = 0;
 
         for (int key : nodeKeys) {
-            int currentDegree = degrees.get(key);
+            int currentDegree = mapNodeToNeighborhood.get(key).size();
 
             if (currentDegree > maxDegree) {
                 maxDegree = currentDegree;
@@ -97,24 +110,14 @@ public class EdgeOrdering {
         // For each node having max-degree we consider his neighborhood.
         for (int node : maxNodes) {
             // We compute the Jaccard similarity between the node and all his neighbours.
-            IntArraySet outNeighborhood = OrderingUtils.getNodeNeighborhood(outEdges, node); // out-neighborhood
-            IntArraySet inNeighborhood = OrderingUtils.getNodeNeighborhood(inEdges, node); // in-neighborhood
-            IntArraySet neighborhood = OrderingUtils.intArraySetUnion(outNeighborhood, inNeighborhood); // union of in-neighborhood and out-neighborhood
+            IntArraySet neighborhood = mapNodeToNeighborhood.get(node);
 
-            for (int outNeighbour : outNeighborhood) {
-                int edgeId = outEdges.get(node).get(outNeighbour).getInt(0);
+            for(int neighbour : neighborhood) {
+                NodesPair currentEndpoints = new NodesPair(node, neighbour);
+                int edgeId = mapEndpointsToEdge.get(currentEndpoints.getId().doubleValue());
                 int domainSize = domains.get(edgeId);
+                Double jaccardSimilarity = OrderingUtils.computeJaccardSimilarity(node, neighbour, mapNodeToNeighborhood, domainSize);
 
-                Double jaccardSimilarity = OrderingUtils.computeJaccardSimilarity(node, neighborhood, outNeighbour, inEdges, outEdges, domainSize);
-                mapEdgeToJaccardSimilarity.put(edgeId, jaccardSimilarity);
-                System.out.println("EDGE ID: " + edgeId + "\tJACCARD SIMILARITY: " + jaccardSimilarity);
-            }
-
-            for (int inNeighbour : inNeighborhood) {
-                int edgeId = inEdges.get(node).get(inNeighbour).getInt(0);
-                int domainSize = domains.get(edgeId);
-
-                Double jaccardSimilarity = OrderingUtils.computeJaccardSimilarity(node, neighborhood, inNeighbour, inEdges, outEdges, domainSize);
                 mapEdgeToJaccardSimilarity.put(edgeId, jaccardSimilarity);
                 System.out.println("EDGE ID: " + edgeId + "\tJACCARD SIMILARITY: " + jaccardSimilarity);
             }
@@ -185,13 +188,11 @@ public class EdgeOrdering {
 
                 // NS (neighbour edges having at least a common node with at least one edges into OS)
                 for (int neighbour : neighborhood) {
-                    int[] currentNeighbourEndpoints = mapEdgeToEndpoints.get(neighbour);
+                    NodesPair currentNeighbourEndpoints = mapEdgeToEndpoints.get(neighbour);
+
                     for(int edge: os) {
-                        int[] currentOsEdgeEndpoints = mapEdgeToEndpoints.get(edge);
-                        if (currentOsEdgeEndpoints[0] == currentNeighbourEndpoints[0] ||
-                                currentOsEdgeEndpoints[0] == currentNeighbourEndpoints[1] ||
-                                currentOsEdgeEndpoints[1] == currentNeighbourEndpoints[0] ||
-                                currentOsEdgeEndpoints[1] == currentNeighbourEndpoints[1]) {
+                        NodesPair currentOsEdgeEndpoints = mapEdgeToEndpoints.get(edge);
+                        if (currentNeighbourEndpoints.hasCommonNodes(currentOsEdgeEndpoints)) {
                             ns.add(neighbour);
                             break;
                         }
@@ -207,17 +208,14 @@ public class EdgeOrdering {
                 // RS (neighbour edges having no common nodes with edges into OS and NS)
                 for (int neighbour : neighborhood) {
                     boolean commonNodes = false;
-                    int[] currentNeighbourEndpoints = mapEdgeToEndpoints.get(neighbour);
+                    NodesPair currentNeighbourEndpoints = mapEdgeToEndpoints.get(neighbour);
 
                     // Searching common nodes between current edge and edges into OS
                     for (int edge : os) {
-                        int[] currentOsEdgeEndpoints = mapEdgeToEndpoints.get(edge);
+                        NodesPair currentOsEdgeEndpoints = mapEdgeToEndpoints.get(edge);
 
-                        if (currentOsEdgeEndpoints[0] == currentNeighbourEndpoints[0] ||
-                                currentOsEdgeEndpoints[0] == currentNeighbourEndpoints[1] ||
-                                currentOsEdgeEndpoints[1] == currentNeighbourEndpoints[0] ||
-                                currentOsEdgeEndpoints[1] == currentNeighbourEndpoints[1]) {
-                            commonNodes = true;
+                        if (currentNeighbourEndpoints.hasCommonNodes(currentOsEdgeEndpoints)) {
+                            ns.add(neighbour);
                             break;
                         }
                     }
@@ -227,13 +225,10 @@ public class EdgeOrdering {
                     if (!commonNodes) {
 
                         for (int edge : ns) {
-                            int[] currentNsEdgeEndpoints = mapEdgeToEndpoints.get(edge);
+                            NodesPair currentNsEdgeEndpoints = mapEdgeToEndpoints.get(edge);
 
-                            if (currentNsEdgeEndpoints[0] == currentNeighbourEndpoints[0] ||
-                                    currentNsEdgeEndpoints[0] == currentNeighbourEndpoints[1] ||
-                                    currentNsEdgeEndpoints[1] == currentNeighbourEndpoints[0] ||
-                                    currentNsEdgeEndpoints[1] == currentNeighbourEndpoints[1]) {
-                                commonNodes = true;
+                            if (currentNeighbourEndpoints.hasCommonNodes(currentNsEdgeEndpoints)) {
+                                ns.add(neighbour);
                                 break;
                             }
                         }
