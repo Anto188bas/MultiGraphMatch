@@ -1,9 +1,7 @@
 import configuration.Configuration;
-import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import org.openjdk.jol.info.GraphLayout;
 import reading.FileManager;
-import target_graph.bitmatrix.BitmatrixStructure;
+import bitmatrix.models.TargetBitmatrix;
 import target_graph.edges.EdgeHandler;
 import target_graph.edges.NewEdgeAggregation;
 import target_graph.nodes.GraphMacroNode;
@@ -38,7 +36,7 @@ public class MainClass {
         //System.out.println(GraphLayout.parseInstance(graphEdge).toFootprint());
 
         // BITMATRIX
-        BitmatrixStructure bitmatrix = new BitmatrixStructure();
+        TargetBitmatrix bitmatrix = new TargetBitmatrix();
         bitmatrix.create_bitset(graphEdge, idx_label, macro_nodes, nodes_macro);
 
 

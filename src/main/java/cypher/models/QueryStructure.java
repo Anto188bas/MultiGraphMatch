@@ -168,10 +168,12 @@ public class QueryStructure {
 
 
     // GETTER
-    public Int2ObjectOpenHashMap<QueryNode> getQuery_nodes()             {return query_nodes;  }
-    public Object2IntOpenHashMap<String>    getNode_name_idx()           {return node_name_idx;}
-    public Int2ObjectOpenHashMap<QueryEdge> getQuery_edges()             {return query_edges;  }
-    public QueryEdgeAggregation             getQuery_pattern()           {return query_pattern;}
+    public Int2ObjectOpenHashMap<QueryNode> getQuery_nodes()             {return query_nodes;          }
+    public QueryNode                        getQuery_node(int node)      {return query_nodes.get(node);}
+    public Object2IntOpenHashMap<String>    getNode_name_idx()           {return node_name_idx;        }
+    public Int2ObjectOpenHashMap<QueryEdge> getQuery_edges()             {return query_edges;          }
+    public QueryEdge                        getQuery_edge(int edge)      {return query_edges.get(edge);}
+    public QueryEdgeAggregation             getQuery_pattern()           {return query_pattern;        }
     public boolean                          isIn(int node1, int node2)   {return query_pattern.isIn(node1,  node2);}
     public boolean                         isOut(int node1, int node2)   {return query_pattern.isOut(node1, node2);}
     public boolean                         isRev(int node1, int node2)   {return query_pattern.isRev(node1, node2);}
