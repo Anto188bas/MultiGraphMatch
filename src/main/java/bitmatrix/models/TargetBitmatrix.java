@@ -1,5 +1,6 @@
-package target_graph.bitmatrix;
+package bitmatrix.models;
 
+import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntIterator;
@@ -9,31 +10,14 @@ import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import tech.tablesaw.api.IntColumn;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.index.IntIndex;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
 
 
-public class BitmatrixStructure {
-    private final Table             table;
-    private final ArrayList<BitSet> bitmatrix;
-    private       IntIndex          bitmatrix_id_indexing;
-
-    public BitmatrixStructure(){
-        IntColumn src_col    = IntColumn.create("src");
-        IntColumn dst_col    = IntColumn.create("dst");
-        IntColumn bit_mtx_id = IntColumn.create("btx_id");
-        table                = Table.create(src_col, dst_col, bit_mtx_id);
-        bitmatrix            = new ArrayList<>();
-    }
-
-    // BITMATRIX NODES SETTING
-    private void node_part_configuration(BitSet bit_mtx_row, int[] labels, int offset){
-        Arrays.stream(labels).forEach(label -> {
-            if (label != -1)
-                bit_mtx_row.set(offset + label);
-        });
+public class TargetBitmatrix extends BitMatrix{
+    // CONSTRUCTOR
+    public TargetBitmatrix(){
+        super();
     }
 
     // BITMATRIX EDGES SETTING
@@ -44,33 +28,11 @@ public class BitmatrixStructure {
         int offset_1,            int offset_2
     ){
         IntIterator types_iter = type_edge.keySet().iterator();
-        while (types_iter.hasNext()){
-            int type = types_iter.nextInt();
-            // EDGE WITHOUT LABEL
-            if (type == 0) continue;
-            // OUT EDGE
-            if (type > 0 )
-                bit_mtx_row.set(offset_1 + offset_2 + type -1);
-            // IN EDGES
-            else {
-                bit_mtx_row.set(offset_1 + (-1) * type -1);
-                System.out.println(type);
-            }
-            // NOTE: -1 because the type edge start from 1
-        }
+        while (types_iter.hasNext())
+            super.set_edge_color(bit_mtx_row, types_iter.nextInt(), offset_1, offset_2);
     }
 
-    // ADD BITSET IF NOT EXIST
-    private int add_bitset_if_not_exist(BitSet record){
-        int i = 0;
-        for (; i < this.bitmatrix.size(); i++){
-            BitSet sel_bitset = bitmatrix.get(i);
-            if (sel_bitset.equals(record)) return i;
-        }
-        bitmatrix.add(record);
-        return i;
-    }
-
+    @Override
     public void create_bitset(
         NewEdgeAggregation              edge_aggregation,
         NodesEdgesLabelsMaps            labels_map,
@@ -79,6 +41,7 @@ public class BitmatrixStructure {
     ){
         int nodes_label_size = labels_map.n_type_sz();
         int edges_label_size = labels_map.e_type_sz();
+        Table table          = super.getTable();
         edge_aggregation.getAggregateEdges().forEach((src, dest_list) -> {
              GraphMacroNode src_macro_node = macro_nodes.get(nodes_macro.get((int) src));
              dest_list.forEach((dest, edges_type) -> {
@@ -93,21 +56,14 @@ public class BitmatrixStructure {
                   // DST LABELS CONFIGURATION
                   int offset = nodes_label_size + 2 * edges_label_size;
                   node_part_configuration(bit_mtx_row, dst_macro_node.get_macroNode_labels(), offset);
-                  int bitset_id = add_bitset_if_not_exist(bit_mtx_row);
-                  // src - dst - bitset_id association
-                  ((IntColumn) table.column("src")).append(src);
-                  ((IntColumn) table.column("dst")).append(dest);
-                  ((IntColumn) table.column("btx_id")).append(bitset_id);
+                  // SRC-DST-ROW ASSOCIATION
+                  add_src_dst_row(src, dest, bit_mtx_row);
              });
         });
         // INDEXING CREATION
-        bitmatrix_id_indexing = new IntIndex(table.intColumn("btx_id"));
+        super.setBitmatrix_id_indexing(new IntIndex(table.intColumn("btx_id")));
     }
 
-    // GETTER
-    public Table             getTable()     {return table;    }
-    public ArrayList<BitSet> getBitmatrix() {return bitmatrix;}
-
-    // TODO implement query check
-    // TODO implement some where condition
+    @Override
+    public void create_bitset(QueryStructure query, NodesEdgesLabelsMaps labels_map) {}
 }
