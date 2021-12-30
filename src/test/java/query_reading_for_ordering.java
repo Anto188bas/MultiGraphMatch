@@ -14,6 +14,9 @@ public class query_reading_for_ordering {
     public static final String hybridQuery = "MATCH p=(n1)<-[a:blk]-(n2), (n2)-[b:ylw]->(n3), (n3)-[c:blue]-(n4), " +
             "(n2)-[d:grn]-(n5), (n2)-[e:org]-(n6), (n6)<-[f:brw]-(n5) RETURN count(n1)";
 
+    public static final String multiEdgeDirectedQuery = "MATCH p=(n1)<-[a:blk]-(n2), (n2)-[b:ylw]->(n3), (n3)-[c:blue]->(n4), " +
+            "(n2)<-[d:grn]-(n5), (n3)-[e:org]->(n6), (n6)-[f:brw]->(n3) RETURN count(n1)";
+
 
     public static void color_matching_configuration(NodesEdgesLabelsMaps labels) {
         labels.createEdgeLabelIdx("blk");
@@ -55,6 +58,10 @@ public class query_reading_for_ordering {
     }
 
     public static QueryStructure getHybridToyQuery() {
+        return _getToyQuery(hybridQuery);
+    }
+
+    public static QueryStructure getMultiEdgeDirectedToyQuery() {
         return _getToyQuery(hybridQuery);
     }
 

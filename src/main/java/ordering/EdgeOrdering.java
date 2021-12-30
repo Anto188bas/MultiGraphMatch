@@ -5,6 +5,7 @@ import cypher.models.QueryEdge;
 import cypher.models.QueryNode;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.doubles.Double2IntOpenHashMap;
+import it.unimi.dsi.fastutil.doubles.Double2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.*;
 
 public class EdgeOrdering {
@@ -49,7 +50,7 @@ public class EdgeOrdering {
         // AUXILIARY INFO
         System.out.println("AUXILIARY INFO");
         Int2ObjectOpenHashMap<NodesPair> mapEdgeToEndpoints = new Int2ObjectOpenHashMap<>(); // Endpoints are lexicographically ordered.
-        Double2IntOpenHashMap mapEndpointsToEdge = new Double2IntOpenHashMap();
+        Double2ObjectOpenHashMap<IntArraySet> mapEndpointsToEdges = new Double2ObjectOpenHashMap<>(); // There can be multiple edges between the same nodes. Through this structure we can obtain the list of edges between two nodes.
 
         for (int edgeKey : unusedEdgeKeys) {
             NodesPair endpoints = OrderingUtils.getEdgeEndpoints(outEdges, edgeKey);
@@ -59,7 +60,14 @@ public class EdgeOrdering {
             } // Else is a directed edge
 
             mapEdgeToEndpoints.put(edgeKey, endpoints);
-            mapEndpointsToEdge.put(endpoints.getId().doubleValue(), edgeKey);
+
+            if(mapEndpointsToEdges.containsKey(endpoints.getId().doubleValue())) {
+                mapEndpointsToEdges.get(endpoints.getId().doubleValue()).add(edgeKey);
+            } else {
+                IntArraySet edgeSet = new IntArraySet();
+                edgeSet.add(edgeKey);
+                mapEndpointsToEdges.put(endpoints.getId().doubleValue(), edgeSet);
+            }
 
             System.out.println("EDGE: " + edgeKey + "\tENDPOINTS: " + endpoints);
         }
@@ -85,13 +93,14 @@ public class EdgeOrdering {
         System.out.println();
 
         // First edge of the ordering
+        Int2IntOpenHashMap degrees = OrderingUtils.computeDegrees(nodeKeys, inEdges, outEdges, inOutEdges);
 
         // We search the node with the higher degree
         IntArrayList maxNodes = new IntArrayList();
         int maxDegree = 0;
 
         for (int key : nodeKeys) {
-            int currentDegree = mapNodeToNeighborhood.get(key).size();
+            int currentDegree = degrees.get(key);
 
             if (currentDegree > maxDegree) {
                 maxDegree = currentDegree;
@@ -114,12 +123,14 @@ public class EdgeOrdering {
 
             for(int neighbour : neighborhood) {
                 NodesPair currentEndpoints = new NodesPair(node, neighbour);
-                int edgeId = mapEndpointsToEdge.get(currentEndpoints.getId().doubleValue());
-                int domainSize = domains.get(edgeId);
-                Double jaccardSimilarity = OrderingUtils.computeJaccardSimilarity(node, neighbour, mapNodeToNeighborhood, domainSize);
+                IntSet edgeSet = mapEndpointsToEdges.get(currentEndpoints.getId().doubleValue());
+                for(int edgeId : edgeSet) { // For each edge between these two nodes
+                    int domainSize = domains.get(edgeId);
+                    Double jaccardSimilarity = OrderingUtils.computeJaccardSimilarity(node, neighbour, mapNodeToNeighborhood, domainSize);
 
-                mapEdgeToJaccardSimilarity.put(edgeId, jaccardSimilarity);
-                System.out.println("EDGE ID: " + edgeId + "\tJACCARD SIMILARITY: " + jaccardSimilarity);
+                    mapEdgeToJaccardSimilarity.put(edgeId, jaccardSimilarity);
+                    System.out.println("EDGE ID: " + edgeId + "\tJACCARD SIMILARITY: " + jaccardSimilarity);
+                }
             }
         }
 
