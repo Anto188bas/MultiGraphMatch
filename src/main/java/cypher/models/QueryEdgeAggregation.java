@@ -83,35 +83,42 @@ public class QueryEdgeAggregation {
         return vNei;
     }
 
+    // ADD SRC-DST-EDGES ASSOCIATION
+    private void add_src_dst_edges(
+        Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>>> aggregation,
+        Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> edges_type,
+        int dir_1, int dir_2
+    ) {
+        edges_type.int2ObjectEntrySet().fastForEach(src_record -> {
+            int src = src_record.getIntKey();
+            // ITERATION OVER DST NODEs
+            src_record.getValue().int2ObjectEntrySet().fastForEach(dst_record -> {
+                int dst            = dst_record.getIntKey();
+                IntArrayList edges = dst_record.getValue();
+                // DST AND SRC ARE IN AGGREGATION. BUT DST IS A SOURCE NODE INSTEAD SRC A DESTINATION ONE. SO
+                // THESE EDGES WILL BE INCOMING ONES
+                if (aggregation.containsKey(dst) && aggregation.get(dst).containsKey(src))
+                    aggregation.get(dst).get(src).put(dir_1, edges);
+                // SRC IS A SOURCE NODE, WHILE DST A DESTINATION ONE
+                else {
+                    if (!aggregation.containsKey(src))
+                        aggregation.put(src, new Int2ObjectOpenHashMap<>());
+                    Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> src_dst_list = aggregation.get(src);
+                    if (!src_dst_list.containsKey(dst))
+                        src_dst_list.put(dst, new Int2ObjectOpenHashMap<>());
+                    src_dst_list.get(dst).put(dir_2, edges);
+                }
+            });
+        });
+    }
+
     // IN AND OUT AGGREGATION
     public Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>>> aggregate_edge() {
         Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>>> aggregation = new Int2ObjectOpenHashMap<>();
-        // ITERATION OVER SRC NODEs
-        out_edges.int2ObjectEntrySet().fastForEach(src_record -> {
-             int src = src_record.getIntKey();
-             // ITERATION OVER DST NODEs
-             src_record.getValue().int2ObjectEntrySet().fastForEach(dst_record -> {
-                 int dst            = dst_record.getIntKey();
-                 IntArrayList edges = dst_record.getValue();
-                 // DST AND SRC ARE IN AGGREGATION. BUT DST IS A SOURCE NODE INSTEAD SRC A DESTINATION ONE. SO
-                 // THESE EDGES WILL BE INCOMING ONES (-1)
-                 if (aggregation.containsKey(dst) && aggregation.get(dst).containsKey(src))
-                    aggregation.get(dst).get(src).put(-1, edges);
-                 // SRC IS A SOURCE NODE, WHILE DST A DESTINATION ONE
-                 else {
-                     if (!aggregation.containsKey(src))
-                         aggregation.put(src, new Int2ObjectOpenHashMap<>());
-                     Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> src_dst_list = aggregation.get(src);
-                     // WE ALREADY AGGREGATE ALL OUT EDGES FROM A NODE TO ANOTHER. THEREFORE, IF DST NOT IN LIST
-                     // WE PUT BOTH DST AND THE ASSOCIATED EDGES
-                     if (!src_dst_list.containsKey(dst)) {
-                         Int2ObjectOpenHashMap<IntArrayList> dir_edge = new Int2ObjectOpenHashMap<>();
-                         dir_edge.put(1, edges);
-                         src_dst_list.put(dst, dir_edge);
-                     }
-                 }
-             });
-        });
+        // ITERATION OVER SRC NODEs (DIRECTED EDGEs)
+        add_src_dst_edges(aggregation, out_edges,    -1, 1);
+        // UNDIRECTED EDGEs
+        add_src_dst_edges(aggregation, in_out_edges, 0, 0);
         return aggregation;
     }
 }

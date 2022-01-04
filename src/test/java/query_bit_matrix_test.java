@@ -27,15 +27,18 @@ public class query_bit_matrix_test {
         create_node_colors(nodes_edges_labels);
         create_edge_colors(nodes_edges_labels);
 
-        String query             = "MATCH p=(n1:GREEN:YELLOW)-[r:RED|ORANGE]->(n2:PURPLE), (n1)<-[r1:BLUE]-(n2) RETURN p";
+        String query             = "MATCH p=(n1:GREEN:YELLOW)-[r:RED]->(n2:PURPLE), (n1)<-[r1:BLUE]-(n2) RETURN p";
         //String query           = "MATCH p=(n1:GREEN:YELLOW)-[:RED|ORANGE *2..3]->(n2:PURPLE) RETURN p";
         QueryStructure query_obj = new QueryStructure();
         query_obj.parser(query, nodes_edges_labels);
         Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>>> aggregate_edge = query_obj.getQuery_pattern().aggregate_edge();
 
+        System.out.println(nodes_edges_labels.getIdxToLabelEdge());
+        System.out.println(nodes_edges_labels.getIdxToLabelNode());
         QueryBitmatrix ww = new QueryBitmatrix();
         ww.create_bitset(query_obj, nodes_edges_labels);
         System.out.println(ww.getTable());
         System.out.println(ww.getBitmatrix());
+
     }
 }
