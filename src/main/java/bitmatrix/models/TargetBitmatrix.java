@@ -7,7 +7,6 @@ import it.unimi.dsi.fastutil.ints.IntIterator;
 import target_graph.edges.NewEdgeAggregation;
 import target_graph.nodes.GraphMacroNode;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
-import tech.tablesaw.api.IntColumn;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.index.IntIndex;
 import java.util.BitSet;
@@ -15,7 +14,7 @@ import java.util.HashMap;
 
 
 public class TargetBitmatrix extends BitMatrix{
-    // CONSTRUCTOR
+   // CONSTRUCTOR
     public TargetBitmatrix(){
         super();
     }
@@ -39,6 +38,7 @@ public class TargetBitmatrix extends BitMatrix{
         HashMap<String, GraphMacroNode> macro_nodes,
         Int2ObjectOpenHashMap<String>   nodes_macro
     ){
+        int bit_set_size     = set_start_directed_position(labels_map, false);
         int nodes_label_size = labels_map.n_type_sz();
         int edges_label_size = labels_map.e_type_sz();
         Table table          = super.getTable();
@@ -46,7 +46,7 @@ public class TargetBitmatrix extends BitMatrix{
              GraphMacroNode src_macro_node = macro_nodes.get(nodes_macro.get((int) src));
              dest_list.forEach((dest, edges_type) -> {
                   GraphMacroNode dst_macro_node = macro_nodes.get(nodes_macro.get((int) dest));
-                  BitSet bit_mtx_row = new BitSet(2*(nodes_label_size + edges_label_size));
+                  BitSet bit_mtx_row = new BitSet(bit_set_size);
                   // SRC LABELS CONFIGURATION.    0 TO len(NODE_LABELS) - 1
                   node_part_configuration(bit_mtx_row, src_macro_node.get_macroNode_labels(), 0);
                   // IN/OUT TYPES CONFIGURATION
@@ -54,8 +54,7 @@ public class TargetBitmatrix extends BitMatrix{
                   // OUT -> len(NODES_LABEL) + len(EDGE_TYPES) TO len(NODES_LABEL) + 2 * len(EDGE_TYPES)
                   edge_part_configuration(bit_mtx_row, edges_type, nodes_label_size, edges_label_size);
                   // DST LABELS CONFIGURATION
-                  int offset = nodes_label_size + 2 * edges_label_size;
-                  node_part_configuration(bit_mtx_row, dst_macro_node.get_macroNode_labels(), offset);
+                  node_part_configuration(bit_mtx_row, dst_macro_node.get_macroNode_labels(), super.getStart_directed_pos()[3]);
                   // SRC-DST-ROW ASSOCIATION
                   add_src_dst_row(src, dest, bit_mtx_row);
              });

@@ -15,45 +15,11 @@ import java.util.BitSet;
 import java.util.HashMap;
 
 public class QueryBitmatrix extends BitMatrix {
-    private int[] start_directed_pos;
-    private int[] start_reverse_pos;
+    private boolean is_directed;
 
     // CONSTRUCTOR
     public QueryBitmatrix(){
         super();
-    }
-
-    // 0. CONFIGURE START DIRECTED POSITION VECTOR
-    private int set_start_directed_position(
-        NodesEdgesLabelsMaps labels_map,
-        boolean is_directed
-    ){
-        int nodes_label_size = labels_map.n_type_sz();
-        int edges_label_size = labels_map.e_type_sz();
-        int bit_set_size     = 2 * nodes_label_size + (is_directed ? 2:3) * edges_label_size;
-
-        // TYPE -> 0 UNDIRECTED, 1 -> DIRECTED
-        if (is_directed) {
-            //  SRC       IN                         OUT                                  DST
-            this.start_directed_pos = new int[] {
-                0, nodes_label_size, nodes_label_size + edges_label_size, nodes_label_size + 2 * edges_label_size, bit_set_size
-            };
-            this.start_reverse_pos = new int[] {
-                nodes_label_size + 2 * edges_label_size, nodes_label_size + edges_label_size, nodes_label_size, 0
-            };
-        }
-        else {
-            //  SRC       IN                         OUT                                 IN/OUT
-            this.start_directed_pos = new int[] {
-                0, nodes_label_size, nodes_label_size +  edges_label_size, nodes_label_size + 2 * edges_label_size,
-                nodes_label_size + 3 * edges_label_size, bit_set_size
-            };
-            this.start_reverse_pos  = new int[] {
-                nodes_label_size + 3 * edges_label_size, nodes_label_size +  edges_label_size, nodes_label_size,
-                nodes_label_size + 2 * edges_label_size, 0
-            };
-        }
-        return bit_set_size;
     }
 
     // 1. EDGE BITs CONFIGURATION
@@ -118,7 +84,7 @@ public class QueryBitmatrix extends BitMatrix {
              int idx      = dir_edges.getIntKey() == -1 ? 1 : dir_edges.getIntKey() ==  1 ? 2 : 3;
              for (int edge_id: dir_edges.getValue())
                  fill_edge_bits(
-                     query.getQuery_edge(edge_id), src_dst_edges, start_directed_pos[idx],
+                     query.getQuery_edge(edge_id), src_dst_edges, getStart_directed_pos()[idx],
                      src_labels, dst_labels, dst_position
                  );
         });
@@ -127,19 +93,11 @@ public class QueryBitmatrix extends BitMatrix {
     // 3. SPECULATE ROWs CREATION
     private void speculate_rows_computing(ArrayList<BitSet> bit_mtx_row) {
         // INIT SPECULATE ROW
-        int last_idx    = this.start_directed_pos.length -1;
+        int last_idx    = getStart_directed_pos().length -1;
         int actual_size = bit_mtx_row.size();
         for (int j = 0; j < actual_size; j++) {
             BitSet row     = bit_mtx_row.get(j);
-            BitSet new_row = new BitSet(start_directed_pos[last_idx]);
-            // SET BIT IN SPECULATE ROW
-            for (int i = 0; i < last_idx; i++) {
-                // last_idx - 1 BECAUSE IN last_idx WE STORED THE BITSET SIZE
-                final int shift = start_reverse_pos[i];
-                row.get(start_directed_pos[i], start_directed_pos[i + 1])
-                   .stream().forEach(index -> new_row.set(shift + index));
-            }
-            bit_mtx_row.add(new_row);
+            bit_mtx_row.add(super.speculate_row(row, last_idx));
         }
     }
 
@@ -157,9 +115,9 @@ public class QueryBitmatrix extends BitMatrix {
         NodesEdgesLabelsMaps labels_map
     ) {
         Table   table           = super.getTable();
-        boolean is_directed     = query.getQuery_pattern().getIn_out_edges().size() == 0;
+        is_directed             = query.getQuery_pattern().getIn_out_edges().size() == 0;
         int     bit_set_size    = set_start_directed_position(labels_map, is_directed);
-        int     dst_position    = this.start_directed_pos.length - 2;
+        int     dst_position    = getStart_directed_pos().length - 2;
 
         Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>>> aggregate_edge =
            query.getQuery_pattern().aggregate_edge();
@@ -173,7 +131,7 @@ public class QueryBitmatrix extends BitMatrix {
                  // SRC AND DST LABELs CONFIGURATION
                  node_part_configuration(src_dst_aggreg, src_labels, 0);
                  // WE PUT -2 BECAUSE THE LAST POSITION IS RELATED TO BITSET SIZE
-                 node_part_configuration(src_dst_aggreg, dst_labels, start_directed_pos[dst_position]);
+                 node_part_configuration(src_dst_aggreg, dst_labels, getStart_directed_pos()[dst_position]);
                  src_dst_edges.add(src_dst_aggreg);
                  // EDGES TYPEs ASSOCIATION
                  edges_part_configuration(query, dst_position, src_labels, dst_labels, src_dst_edges, verse_edges);
@@ -184,4 +142,7 @@ public class QueryBitmatrix extends BitMatrix {
         });
         super.setBitmatrix_id_indexing(new IntIndex(table.intColumn("btx_id")));
     }
+
+    // GETTER
+    public boolean isIs_directed()         {return is_directed;}
 }
