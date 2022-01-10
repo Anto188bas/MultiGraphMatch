@@ -6,6 +6,7 @@ import cypher.models.QueryStructure;
 import domain.AggregationDomain;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import ordering.PairsOrdering;
 import reading.FileManager;
 import target_graph.edges.EdgeHandler;
 import target_graph.edges.NewEdgeAggregation;
@@ -17,7 +18,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class test_on_syntetic_net {
@@ -67,6 +67,8 @@ public class test_on_syntetic_net {
                     System.out.println("src: " + record.getIntKey() + "; dst: " + sub_record.getIntKey() + "; |domain|: " + sub_record.getIntValue());
                 });
             });
+
+            int[][] pairs_ordering = PairsOrdering.computePairsOrdering(query_obj, aggregationDomain.getAggregate_domain());
         });
 
     }

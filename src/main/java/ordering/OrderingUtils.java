@@ -1,9 +1,7 @@
 package ordering;
 
 import it.unimi.dsi.fastutil.ints.*;
-
-
-import java.util.Arrays;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 
 public class OrderingUtils {
 
@@ -24,32 +22,30 @@ public class OrderingUtils {
         return null;
     }
 
-    public static IntArraySet getEdgeNeighborhood(Int2ObjectOpenHashMap<NodesPair> mapEdgeToEndpoints, int edge) {
-        IntArraySet neighborhood = new IntArraySet();
-        NodesPair edgeEndpoints = mapEdgeToEndpoints.get(edge);
+    public static ObjectArraySet<NodesPair> getPairNeighborhood(NodesPair pair, Int2ObjectOpenHashMap<IntArraySet> map_node_to_neighborhood) {
+        ObjectArraySet<NodesPair> neighborhood = new ObjectArraySet<>();
 
-        for (int currentEdge : mapEdgeToEndpoints.keySet()) {
-            if (currentEdge != edge) {
-                NodesPair currentEdgeEndpoints = mapEdgeToEndpoints.get(currentEdge);
+        int node = pair.getFirstEndpoint().intValue();
 
-                if (edgeEndpoints.getFirstEndpoint().equals(currentEdgeEndpoints.getFirstEndpoint()) ||
-                        edgeEndpoints.getFirstEndpoint().equals(currentEdgeEndpoints.getSecondEndpoint()) ||
-                        edgeEndpoints.getSecondEndpoint().equals(currentEdgeEndpoints.getFirstEndpoint()) ||
-                        edgeEndpoints.getSecondEndpoint().equals(currentEdgeEndpoints.getSecondEndpoint())) {
-                    neighborhood.add(currentEdge);
-                }
-            }
+        for (int neighbour : map_node_to_neighborhood.get(node)) {
+            neighborhood.add(new NodesPair(node, neighbour));
+        }
+
+        node = pair.getSecondEndpoint().intValue();
+
+        for (int neighbour : map_node_to_neighborhood.get(node)) {
+            neighborhood.add(new NodesPair(node, neighbour));
         }
 
         return neighborhood;
     }
 
-    public static Double computeSetWeight(IntArraySet edgeSet, Int2IntOpenHashMap domains) {
+    public static Double computeSetWeight(ObjectArraySet<NodesPair> pair_set, Int2IntOpenHashMap domains) {
         double w = 0d;
-
-        for (int edge : edgeSet) {
-            int domain_size = domains.get(edge);
+        for (NodesPair pair : pair_set) {
+            int domain_size = domains.get(pair.getId().intValue());
             w += 1d / domain_size;
+
         }
 
         return w;
@@ -90,19 +86,19 @@ public class OrderingUtils {
     public static Int2IntOpenHashMap computeDegrees(IntSet nodes, Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> inEdges, Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> outEdges, Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> inOutEdges) {
         Int2IntOpenHashMap degrees = new Int2IntOpenHashMap();
 
-        for(int node: nodes) {
+        for (int node : nodes) {
 
             int degree = 0;
 
-            if(inEdges.containsKey(node)) {
-                 degree += inEdges.get(node).size();
+            if (inEdges.containsKey(node)) {
+                degree += inEdges.get(node).size();
             }
 
-            if(outEdges.containsKey(node)) {
+            if (outEdges.containsKey(node)) {
                 degree += outEdges.get(node).size();
             }
 
-            if(inOutEdges.containsKey(node)) {
+            if (inOutEdges.containsKey(node)) {
                 degree += inOutEdges.get(node).size();
             }
 

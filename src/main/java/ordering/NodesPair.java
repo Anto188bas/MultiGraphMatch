@@ -5,7 +5,14 @@ public class NodesPair {
     private final Integer firstEndpoint;
     private final Integer secondEndpoint;
 
-    private final Double id;
+    private final Integer id;
+
+    public NodesPair() {
+        this.firstEndpoint = -1;
+        this.secondEndpoint = -1;
+
+        this.id = -1;
+    }
 
     public NodesPair(int a, int b) {
         if (a < b) {
@@ -17,7 +24,7 @@ public class NodesPair {
         }
 
         // Cantor pairing function
-        this.id = 0.5d * (this.firstEndpoint + this.secondEndpoint) * (this.firstEndpoint + this.secondEndpoint + 1) + this.secondEndpoint;
+        this.id = (int) (0.5 * (this.firstEndpoint + this.secondEndpoint) * (this.firstEndpoint + this.secondEndpoint + 1) + this.secondEndpoint);
     }
 
     public Integer getFirstEndpoint() {
@@ -28,7 +35,7 @@ public class NodesPair {
         return this.secondEndpoint;
     }
 
-    public Double getId() {
+    public Integer getId() {
         return id;
     }
 
@@ -57,9 +64,9 @@ public class NodesPair {
         if (this.getClass() != o.getClass())
             return false;
         NodesPair q = (NodesPair) o;
-        System.out.println(this + ", " + q);
+
         // field comparison
-        return Double.compare(this.getId(), q.getId()) == 0;
+        return (this.getId() == q.getId());
     }
 
 
