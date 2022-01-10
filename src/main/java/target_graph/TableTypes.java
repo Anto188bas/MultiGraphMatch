@@ -27,6 +27,10 @@ public class TableTypes {
         ColumnType[] types = new ColumnType[header.length];
         for(int i=0; i<header.length; i++){
             String[] name_type = header[i].split(":");
+            if (name_type[0].equalsIgnoreCase("id")) {
+                types[i] = INTEGER;
+                continue;
+            }
             column_type_selector(types, name_type.length > 1 ? name_type[1] : "string", i);
         }
         return types;

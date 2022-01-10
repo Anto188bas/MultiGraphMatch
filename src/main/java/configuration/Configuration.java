@@ -9,7 +9,6 @@ public class Configuration {
     public String result_file;
     public int    timeout;
 
-    public Configuration() {}
     public Configuration(String[] args){
         set_error();
         timeout = 1800;
@@ -64,5 +63,17 @@ public class Configuration {
                 }
             }
         });
+    }
+
+    // TOSTRING
+    @Override
+    public String toString() {
+        return "Configuration{" +
+                "nodes_main_directory='" + nodes_main_directory + '\'' +
+                ", edges_main_directory='" + edges_main_directory + '\'' +
+                ", query_file='" + query_file + '\'' +
+                ", result_file='" + result_file + '\'' +
+                ", timeout=" + timeout +
+                '}';
     }
 }

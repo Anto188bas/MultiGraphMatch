@@ -5,6 +5,7 @@ import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvValidationException;
+import configuration.Configuration;
 import target_graph.TableTypes;
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.Table;
@@ -12,6 +13,9 @@ import tech.tablesaw.io.csv.CsvReadOptions;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 
 
 public class FileManager {
@@ -36,5 +40,11 @@ public class FileManager {
             } catch (CsvValidationException | IOException e) {e.printStackTrace();}
         }
         return tables;
+    }
+
+    public static List<String> query_reading(Configuration configuration) throws IOException {
+        String path = configuration.query_file + "/query.txt";
+        List<String> lines = Files.readAllLines(Path.of(path));
+        return lines;
     }
 }

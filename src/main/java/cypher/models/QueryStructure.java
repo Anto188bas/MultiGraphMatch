@@ -103,7 +103,7 @@ public class QueryStructure {
     // EDGE CREATION
     private int edge_manager(RelationshipPattern relationship, NodesEdgesLabelsMaps label_type_map){
         int id = query_edges.size();
-        System.out.println(relationship);
+        //System.out.println(relationship);
         query_edges.put(id, new QueryEdge(relationship, label_type_map));
         return id;
     }

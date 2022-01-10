@@ -3,8 +3,6 @@ package target_graph.edges;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
-import javax.swing.plaf.PanelUI;
-
 public class NewEdgeAggregation extends ParentAggregation{
     //                 SRC id as key       DST id as key         type as key          edges id
     private final Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>>> aggregateEdges;

@@ -134,7 +134,7 @@ public class QueryReturn {
             ReturnItem item = items.next();
             create_prop_alias_array(item.expression(), item.name());
         }
-        System.out.println(toString());
+        //System.out.println(toString());
     }
 
     // GETTER

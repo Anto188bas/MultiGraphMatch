@@ -34,7 +34,6 @@ public class MacroNodeHandler {
          );
     }
 
-
     public static int graph_macro_node_creation(
         Table[]                                  tables,
         String                                   col_2_index,
