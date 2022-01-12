@@ -6,7 +6,7 @@ import cypher.models.QueryStructure;
 import domain.AggregationDomain;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import ordering.PairsOrdering;
+import ordering.EdgeOrdering;
 import reading.FileManager;
 import target_graph.edges.EdgeHandler;
 import target_graph.edges.NewEdgeAggregation;
@@ -68,7 +68,7 @@ public class test_on_syntetic_net {
                 });
             });
 
-            int[][] pairs_ordering = PairsOrdering.computePairsOrdering(query_obj, aggregationDomain.getAggregate_domain());
+            IntArrayList edge_ordering = EdgeOrdering.computePairsOrdering(query_obj, aggregationDomain.getAggregate_domain());
         });
 
     }

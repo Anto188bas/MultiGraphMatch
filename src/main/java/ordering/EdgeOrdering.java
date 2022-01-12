@@ -5,9 +5,10 @@ import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 
-public class PairsOrdering {
-    public static int[][] computePairsOrdering(QueryStructure query_structure, Int2ObjectOpenHashMap<Int2IntOpenHashMap> aggregate_domain) {
+public class EdgeOrdering {
+    public static IntArrayList computePairsOrdering(QueryStructure query_structure, Int2ObjectOpenHashMap<Int2IntOpenHashMap> aggregate_domain) {
         //************************************************************* PRE PROCESSING *************************************************************//
+        IntArrayList edge_ordering = new IntArrayList();
         // NODES
         IntSet node_keys = query_structure.getQuery_nodes().keySet();
 
@@ -21,6 +22,7 @@ public class PairsOrdering {
         // PAIR OF NODES HAVING AT LEAST ONE EDGE
         ObjectArrayList<NodesPair> selected_pairs = new ObjectArrayList<>();
         ObjectArrayList<NodesPair> unselected_pairs = new ObjectArrayList<>();
+        Int2ObjectOpenHashMap<IntArraySet> map_endpoints_to_edges = new Int2ObjectOpenHashMap<>();
 
         for (int edge_key : edge_keys) {
             NodesPair endpoints = OrderingUtils.getEdgeEndpoints(out_edges, edge_key);
@@ -28,6 +30,14 @@ public class PairsOrdering {
             if (endpoints == null) { // Undirected edge
                 endpoints = OrderingUtils.getEdgeEndpoints(in_out_edges, edge_key);
             } // Else is a directed edge
+
+            if(map_endpoints_to_edges.containsKey(endpoints.getId().intValue())) {
+                map_endpoints_to_edges.get(endpoints.getId().intValue()).add(edge_key);
+            } else {
+                IntArraySet edge_set = new IntArraySet();
+                edge_set.add(edge_key);
+                map_endpoints_to_edges.put(endpoints.getId().intValue(), edge_set);
+            }
 
             if (!unselected_pairs.contains(endpoints)) {
                 unselected_pairs.push(endpoints);
@@ -115,6 +125,7 @@ public class PairsOrdering {
 
         selected_pairs.push(max_query_pair);
         unselected_pairs.remove(max_query_pair);
+        edge_ordering.addAll(map_endpoints_to_edges.get(max_query_pair.getId().intValue()));
         //******************************************************************************************************************************************//
 
         //************************************************************* RESIDUAL PAIRS *************************************************************//
@@ -248,6 +259,7 @@ public class PairsOrdering {
                 if (max_pairs.size() == 1 || index == 3) { // If there is no tie (cases 1, 2, 3, and 4) or there are ties in all weights (case 5)
                     unselected_pairs.remove(max_pairs.get(0));
                     selected_pairs.push(max_pairs.get(0));
+                    edge_ordering.addAll(map_endpoints_to_edges.get(max_pairs.get(0).getId().intValue()));
 
                     break;
                 }
@@ -255,26 +267,14 @@ public class PairsOrdering {
 
         }
         //******************************************************************************************************************************************//
-        System.out.println("ORDERING: ");
+        System.out.println("PAIRS: ");
 
-        int[][] ordering = new int[selected_pairs.size()][2];
-
-        // FIXME: We need to determine how to order the each pair of node (for example, lexicographically).
-        // They are currently ordered to allow quick access to compatibility domains.
-        int i = 0;
-        System.out.print("[");
         for (NodesPair pair : selected_pairs) {
-            if (aggregate_domain.containsKey(pair.getFirstEndpoint().intValue())) {
-                ordering[i][0] = pair.getFirstEndpoint();
-                ordering[i][1] = pair.getSecondEndpoint();
-            } else {
-                ordering[i][0] = pair.getSecondEndpoint();
-                ordering[i][1] = pair.getFirstEndpoint();
-            }
-            System.out.print("{" + ordering[i][0] + ", " + ordering[i][1] + "}, ");
+            System.out.println("\tPAIR: {" + pair + "} \tEDGES: " + map_endpoints_to_edges.get(pair.getId().intValue()));
         }
-        System.out.println("]");
 
-        return ordering;
+        System.out.println("EDGES:\n\t" + edge_ordering);
+
+        return edge_ordering;
     }
 }
