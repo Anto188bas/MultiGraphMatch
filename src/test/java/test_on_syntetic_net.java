@@ -16,6 +16,7 @@ import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import tech.tablesaw.api.Table;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -68,7 +69,13 @@ public class test_on_syntetic_net {
                 });
             });
 
-            IntArrayList edge_ordering = EdgeOrdering.computePairsOrdering(query_obj, aggregationDomain.getAggregate_domain());
+            int[] map_state_to_edge = EdgeOrdering.computePairsOrdering(query_obj, aggregationDomain.getAggregate_domain());
+            int[] map_edge_to_state = EdgeOrdering.getInverseMap(map_state_to_edge);
+
+
+            System.out.println("map_state_to_edge: " + Arrays.toString(map_state_to_edge));
+            System.out.println("map_edge_to_state: " + Arrays.toString(map_edge_to_state));
+
         });
 
     }

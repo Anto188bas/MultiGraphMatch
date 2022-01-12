@@ -6,7 +6,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 
 public class EdgeOrdering {
-    public static IntArrayList computePairsOrdering(QueryStructure query_structure, Int2ObjectOpenHashMap<Int2IntOpenHashMap> aggregate_domain) {
+    public static int[] computePairsOrdering(QueryStructure query_structure, Int2ObjectOpenHashMap<Int2IntOpenHashMap> aggregate_domain) {
         //************************************************************* PRE PROCESSING *************************************************************//
         IntArrayList edge_ordering = new IntArrayList();
         // NODES
@@ -275,6 +275,16 @@ public class EdgeOrdering {
 
         System.out.println("EDGES:\n\t" + edge_ordering);
 
-        return edge_ordering;
+        return edge_ordering.toIntArray();
+    }
+
+    public static int[] getInverseMap(int[] map) {
+        int[] inverse = new int[map.length];
+
+        for(int i = 0; i < map.length; i++) {
+            inverse[map[i]] = i;
+        }
+
+        return inverse;
     }
 }
