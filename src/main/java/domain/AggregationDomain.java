@@ -12,8 +12,8 @@ import java.util.Optional;
 
 public class AggregationDomain {
     // ATTRIBUTE
-    private final Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<Table>> query_target_assoc;
-    private final Int2ObjectOpenHashMap<Int2IntOpenHashMap>           aggregate_domain;
+    private final Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<AssociationIndex>> query_target_assoc;
+    private final Int2ObjectOpenHashMap<Int2IntOpenHashMap>                      aggregate_domain;
 
     // CONSTRUCTOR
     public AggregationDomain(){
@@ -57,22 +57,30 @@ public class AggregationDomain {
         Int2ObjectOpenHashMap<Table> q_idrow_t_src_dst = qrow_target_association(compatibility, target_matrix);
         query_matrix.getTable().forEach(row -> {
              Table corresponding_table = q_idrow_t_src_dst.get(row.getInt("btx_id"));
-             if (!query_target_assoc.containsKey(row.getInt("src"))) {
+             if (!query_target_assoc.containsKey(row.getInt("src")))
                  query_target_assoc.put(row.getInt("src"), new Int2ObjectOpenHashMap<>());
-                 aggregate_domain.put(row.getInt("src"),   new Int2IntOpenHashMap());
-             }
-             Int2ObjectOpenHashMap<Table> target_part = query_target_assoc.get(row.getInt("src"));
-             Int2IntOpenHashMap           dst_cardin  = aggregate_domain.get(row.getInt("src"));
-             if (target_part.containsKey(row.getInt("dst"))){
-                 Table tmp = target_part.get(row.getInt("dst"));
-                 corresponding_table = corresponding_table.append(tmp).dropDuplicateRows();
-             }
-             target_part.put(row.getInt("dst"), corresponding_table);
-             dst_cardin.put( row.getInt("dst"), corresponding_table.rowCount());
+
+             // SRC PART
+             Int2ObjectOpenHashMap<AssociationIndex> target_part = query_target_assoc.get(row.getInt("src"));
+
+             // COMPATIBILITY CONFIGURATION (DST PART CONFIGURATION)
+             if (target_part.containsKey(row.getInt("dst")))
+                 target_part.get(row.getInt("dst")).add_new_associations(corresponding_table);
+             else
+                 target_part.put(row.getInt("dst"), new AssociationIndex(corresponding_table));
+        });
+
+        // DOMAIN CONFIGURATION
+        query_target_assoc.int2ObjectEntrySet().fastForEach(record -> {
+             aggregate_domain.put(record.getIntKey(), new Int2IntOpenHashMap());
+             record.getValue().int2ObjectEntrySet().fastForEach(dst_table -> {
+                 aggregate_domain.get(record.getIntKey()).put(dst_table.getIntKey(), dst_table.getValue().get_table_size());
+                 dst_table.getValue().index_configuration();
+             });
         });
     }
 
     // GETTER
-    public Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<Table>> getQuery_target_assoc() {return query_target_assoc;}
-    public Int2ObjectOpenHashMap<Int2IntOpenHashMap>           getAggregate_domain()   {return aggregate_domain;  }
+    public Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<AssociationIndex>> getQuery_target_assoc() {return query_target_assoc;}
+    public Int2ObjectOpenHashMap<Int2IntOpenHashMap> getAggregate_domain()   {return aggregate_domain;  }
 }
