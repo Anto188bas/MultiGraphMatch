@@ -1,9 +1,12 @@
 package simmetry_condition;
 
+import cypher.models.QueryEdge;
 import cypher.models.QueryEdgeAggregation;
 import cypher.models.QueryStructure;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+
 import java.util.Arrays;
 import java.util.BitSet;
 
@@ -43,13 +46,14 @@ public class SymmetryCondition {
     private static void isomorphicExtensions(int[] fDir, int[] fRev, ObjectArrayList<int[]> vv, BitSet support, int pos, QueryStructure query){
         int node_number = fDir.length;
         int[] cand      = new int[node_number];
-        Arrays.fill(cand, 0, cand.length -1, -1);
+        Arrays.fill(cand, 0, cand.length, -1);
         int i, j;
+        int [] vTemp;
         if (pos == node_number)
             vv.add(Arrays.copyOfRange(fDir, 0, node_number));
         else {
             int[] count = new int[node_number];
-            Arrays.fill(count, 0, count.length -1, 0);
+            Arrays.fill(count, 0, count.length, 0);
             int   ncand = 0;
             // WE ARE WORKING ON THE ITH NODE
             for (i = 0; i < node_number; i++) {
@@ -119,8 +123,8 @@ public class SymmetryCondition {
         // fDir and fRev creation and initialization. all the elements are set to -1
         int[] fDir = new int[node_number];
         int[] fRev = new int[node_number];
-        Arrays.fill(fDir, 0, fDir.length -1, -1);
-        Arrays.fill(fRev, 0, fRev.length -1, -1);
+        Arrays.fill(fDir, 0, fDir.length, -1);
+        Arrays.fill(fRev, 0, fRev.length, -1);
 
         // Sequence and support configuration
         int[][] sequence = create_sequence_matrix(query, node_number);
@@ -139,16 +143,76 @@ public class SymmetryCondition {
             }
         } return vv;
     }
-
-    public IntArrayList[] getNodeSymmetryConditions(QueryStructure query) {
-        int i, j;
+    // 5. NODES SYMMETRY CONDITIONS
+    public static IntArrayList[] getNodeSymmetryConditions(QueryStructure query) {
+        int i, j, k;
         ObjectArrayList<int[]> vv = findAutomorphisms(query);
         int vv_size               = vv.size();
         int numNodes              = query.getQuery_nodes().size();
         IntArrayList[] listCond   = new IntArrayList[numNodes];
-        Arrays.fill(listCond, 0, numNodes -1, new IntArrayList());
+        for(i = 0; i < numNodes; i++) {
+            listCond[i] = new IntArrayList();
+        }
         BitSet broken             = new BitSet(vv_size);
-        // TODO complete me
-        return null;
+        for(i=0;i<numNodes;i++)
+        {
+            for(j=0;j<vv_size;j++)
+            {
+                if(!broken.get(j) && vv.get(j)[i]!=i)
+                    break;
+            }
+            if(j<vv_size)
+            {
+                for(k=i+1;k<numNodes;k++)
+                {
+                    for (j=0;j<vv_size;j++)
+                    {
+                        if(!broken.get(j) && vv.get(j)[i]==k)
+                        {
+                            listCond[k].add(i);
+                            break;
+                        }
+                    }
+                }
+            }
+            for(j=0;j<vv_size;j++)
+            {
+                if(vv.get(j)[i]!=i)
+                    broken.set(j);
+            }
+
+        }
+        return listCond;
+    }
+
+    // 5. EDGES SYMMETRY CONDITIONS
+    public static IntArrayList[] getEdgeSymmetryConditions(QueryStructure query)
+    {
+        Int2ObjectOpenHashMap<QueryEdge> edges = query.getQuery_edges();
+        IntArrayList[] symmCond=new IntArrayList[edges.size()];
+        for(int i=0;i<edges.size();i++)
+            symmCond[i]=new IntArrayList();
+
+        query.getQuery_pattern().getOut_edges().int2ObjectEntrySet().fastForEach(outAdiacs -> {
+            Int2ObjectOpenHashMap<IntArrayList> mapAdiacs=outAdiacs.getValue();
+            mapAdiacs.int2ObjectEntrySet().fastForEach(adiac -> {
+                IntArrayList listEdgeIds=adiac.getValue();
+                for(int i=0;i<listEdgeIds.size();i++)
+                {
+                    int idEdge1=listEdgeIds.getInt(i);
+                    QueryEdge qe1=edges.get(idEdge1);
+                    for(int j=i+1;j<listEdgeIds.size();j++)
+                    {
+                        int idEdge2=listEdgeIds.getInt(j);
+                        QueryEdge qe2=edges.get(idEdge2);
+                        if(idEdge1<idEdge2 && qe1.equivalent_to(qe2))
+                            symmCond[idEdge2].add(idEdge1);
+                    }
+                }
+            });
+        });
+
+
+        return symmCond;
     }
 }

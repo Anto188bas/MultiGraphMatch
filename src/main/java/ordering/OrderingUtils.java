@@ -3,23 +3,28 @@ package ordering;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 public class OrderingUtils {
 
     public static NodesPair getEdgeEndpoints(Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> edges, int edgeId) {
+        AtomicReference<NodesPair> endpoints = new AtomicReference<>();
 
-        for (int firstEndpoint : edges.keySet()) {
-            Int2ObjectOpenHashMap<IntArrayList> adjList = edges.get(firstEndpoint);
+        edges.int2ObjectEntrySet().fastForEach(record -> {
+            int first_endpoint = record.getIntKey();
 
-            for (int secondEndpoint : adjList.keySet()) {
-                int _edgeId = adjList.get(secondEndpoint).getInt(0);
+            record.getValue().int2ObjectEntrySet().fastForEach(sub_record -> {
+                int second_endpoint = sub_record.getIntKey();
 
-                if (_edgeId == edgeId) {
-                    return new NodesPair(firstEndpoint, secondEndpoint);  // Endpoints are lexicographically ordered
+                for(int _edge_id: sub_record.getValue()) {
+                    if (_edge_id == edgeId) {
+                        endpoints.set(new NodesPair(first_endpoint, second_endpoint));  // Endpoints are lexicographically ordered
+                    }
                 }
-            }
-        }
+            });
+        });
 
-        return null;
+        return endpoints.get();
     }
 
     public static ObjectArraySet<NodesPair> getPairNeighborhood(NodesPair pair, Int2ObjectOpenHashMap<IntArraySet> map_node_to_neighborhood) {

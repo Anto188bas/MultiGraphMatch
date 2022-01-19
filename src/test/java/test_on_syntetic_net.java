@@ -8,6 +8,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import ordering.EdgeOrdering;
 import reading.FileManager;
+import simmetry_condition.SymmetryCondition;
 import target_graph.edges.EdgeHandler;
 import target_graph.edges.NewEdgeAggregation;
 import target_graph.nodes.GraphMacroNode;
@@ -69,13 +70,23 @@ public class test_on_syntetic_net {
                 });
             });
 
+            // EDGE ORDERING
             int[] map_state_to_edge = EdgeOrdering.computePairsOrdering(query_obj, aggregationDomain.getAggregate_domain());
             int[] map_edge_to_state = EdgeOrdering.getInverseMap(map_state_to_edge);
-
 
             System.out.println("map_state_to_edge: " + Arrays.toString(map_state_to_edge));
             System.out.println("map_edge_to_state: " + Arrays.toString(map_edge_to_state));
 
+            // SYMMETRY CONDITIONS
+            IntArrayList[] symm_cond_nodes = SymmetryCondition.getNodeSymmetryConditions(query_obj);
+            IntArrayList[] symm_cond_edges = SymmetryCondition.getEdgeSymmetryConditions(query_obj);
+
+            System.out.println("NODES SYMMETRY CONDITIONS");
+            for(int i=0; i<symm_cond_nodes.length; i++)
+			    System.out.println("NODE " + i + ": " + symm_cond_nodes[i]);
+            System.out.println("EDGES SIMMETRY CONDITIONS:");
+		    for(int i=0; i<symm_cond_edges.length; i++)
+			    System.out.println("EDGE " + i + ": " + symm_cond_edges[i]);
         });
 
     }

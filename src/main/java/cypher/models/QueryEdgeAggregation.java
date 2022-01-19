@@ -70,9 +70,9 @@ public class QueryEdgeAggregation {
     public Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> getIn_out_edges() {return in_out_edges;}
 
     // IS FUNCTION
-    public boolean  isIn(int node1, int node2) {return  in_edges.get(node1).containsKey(node2);}
-    public boolean isOut(int node1, int node2) {return out_edges.get(node1).containsKey(node2);}
-    public boolean isRev(int node1, int node2) {return in_out_edges.get(node1).containsKey(node2);}
+    public boolean  isIn(int node1, int node2) {    return in_edges.containsKey(node1)      && in_edges.get(node1).containsKey(node2);      }
+    public boolean isOut(int node1, int node2) {    return out_edges.containsKey(node1)     && out_edges.get(node1).containsKey(node2);     }
+    public boolean isRev(int node1, int node2) {    return in_out_edges.containsKey(node1)  && in_out_edges.get(node1).containsKey(node2);  }
 
     // GET NEIGHBOURS OF A NODES
     public IntArrayList get_node_neighbours(int node_1, int total_nodes){
