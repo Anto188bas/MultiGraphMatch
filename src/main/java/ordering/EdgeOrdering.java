@@ -6,7 +6,22 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 
 public class EdgeOrdering {
-    public static int[] computePairsOrdering(QueryStructure query_structure, Int2ObjectOpenHashMap<Int2IntOpenHashMap> aggregate_domain) {
+    private final QueryStructure query_structure;
+    private final Int2ObjectOpenHashMap<Int2IntOpenHashMap> aggregate_domain;
+    private int[] map_edge_to_state;
+    private int[] map_state_to_edge;
+    private int[] map_state_to_src;
+    private int[] map_state_to_dst;
+    private ObjectArrayList<NodesPair> pairs_ordering;
+
+    public EdgeOrdering(QueryStructure query_structure, Int2ObjectOpenHashMap<Int2IntOpenHashMap> aggregate_domain) {
+        this.query_structure = query_structure;
+        this.aggregate_domain = aggregate_domain;
+
+        this.computePairsOrdering();
+    }
+
+    private void computePairsOrdering() {
         //************************************************************* PRE PROCESSING *************************************************************//
         IntArrayList edge_ordering = new IntArrayList();
         // NODES
@@ -23,6 +38,8 @@ public class EdgeOrdering {
         ObjectArrayList<NodesPair> selected_pairs = new ObjectArrayList<>();
         ObjectArrayList<NodesPair> unselected_pairs = new ObjectArrayList<>();
         Int2ObjectOpenHashMap<IntArraySet> map_endpoints_to_edges = new Int2ObjectOpenHashMap<>();
+        Int2ObjectOpenHashMap<NodesPair> map_edge_to_endpoints = new Int2ObjectOpenHashMap<>();
+
 
         for (int edge_key : edge_keys) {
             NodesPair endpoints = OrderingUtils.getEdgeEndpoints(out_edges, edge_key);
@@ -38,6 +55,8 @@ public class EdgeOrdering {
                 edge_set.add(edge_key);
                 map_endpoints_to_edges.put(endpoints.getId().intValue(), edge_set);
             }
+
+            map_edge_to_endpoints.put(edge_key, endpoints);
 
             if (!unselected_pairs.contains(endpoints)) {
                 unselected_pairs.push(endpoints);
@@ -267,18 +286,30 @@ public class EdgeOrdering {
 
         }
         //******************************************************************************************************************************************//
-        System.out.println("PAIRS: ");
+        pairs_ordering = selected_pairs;
+        map_state_to_edge = edge_ordering.toIntArray();
+        map_edge_to_state = this.getInverseMap(map_state_to_edge);
 
-        for (NodesPair pair : selected_pairs) {
-            System.out.println("\tPAIR: {" + pair + "} \tEDGES: " + map_endpoints_to_edges.get(pair.getId().intValue()));
+        map_state_to_src = new int[edge_keys.size()];
+        map_state_to_dst = new int[edge_keys.size()];
+
+        int i = 0;
+        for (int edge: edge_ordering) {
+            NodesPair pair = map_edge_to_endpoints.get(edge);
+
+            if (aggregate_domain.containsKey(pair.getFirstEndpoint().intValue())) {
+                map_state_to_src[i] = pair.getFirstEndpoint();
+                map_state_to_dst[i] = pair.getSecondEndpoint();
+            } else {
+                map_state_to_src[i] = pair.getSecondEndpoint();
+                map_state_to_dst[i] = pair.getFirstEndpoint();
+            }
+            i++;
         }
-
-        System.out.println("EDGES:\n\t" + edge_ordering);
-
-        return edge_ordering.toIntArray();
     }
 
-    public static int[] getInverseMap(int[] map) {
+    // GETTER
+   private int[] getInverseMap(int[] map) {
         int[] inverse = new int[map.length];
 
         for(int i = 0; i < map.length; i++) {
@@ -286,5 +317,25 @@ public class EdgeOrdering {
         }
 
         return inverse;
+    }
+
+    public ObjectArrayList<NodesPair> getPairs_ordering() {
+        return pairs_ordering;
+    }
+
+    public int[] getMap_state_to_edge() {
+        return map_state_to_edge;
+    }
+
+    public int[] getMap_edge_to_state() {
+        return map_edge_to_state;
+    }
+
+    public int[] getMap_state_to_src() {
+        return map_state_to_src;
+    }
+
+    public int[] getMap_state_to_dst() {
+        return map_state_to_dst;
     }
 }

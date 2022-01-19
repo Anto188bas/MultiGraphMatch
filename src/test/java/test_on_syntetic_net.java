@@ -71,11 +71,16 @@ public class test_on_syntetic_net {
             });
 
             // EDGE ORDERING
-            int[] map_state_to_edge = EdgeOrdering.computePairsOrdering(query_obj, aggregationDomain.getAggregate_domain());
-            int[] map_edge_to_state = EdgeOrdering.getInverseMap(map_state_to_edge);
+            EdgeOrdering edgeOrdering = new EdgeOrdering(query_obj, aggregationDomain.getAggregate_domain());
+            int[] map_state_to_edge = edgeOrdering.getMap_state_to_edge();
+            int[] map_edge_to_state = edgeOrdering.getMap_edge_to_state();
+            int[] map_state_to_src = edgeOrdering.getMap_state_to_src();
+            int[] map_state_to_dst = edgeOrdering.getMap_state_to_dst();
 
             System.out.println("map_state_to_edge: " + Arrays.toString(map_state_to_edge));
             System.out.println("map_edge_to_state: " + Arrays.toString(map_edge_to_state));
+            System.out.println("map_state_to_src: " + Arrays.toString(map_state_to_src));
+            System.out.println("map_state_to_dst: " + Arrays.toString(map_state_to_dst));
 
             // SYMMETRY CONDITIONS
             IntArrayList[] symm_cond_nodes = SymmetryCondition.getNodeSymmetryConditions(query_obj);
