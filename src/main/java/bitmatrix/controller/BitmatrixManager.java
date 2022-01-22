@@ -29,6 +29,7 @@ public class BitmatrixManager {
         boolean is_compatible;
 
         // CASE 1
+        // TODO: WE FIXED THE REVERSE CASE, SO WE HAVE TO DO A COMBINED CHECK SRC-DST AND DST-SRC TO REDUCE THE CONTROL NUMBER
         if (is_directed) {
            for (int i = 0; i < qmatrix.size(); i++){
                IntArrayList compatible_record = new IntArrayList();

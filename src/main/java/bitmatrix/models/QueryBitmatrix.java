@@ -91,14 +91,15 @@ public class QueryBitmatrix extends BitMatrix {
     }
 
     // 3. SPECULATE ROWs CREATION
-    private void speculate_rows_computing(ArrayList<BitSet> bit_mtx_row) {
+    // WE NEED TO CREATE A SEPARATE STRUCTURE BECAUSE THE REVERSE IMPLIES DST-SRC AND NOT SRC-DST
+    private ArrayList<BitSet> speculate_rows_computing(ArrayList<BitSet> bit_mtx_row) {
+        ArrayList<BitSet> speculate = new ArrayList<>();
         // INIT SPECULATE ROW
         int last_idx    = getStart_directed_pos().length -1;
-        int actual_size = bit_mtx_row.size();
-        for (int j = 0; j < actual_size; j++) {
-            BitSet row     = bit_mtx_row.get(j);
-            bit_mtx_row.add(super.speculate_row(row, last_idx));
+        for (BitSet row : bit_mtx_row) {
+            speculate.add(super.speculate_row(row, last_idx));
         }
+        return speculate;
     }
 
     // IT IS NOT IMPLEMENTED BECAUSE IS RELATED TO TARGET
@@ -119,8 +120,7 @@ public class QueryBitmatrix extends BitMatrix {
         int     bit_set_size    = set_start_directed_position(labels_map, is_directed);
         int     dst_position    = getStart_directed_pos().length - 2;
 
-        Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>>> aggregate_edge =
-           query.getQuery_pattern().aggregate_edge();
+        Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>>> aggregate_edge = query.getQuery_pattern().aggregate_edge();
         aggregate_edge.forEach((src, dst_list  ) -> {
              int[] src_labels      = query.getQuery_node(src).getLabels().toIntArray();
              dst_list.forEach((dst, verse_edges) -> {
@@ -135,9 +135,10 @@ public class QueryBitmatrix extends BitMatrix {
                  src_dst_edges.add(src_dst_aggreg);
                  // EDGES TYPEs ASSOCIATION
                  edges_part_configuration(query, dst_position, src_labels, dst_labels, src_dst_edges, verse_edges);
-                 speculate_rows_computing(src_dst_edges);
+                 ArrayList<BitSet> dst_src_edges = speculate_rows_computing(src_dst_edges);
                  // SRC-DST-ROWs ASSOCIATION
                  add_src_dst_row(src, dst, src_dst_edges);
+                 add_src_dst_row(dst, src, dst_src_edges);
              });
         });
         super.setBitmatrix_id_indexing(new IntIndex(table.intColumn("btx_id")));

@@ -3,17 +3,20 @@ package cypher.models;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class QueryEdgeAggregation {
     private final Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> in_edges;
     private final Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> out_edges;
     private final Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> in_out_edges;
+    private       ArrayList<int[]>                                           q_aggregation;
 
     public QueryEdgeAggregation(){
-        in_edges     = new Int2ObjectOpenHashMap<>();
-        out_edges    = new Int2ObjectOpenHashMap<>();
-        in_out_edges = new Int2ObjectOpenHashMap<>();
+        in_edges         = new Int2ObjectOpenHashMap<>();
+        out_edges        = new Int2ObjectOpenHashMap<>();
+        in_out_edges     = new Int2ObjectOpenHashMap<>();
+        q_aggregation    = new ArrayList<>();
     }
 
     // ADD NODES-EDGE ASSOCIATION INTO THE CONSIDERED STRUCTURE
@@ -64,16 +67,6 @@ public class QueryEdgeAggregation {
         }
     }
 
-    // GETTER
-    public Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> getIn_edges()     {return in_edges;    }
-    public Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> getOut_edges()    {return out_edges;   }
-    public Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> getIn_out_edges() {return in_out_edges;}
-
-    // IS FUNCTION
-    public boolean  isIn(int node1, int node2) {    return in_edges.containsKey(node1)      && in_edges.get(node1).containsKey(node2);      }
-    public boolean isOut(int node1, int node2) {    return out_edges.containsKey(node1)     && out_edges.get(node1).containsKey(node2);     }
-    public boolean isRev(int node1, int node2) {    return in_out_edges.containsKey(node1)  && in_out_edges.get(node1).containsKey(node2);  }
-
     // GET NEIGHBOURS OF A NODES
     public IntArrayList get_node_neighbours(int node_1, int total_nodes){
         IntArrayList vNei = new IntArrayList();
@@ -112,13 +105,33 @@ public class QueryEdgeAggregation {
         });
     }
 
+
     // IN AND OUT AGGREGATION
     public Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>>> aggregate_edge() {
+        q_aggregation = new ArrayList<>();
         Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>>> aggregation = new Int2ObjectOpenHashMap<>();
         // ITERATION OVER SRC NODEs (DIRECTED EDGEs)
         add_src_dst_edges(aggregation, out_edges,    -1, 1);
         // UNDIRECTED EDGEs
         add_src_dst_edges(aggregation, in_out_edges, 0, 0);
+        // FINAL AGGREGATION
+        aggregation.int2ObjectEntrySet().fastForEach(src_dsts ->
+            src_dsts.getValue().int2ObjectEntrySet().fastForEach(dst ->
+                q_aggregation.add(new int[]{src_dsts.getIntKey(), dst.getIntKey()})
+            )
+        );
         return aggregation;
     }
+
+
+    // GETTER
+    public Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> getIn_edges()      {return in_edges;    }
+    public Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> getOut_edges()     {return out_edges;   }
+    public Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> getIn_out_edges()  {return in_out_edges;}
+    public ArrayList<int[]>                                           getQ_aggregation() {return q_aggregation;}
+
+    // IS FUNCTION
+    public boolean  isIn(int node1, int node2) {    return in_edges.containsKey(node1)      && in_edges.get(node1).containsKey(node2);      }
+    public boolean isOut(int node1, int node2) {    return out_edges.containsKey(node1)     && out_edges.get(node1).containsKey(node2);     }
+    public boolean isRev(int node1, int node2) {    return in_out_edges.containsKey(node1)  && in_out_edges.get(node1).containsKey(node2);  }
 }
