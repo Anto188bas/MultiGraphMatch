@@ -9,9 +9,8 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.index.IntIndex;
 import tech.tablesaw.selection.Selection;
-
-import java.util.ArrayList;
 import java.util.Optional;
+
 
 public class AggregationDomain {
     // ATTRIBUTE
@@ -80,7 +79,11 @@ public class AggregationDomain {
              if (record.getValue().size() != 0) {
                  aggregate_domain.put(record.getIntKey(), new Int2IntOpenHashMap());
                  record.getValue().int2ObjectEntrySet().fastForEach(dst_table -> {
-                     aggregate_domain.get(record.getIntKey()).put(dst_table.getIntKey(), dst_table.getValue().get_table_size());
+                     AssociationIndex associations = dst_table.getValue();
+                     aggregate_domain.get(
+                         record.getIntKey()).put(dst_table.getIntKey(),
+                        associations.get_table_size() + associations.get_reverse_sz()
+                     );
                      dst_table.getValue().index_configuration();
                  });
              } else query_target_assoc.remove(record.getIntKey());
