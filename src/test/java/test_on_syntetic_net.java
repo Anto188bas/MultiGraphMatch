@@ -7,9 +7,8 @@ import domain.AggregationDomain;
 import domain.AssociationIndex;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import matching.MatchingData;
+import matching.models.MatchingData;
 import ordering.EdgeOrdering;
-import org.apache.commons.lang.ArrayUtils;
 import reading.FileManager;
 import simmetry_condition.SymmetryCondition;
 import state_machine.StateStructures;
@@ -113,6 +112,9 @@ public class test_on_syntetic_net {
             int[] listInitNodes  = tmp.get_complete_table().intColumn("src").asSet().stream().mapToInt(Integer::intValue).toArray();
 
             MatchingData matchind_data = new MatchingData(query_obj);
+
+            int x = -10;
+            System.out.println(Integer.signum(x));
 
         });
 

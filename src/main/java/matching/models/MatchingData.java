@@ -1,4 +1,4 @@
-package matching;
+package matching.models;
 
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
