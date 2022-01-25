@@ -106,13 +106,16 @@ public class MatchingProcedure {
                  // UPDATE MAP
                  matchingData.solution_edges[si] = matchingData.setCandidates[si].getInt(matchingData.candidatesIT[si]);
                  if(si==0) {
-                     matchingData.solution_nodes[states.map_state_to_src[si]] = matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
-                     matchingData.solution_nodes[states.map_state_to_dst[si]] = matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
+                     matchingData.solution_nodes[states.map_state_to_src[si]] =
+                        matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
+                     matchingData.solution_nodes[states.map_state_to_dst[si]] =
+                        matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
                  }
                  else {
                      int node_to_match = states.map_state_to_mnode[si];
                      if(matchingData.solution_nodes[node_to_match] == -1)
-                        matchingData.solution_nodes[node_to_match] = matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
+                        matchingData.solution_nodes[node_to_match] =
+                          matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
                  }
 
                  if(si == numQueryEdges-1) {
