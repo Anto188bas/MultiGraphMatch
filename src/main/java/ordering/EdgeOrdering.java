@@ -5,6 +5,9 @@ import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 public class EdgeOrdering {
     private final QueryStructure query_structure;
     private final Int2ObjectOpenHashMap<Int2IntOpenHashMap> aggregate_domain;
@@ -12,6 +15,7 @@ public class EdgeOrdering {
     private int[] map_state_to_edge;
     private int[] map_state_to_src;
     private int[] map_state_to_dst;
+    private int[] map_state_node_to_match;
     private ObjectArrayList<NodesPair> pairs_ordering;
 
     public EdgeOrdering(QueryStructure query_structure, Int2ObjectOpenHashMap<Int2IntOpenHashMap> aggregate_domain) {
@@ -290,8 +294,9 @@ public class EdgeOrdering {
         map_state_to_edge = edge_ordering.toIntArray();
         map_edge_to_state = this.getInverseMap(map_state_to_edge);
 
-        map_state_to_src = new int[edge_keys.size()];
-        map_state_to_dst = new int[edge_keys.size()];
+        map_state_to_src        = new int[edge_keys.size()];
+        map_state_to_dst        = new int[edge_keys.size()];
+        map_state_node_to_match = new int[edge_keys.size()];
 
         int i = 0;
         for (int edge: edge_ordering) {
@@ -306,6 +311,19 @@ public class EdgeOrdering {
             }
             i++;
         }
+
+        // TODO CHECK ME
+        for(i = 1; i < map_state_node_to_match.length; i++) {
+            int psi  = i - 1;
+
+            System.out.println("State: " + psi + "\tsrc: " + map_state_to_src[psi] + "\tdst: " + map_state_to_dst[psi]);
+            System.out.println("State: " + i   + "\tsrc: " + map_state_to_src[i]   + "\tdst: " + map_state_to_dst[i]);
+
+            ArrayList<Integer> actList = new ArrayList<>(Arrays.asList(map_state_to_src[i], map_state_to_dst[i]));
+            actList.removeAll(Arrays.asList(map_state_to_src[psi], map_state_to_dst[psi]));
+            System.out.println(actList);
+        }
+
     }
 
     // GETTER
@@ -331,9 +349,7 @@ public class EdgeOrdering {
         return map_edge_to_state;
     }
 
-    public int[] getMap_state_to_src() {
-        return map_state_to_src;
-    }
+    public int[] getMap_state_to_src()  { return map_state_to_src;  }
 
     public int[] getMap_state_to_dst() {
         return map_state_to_dst;

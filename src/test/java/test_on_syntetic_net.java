@@ -77,10 +77,10 @@ public class test_on_syntetic_net {
             // EDGE ORDERING
             EdgeOrdering edgeOrdering = new EdgeOrdering(query_obj, aggregationDomain.getAggregate_domain());
             StateStructures states    = new StateStructures();
-            states.map_state_to_edge = edgeOrdering.getMap_state_to_edge();
-            states.map_edge_to_state = edgeOrdering.getMap_edge_to_state();
-            states.map_state_to_src = edgeOrdering.getMap_state_to_src();
-            states.map_state_to_dst = edgeOrdering.getMap_state_to_dst();
+            states.map_state_to_edge  = edgeOrdering.getMap_state_to_edge();
+            states.map_edge_to_state  = edgeOrdering.getMap_edge_to_state();
+            states.map_state_to_src   = edgeOrdering.getMap_state_to_src();
+            states.map_state_to_dst   = edgeOrdering.getMap_state_to_dst();
 
             // LOGGING
             //System.out.println("map_state_to_edge: " + Arrays.toString(states.map_state_to_edge));
