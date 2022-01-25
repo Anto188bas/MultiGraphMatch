@@ -33,8 +33,8 @@ public class test_on_syntetic_net {
         Table[] edges_tables_properties = FileManager.files_reading(configuration.edges_main_directory, ',');
 
         // NODE ELABORATION
-        HashMap<String, GraphMacroNode> macro_nodes           = new HashMap<>();
-        Int2ObjectOpenHashMap<String> nodes_macro             = new Int2ObjectOpenHashMap<>();
+        HashMap<String, GraphMacroNode>          macro_nodes  = new HashMap<>();
+        Int2ObjectOpenHashMap<String>            nodes_macro  = new Int2ObjectOpenHashMap<>();
         Int2ObjectOpenHashMap<ArrayList<String>> level_nodeId = new Int2ObjectOpenHashMap<>();
         int max_deep_level = MacroNodeHandler.graph_macro_node_creation(
             nodes_tables,"type", idx_label, macro_nodes, level_nodeId, nodes_macro
@@ -61,26 +61,32 @@ public class test_on_syntetic_net {
 
 
             // COMPATIBILITY COMPUTING
+            double inizio_dom = System.currentTimeMillis();
             Int2ObjectOpenHashMap<IntArrayList> compatibility = BitmatrixManager.bitmatrix_manager(query_bitmatrix, target_bitmatrix);
             AggregationDomain aggregationDomain = new AggregationDomain();
             aggregationDomain.query_target_association(compatibility, target_bitmatrix, query_bitmatrix, query_obj);
+            System.out.println("domain computing time: " + (System.currentTimeMillis() - inizio_dom)/1000);
 
 
             // LOGGING
+            /*
             aggregationDomain.getAggregate_domain().int2ObjectEntrySet().fastForEach(record -> {
                 record.getValue().int2IntEntrySet().fastForEach(sub_record -> {
                     System.out.println("src: " + record.getIntKey() + "; dst: " + sub_record.getIntKey() + "; |domain|: " + sub_record.getIntValue());
                 });
             });
+            */
 
 
             // EDGE ORDERING
+            double ordering_stime     = System.currentTimeMillis();
             EdgeOrdering edgeOrdering = new EdgeOrdering(query_obj, aggregationDomain.getAggregate_domain());
             StateStructures states    = new StateStructures();
             states.map_state_to_edge  = edgeOrdering.getMap_state_to_edge();
             states.map_edge_to_state  = edgeOrdering.getMap_edge_to_state();
             states.map_state_to_src   = edgeOrdering.getMap_state_to_src();
             states.map_state_to_dst   = edgeOrdering.getMap_state_to_dst();
+            System.out.println("ordering computing time: " + (System.currentTimeMillis() - ordering_stime)/1000);
 
             // LOGGING
             //System.out.println("map_state_to_edge: " + Arrays.toString(states.map_state_to_edge));
