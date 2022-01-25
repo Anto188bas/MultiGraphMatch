@@ -109,18 +109,21 @@ public class test_on_syntetic_net {
 			    System.out.println("EDGE " + i + ": " + symm_cond_edges[i]);
 			 */
 
-
+            int[][] map_state_to_mapped_nodes = edgeOrdering.getMap_state_to_mapped_nodes();
+            for(int i = 0; i < map_state_to_mapped_nodes.length; i++) {
+                System.out.println("STATE " + i + "\tMAPPED NODES: " + Arrays.toString(map_state_to_mapped_nodes[i]));
+            }
 		    // TMP CODE
-		    int first_edge       = states.map_state_to_edge[0];
-		    int q_src            = states.map_state_to_src[0];
-		    int q_dst            = states.map_state_to_dst[0];
-		    AssociationIndex tmp = aggregationDomain.getQuery_target_assoc().get(q_src).get(q_dst);
-            int[] listInitNodes  = tmp.get_complete_table().intColumn("src").asSet().stream().mapToInt(Integer::intValue).toArray();
-
-            MatchingData matchind_data = new MatchingData(query_obj);
-
-            int x = -10;
-            System.out.println(Integer.signum(x));
+//		    int first_edge       = states.map_state_to_edge[0];
+//		    int q_src            = states.map_state_to_src[0];
+//		    int q_dst            = states.map_state_to_dst[0];
+//		    AssociationIndex tmp = aggregationDomain.getQuery_target_assoc().get(q_src).get(q_dst);
+//            int[] listInitNodes  = tmp.get_complete_table().intColumn("src").asSet().stream().mapToInt(Integer::intValue).toArray();
+//
+//            MatchingData matchind_data = new MatchingData(query_obj);
+//
+//            int x = -10;
+//            System.out.println(Integer.signum(x));
 
         });
 

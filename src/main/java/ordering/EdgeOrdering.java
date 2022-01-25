@@ -15,7 +15,7 @@ public class EdgeOrdering {
     private int[] map_state_to_edge;
     private int[] map_state_to_src;
     private int[] map_state_to_dst;
-    private int[] map_state_node_to_match;
+    private int[][] map_state_to_mapped_nodes;
     private ObjectArrayList<NodesPair> pairs_ordering;
 
     public EdgeOrdering(QueryStructure query_structure, Int2ObjectOpenHashMap<Int2IntOpenHashMap> aggregate_domain) {
@@ -97,6 +97,10 @@ public class EdgeOrdering {
         //******************************************************************************************************************************************//
 
         //*************************************************************** FIRST PAIR ***************************************************************//
+        IntArraySet ordered_nodes = new IntArraySet();
+        map_state_to_mapped_nodes = new int[edge_keys.size()][2];
+        IntArraySet current_edge_set;
+        int state_index = 0;
         // First pair of the ordering
         Int2IntOpenHashMap degrees = OrderingUtils.computeDegrees(node_keys, in_edges, out_edges, in_out_edges);
 
@@ -134,7 +138,7 @@ public class EdgeOrdering {
         }
 
         // We search the pair having the maximum Jaccard Similarity
-        NodesPair max_query_pair = new NodesPair();
+        NodesPair query_pair_to_add = new NodesPair();
         double max_jaccard_similarity = -1d;
 
         for (NodesPair pair : unselected_pairs) {
@@ -142,13 +146,27 @@ public class EdgeOrdering {
 
             if (current_jaccard_similarity > max_jaccard_similarity) {
                 max_jaccard_similarity = current_jaccard_similarity;
-                max_query_pair = pair;
+                query_pair_to_add = pair;
             }
         }
 
-        selected_pairs.push(max_query_pair);
-        unselected_pairs.remove(max_query_pair);
-        edge_ordering.addAll(map_endpoints_to_edges.get(max_query_pair.getId().intValue()));
+        selected_pairs.push(query_pair_to_add);
+        unselected_pairs.remove(query_pair_to_add);
+        current_edge_set = map_endpoints_to_edges.get(query_pair_to_add.getId().intValue());
+        edge_ordering.addAll(current_edge_set);
+
+        map_state_to_mapped_nodes[state_index++] = null;
+        if(current_edge_set.size() > 1) {
+            for(int i = 0; i < current_edge_set.size() - 1; i++) {
+                map_state_to_mapped_nodes[state_index][0] = query_pair_to_add.getFirstEndpoint();
+                map_state_to_mapped_nodes[state_index][1] = query_pair_to_add.getSecondEndpoint();
+                state_index++;
+            }
+        }
+
+        ordered_nodes.add(query_pair_to_add.getFirstEndpoint().intValue());
+        ordered_nodes.add(query_pair_to_add.getSecondEndpoint().intValue());
+
         //******************************************************************************************************************************************//
 
         //************************************************************* RESIDUAL PAIRS *************************************************************//
@@ -280,9 +298,34 @@ public class EdgeOrdering {
 
                 }
                 if (max_pairs.size() == 1 || index == 3) { // If there is no tie (cases 1, 2, 3, and 4) or there are ties in all weights (case 5)
-                    unselected_pairs.remove(max_pairs.get(0));
-                    selected_pairs.push(max_pairs.get(0));
-                    edge_ordering.addAll(map_endpoints_to_edges.get(max_pairs.get(0).getId().intValue()));
+                    query_pair_to_add = max_pairs.get(0);
+                    unselected_pairs.remove(query_pair_to_add);
+                    selected_pairs.push(query_pair_to_add);
+                    current_edge_set = map_endpoints_to_edges.get(query_pair_to_add.getId().intValue());
+                    edge_ordering.addAll(current_edge_set);
+
+                    IntArraySet mapped_nodes = new IntArraySet();
+
+                    if(ordered_nodes.contains(query_pair_to_add.getFirstEndpoint().intValue())) {
+                        mapped_nodes.add(query_pair_to_add.getFirstEndpoint().intValue());
+                    }
+
+                    if(ordered_nodes.contains(query_pair_to_add.getSecondEndpoint().intValue())) {
+                        mapped_nodes.add(query_pair_to_add.getSecondEndpoint().intValue());
+                    }
+
+                    map_state_to_mapped_nodes[state_index++] = mapped_nodes.toIntArray();
+
+                    if(current_edge_set.size() > 1) {
+                        for(int i = 0; i < current_edge_set.size() - 1; i++) {
+                            map_state_to_mapped_nodes[state_index][0] = query_pair_to_add.getFirstEndpoint();
+                            map_state_to_mapped_nodes[state_index][1] = query_pair_to_add.getSecondEndpoint();
+                            state_index++;
+                        }
+                    }
+
+                    ordered_nodes.add(query_pair_to_add.getFirstEndpoint().intValue());
+                    ordered_nodes.add(query_pair_to_add.getSecondEndpoint().intValue());
 
                     break;
                 }
@@ -296,7 +339,7 @@ public class EdgeOrdering {
 
         map_state_to_src        = new int[edge_keys.size()];
         map_state_to_dst        = new int[edge_keys.size()];
-        map_state_node_to_match = new int[edge_keys.size()];
+
 
         int i = 0;
         for (int edge: edge_ordering) {
@@ -311,19 +354,6 @@ public class EdgeOrdering {
             }
             i++;
         }
-
-        // TODO CHECK ME
-        for(i = 1; i < map_state_node_to_match.length; i++) {
-            int psi  = i - 1;
-
-            System.out.println("State: " + psi + "\tsrc: " + map_state_to_src[psi] + "\tdst: " + map_state_to_dst[psi]);
-            System.out.println("State: " + i   + "\tsrc: " + map_state_to_src[i]   + "\tdst: " + map_state_to_dst[i]);
-
-            ArrayList<Integer> actList = new ArrayList<>(Arrays.asList(map_state_to_src[i], map_state_to_dst[i]));
-            actList.removeAll(Arrays.asList(map_state_to_src[psi], map_state_to_dst[psi]));
-            System.out.println(actList);
-        }
-
     }
 
     // GETTER
@@ -353,5 +383,9 @@ public class EdgeOrdering {
 
     public int[] getMap_state_to_dst() {
         return map_state_to_dst;
+    }
+
+    public int[][] getMap_state_to_mapped_nodes() {
+        return map_state_to_mapped_nodes;
     }
 }

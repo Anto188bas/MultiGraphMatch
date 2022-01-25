@@ -1,6 +1,9 @@
 package ordering;
 
 
+import it.unimi.dsi.fastutil.ints.IntArraySet;
+import it.unimi.dsi.fastutil.ints.IntCollection;
+
 public class NodesPair {
     private final Integer firstEndpoint;
     private final Integer secondEndpoint;
