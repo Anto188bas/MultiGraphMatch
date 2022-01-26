@@ -297,10 +297,12 @@ public class EdgeOrdering {
                     current_edge_set = map_endpoints_to_edges.get(query_pair_to_add.getId().intValue());
                     edge_ordering.addAll(current_edge_set);
 
-                    if(ordered_nodes.contains(query_pair_to_add.getFirstEndpoint().intValue())) {
+                    if(!ordered_nodes.contains(query_pair_to_add.getFirstEndpoint().intValue())) {
+                        map_state_to_unmapped_nodes[state_index++] = query_pair_to_add.getFirstEndpoint().intValue();
+                    } else if(!ordered_nodes.contains(query_pair_to_add.getSecondEndpoint().intValue())) {
                         map_state_to_unmapped_nodes[state_index++] = query_pair_to_add.getSecondEndpoint().intValue();
                     } else {
-                        map_state_to_unmapped_nodes[state_index++] = query_pair_to_add.getFirstEndpoint().intValue();
+                        map_state_to_unmapped_nodes[state_index++] = -1;
                     }
 
                     if(current_edge_set.size() > 1) {
