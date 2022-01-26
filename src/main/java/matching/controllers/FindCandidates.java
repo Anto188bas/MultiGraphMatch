@@ -9,6 +9,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import matching.models.MatchingData;
 import state_machine.StateStructures;
 import target_graph.edges.NewEdgeAggregation;
+import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
 
 
@@ -130,5 +131,42 @@ public class FindCandidates {
         }
 
         return listCandidates;
+    }
+
+    public static IntArrayList find_first_candidate(
+           Row src_dst,
+           int q_src,
+           int qs_t,  int qd_t,
+           IntArrayList types,
+           NewEdgeAggregation target_edges,
+           int direction,
+           MatchingData matchingData,
+           IntArrayList[] nodes_symmetry
+    ) {
+          IntArrayList listCandidates = new IntArrayList();
+          Int2ObjectOpenHashMap<IntArrayList> types_edges = target_edges.getSrcDstAssociations(
+             src_dst.getInt("src"), src_dst.getInt("dst")
+          );
+
+          // NO TYPES
+          if(types.size() == 0) {
+              // UNDIRECTED
+              if(direction == 0)
+                 EdgeSelections.no_types_undirected_case(
+                    listCandidates,types_edges, src_dst, qs_t, qd_t, q_src, matchingData, nodes_symmetry
+                 );
+              else
+                  EdgeSelections.no_types_directed_case(
+                    listCandidates, types_edges, src_dst, qs_t, qd_t, q_src, matchingData, nodes_symmetry, direction
+                  );
+          }
+          // TYPES
+          else {
+              EdgeSelections.configured_types_case(
+                   listCandidates, types_edges, src_dst, qs_t, qd_t, q_src, matchingData, nodes_symmetry, types
+              );
+          }
+
+          return listCandidates;
     }
 }

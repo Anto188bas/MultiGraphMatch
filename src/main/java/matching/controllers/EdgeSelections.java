@@ -12,6 +12,7 @@ import tech.tablesaw.api.Table;
 public class EdgeSelections {
     // 0. SET SELECTED EDGE AND NODE
     // - 1.
+    // CANDIDATES
     private static void set_edge_node_id(IntArrayList edges, MatchingData matchingData, IntArrayList listCandidates, int t_node) {
         for(int idEdge: edges) {
             // TODO WE WILL ANALYZE THE PROPERTIES AFTER THE BITMATRIX COMPATIBILITY
@@ -20,6 +21,17 @@ public class EdgeSelections {
             listCandidates.add(t_node);
         }
     }
+
+    // FIRST CANDIDATES
+    private static void set_edge_node_id(IntArrayList edges, MatchingData matchingData, IntArrayList listCandidates, int first_node, int second_node) {
+        for(int idEdge: edges) {
+            if(matchingData.matchedEdges.contains(idEdge)) continue;
+            listCandidates.add(idEdge);
+            listCandidates.add(first_node);
+            listCandidates.add(second_node);
+        }
+    }
+
 
     // - 2.
     public static void set_edges_id(
@@ -39,7 +51,7 @@ public class EdgeSelections {
         }
     }
 
-    // 1. TYPE VECTOR IS EMPTY AND DIRECTION IS BOTH, SO EVERY TARGET EDGE COULD BE A CANDIDATE
+    // 1a. TYPE VECTOR IS EMPTY AND DIRECTION IS BOTH, SO EVERY TARGET EDGE COULD BE A CANDIDATE (CANDIDATES)
     public static void no_types_undirected_case(
             IntArrayList listCandidates, NewEdgeAggregation target_aggregation,
             Table candidates,            int                id_col,
@@ -61,7 +73,28 @@ public class EdgeSelections {
         }
     }
 
-    // 2. TYPE VECTOR IS EMPTY AND DIRECTION IS SET
+    // 1b. TYPE VECTOR IS EMPTY AND DIRECTION IS BOTH, SO EVERY TARGET EDGE COULD BE A CANDIDATE (FIRST CANDIDATES)
+    public static void no_types_undirected_case(
+            IntArrayList listCandidates,
+            Int2ObjectOpenHashMap<IntArrayList> types_edges,
+            Row                row,
+            int                qs_t_col,
+            int                qd_t_col,
+            int                q_src,
+            MatchingData       matchingData,
+            IntArrayList[]     nodes_symmetry
+    ) {
+         int t_src = row.getInt(qs_t_col);
+         if (FindCandidates.nodeCondCheck(q_src, t_src, matchingData, nodes_symmetry)) {
+             int t_dst = row.getInt(qd_t_col);
+             types_edges.int2ObjectEntrySet().fastForEach(type_edges ->
+                 set_edge_node_id(type_edges.getValue(), matchingData, listCandidates, t_src, t_dst)
+             );
+         }
+    }
+
+
+    // 2a. TYPE VECTOR IS EMPTY AND DIRECTION IS SET (CANDIDATES)
     public static void no_types_directed_case(
             IntArrayList       listCandidates,  NewEdgeAggregation target_aggregation,
             Table              candidates,      int                id_col,
@@ -84,7 +117,30 @@ public class EdgeSelections {
         }
     }
 
-    // 3. TYPE VECTOR IS SET
+    // 2b. TYPE VECTOR IS EMPTY AND DIRECTION IS SET (FIRST CANDIDATES)
+    public static void no_types_directed_case(
+            IntArrayList       listCandidates,
+            Int2ObjectOpenHashMap<IntArrayList> types_edges,
+            Row                row,
+            int                qs_t_col,
+            int                qd_t_col,
+            int                q_node,
+            MatchingData       matchingData,
+            IntArrayList[]     nodes_symmetry,
+            int                direction
+    ) {
+        int t_src = row.getInt(qs_t_col);
+        if (FindCandidates.nodeCondCheck(q_node, t_src, matchingData, nodes_symmetry)) {
+            int t_dst = row.getInt(qd_t_col);
+            types_edges.int2ObjectEntrySet().fastForEach(type_edges -> {
+                 if(Integer.signum(type_edges.getIntKey()) == direction)
+                    set_edge_node_id(type_edges.getValue(), matchingData, listCandidates, t_src, t_dst);
+            });
+        }
+    }
+
+
+    // 3a. TYPE VECTOR IS SET (CANDIDATES)
     public static void configured_types_case (
             IntArrayList       listCandidates,  NewEdgeAggregation target_aggregation,
             Table              candidates,      int                id_col,
@@ -108,6 +164,28 @@ public class EdgeSelections {
         }
     }
 
+    // 3.b TYPE VECTOR IS SET (CANDIDATES)
+    public static void configured_types_case (
+            IntArrayList       listCandidates,
+            Int2ObjectOpenHashMap<IntArrayList> types_edges,
+            Row                row,
+            int                qs_t_col,
+            int                qd_t_col,
+            int                q_node,
+            MatchingData       matchingData,
+            IntArrayList[]     nodes_symmetry,
+            IntArrayList types
+    ) {
+        int t_src = row.getInt(qs_t_col);
+        if (FindCandidates.nodeCondCheck(q_node, t_src, matchingData, nodes_symmetry)){
+            int t_dst = row.getInt(qd_t_col);
+            for(int i=0; i < types.size(); i++) {
+                IntArrayList sel_edges = types_edges.get(types.getInt(i));
+                if(sel_edges == null) continue;
+                    set_edge_node_id(sel_edges, matchingData, listCandidates, t_src, t_dst);
+            }
+        }
+    }
 
     // 4. CASE WHERE BOTH NODE ARE MATCHED
     public static void set_edge_candidate_both_nodes_matched(
