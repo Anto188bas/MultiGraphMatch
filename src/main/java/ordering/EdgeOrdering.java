@@ -330,12 +330,15 @@ public class EdgeOrdering {
         for (int edge: edge_ordering) {
             NodesPair pair = map_edge_to_endpoints.get(edge);
 
-            if (aggregate_domain.containsKey(pair.getFirstEndpoint().intValue())) {
-                map_state_to_src[i] = pair.getFirstEndpoint();
-                map_state_to_dst[i] = pair.getSecondEndpoint();
+            int first_endpoint = pair.getFirstEndpoint().intValue();
+            int second_endpoint = pair.getSecondEndpoint().intValue();
+
+            if (aggregate_domain.containsKey(first_endpoint) && aggregate_domain.get(first_endpoint).containsKey(second_endpoint)) {
+                map_state_to_src[i] = first_endpoint;
+                map_state_to_dst[i] = second_endpoint;
             } else {
-                map_state_to_src[i] = pair.getSecondEndpoint();
-                map_state_to_dst[i] = pair.getFirstEndpoint();
+                map_state_to_src[i] = second_endpoint;
+                map_state_to_dst[i] = first_endpoint;
             }
             i++;
         }
