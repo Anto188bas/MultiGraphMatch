@@ -5,9 +5,6 @@ import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
 public class EdgeOrdering {
     private final QueryStructure query_structure;
     private final Int2ObjectOpenHashMap<Int2IntOpenHashMap> aggregate_domain;
@@ -15,7 +12,7 @@ public class EdgeOrdering {
     private int[] map_state_to_edge;
     private int[] map_state_to_src;
     private int[] map_state_to_dst;
-    private int[][] map_state_to_mapped_nodes;
+    private int[] map_state_to_unmapped_nodes;
     private ObjectArrayList<NodesPair> pairs_ordering;
 
     public EdgeOrdering(QueryStructure query_structure, Int2ObjectOpenHashMap<Int2IntOpenHashMap> aggregate_domain) {
@@ -98,7 +95,7 @@ public class EdgeOrdering {
 
         //*************************************************************** FIRST PAIR ***************************************************************//
         IntArraySet ordered_nodes = new IntArraySet();
-        map_state_to_mapped_nodes = new int[edge_keys.size()][2];
+        map_state_to_unmapped_nodes = new int[edge_keys.size()];
         IntArraySet current_edge_set;
         int state_index = 0;
         // First pair of the ordering
@@ -155,13 +152,9 @@ public class EdgeOrdering {
         current_edge_set = map_endpoints_to_edges.get(query_pair_to_add.getId().intValue());
         edge_ordering.addAll(current_edge_set);
 
-        map_state_to_mapped_nodes[state_index++] = null;
-        if(current_edge_set.size() > 1) {
-            for(int i = 0; i < current_edge_set.size() - 1; i++) {
-                map_state_to_mapped_nodes[state_index][0] = query_pair_to_add.getFirstEndpoint();
-                map_state_to_mapped_nodes[state_index][1] = query_pair_to_add.getSecondEndpoint();
-                state_index++;
-            }
+
+        for(state_index = 0; state_index < current_edge_set.size(); state_index++) {
+            map_state_to_unmapped_nodes[state_index] = -1;
         }
 
         ordered_nodes.add(query_pair_to_add.getFirstEndpoint().intValue());
@@ -304,23 +297,15 @@ public class EdgeOrdering {
                     current_edge_set = map_endpoints_to_edges.get(query_pair_to_add.getId().intValue());
                     edge_ordering.addAll(current_edge_set);
 
-                    IntArraySet mapped_nodes = new IntArraySet();
-
                     if(ordered_nodes.contains(query_pair_to_add.getFirstEndpoint().intValue())) {
-                        mapped_nodes.add(query_pair_to_add.getFirstEndpoint().intValue());
+                        map_state_to_unmapped_nodes[state_index++] = query_pair_to_add.getSecondEndpoint().intValue();
+                    } else {
+                        map_state_to_unmapped_nodes[state_index++] = query_pair_to_add.getFirstEndpoint().intValue();
                     }
-
-                    if(ordered_nodes.contains(query_pair_to_add.getSecondEndpoint().intValue())) {
-                        mapped_nodes.add(query_pair_to_add.getSecondEndpoint().intValue());
-                    }
-
-                    map_state_to_mapped_nodes[state_index++] = mapped_nodes.toIntArray();
 
                     if(current_edge_set.size() > 1) {
                         for(int i = 0; i < current_edge_set.size() - 1; i++) {
-                            map_state_to_mapped_nodes[state_index][0] = query_pair_to_add.getFirstEndpoint();
-                            map_state_to_mapped_nodes[state_index][1] = query_pair_to_add.getSecondEndpoint();
-                            state_index++;
+                            map_state_to_unmapped_nodes[state_index++] = -1;
                         }
                     }
 
@@ -385,7 +370,7 @@ public class EdgeOrdering {
         return map_state_to_dst;
     }
 
-    public int[][] getMap_state_to_mapped_nodes() {
-        return map_state_to_mapped_nodes;
+    public int[] getMap_state_to_unmapped_nodes() {
+        return map_state_to_unmapped_nodes;
     }
 }

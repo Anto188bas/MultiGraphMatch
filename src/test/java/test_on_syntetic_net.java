@@ -4,10 +4,8 @@ import bitmatrix.models.TargetBitmatrix;
 import configuration.Configuration;
 import cypher.models.QueryStructure;
 import domain.AggregationDomain;
-import domain.AssociationIndex;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import matching.models.MatchingData;
 import ordering.EdgeOrdering;
 import reading.FileManager;
 import simmetry_condition.SymmetryCondition;
@@ -109,9 +107,9 @@ public class test_on_syntetic_net {
 			    System.out.println("EDGE " + i + ": " + symm_cond_edges[i]);
 			 */
 
-            int[][] map_state_to_mapped_nodes = edgeOrdering.getMap_state_to_mapped_nodes();
-            for(int i = 0; i < map_state_to_mapped_nodes.length; i++) {
-                System.out.println("STATE " + i + "\tMAPPED NODES: " + Arrays.toString(map_state_to_mapped_nodes[i]));
+            int[] map_state_to_unmapped_nodes = edgeOrdering.getMap_state_to_unmapped_nodes();
+            for(int i = 0; i < map_state_to_unmapped_nodes.length; i++) {
+                System.out.println("STATE " + i + "\tUNMAPPED NODES: " + map_state_to_unmapped_nodes[i]);
             }
 		    // TMP CODE
 //		    int first_edge       = states.map_state_to_edge[0];
