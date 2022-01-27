@@ -47,7 +47,8 @@ public class NewEdgeAggregation extends ParentAggregation{
 
     // 3. SRC - DST ASSOCIATIONS
     public Int2ObjectOpenHashMap<IntArrayList> getSrcDstAssociations(int src, int dst) {
-        return aggregateEdges.get(src).get(dst);
+        try {return aggregateEdges.get(src).get(dst);}
+        catch (Exception e) {return null;}
     }
 
     // 4. SRC - DST - Type

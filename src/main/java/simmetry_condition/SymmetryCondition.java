@@ -46,14 +46,14 @@ public class SymmetryCondition {
     private static void isomorphicExtensions(int[] fDir, int[] fRev, ObjectArrayList<int[]> vv, BitSet support, int pos, QueryStructure query){
         int node_number = fDir.length;
         int[] cand      = new int[node_number];
-        Arrays.fill(cand, 0, cand.length, -1);
+        Arrays.fill(cand, -1);
         int i, j;
         int [] vTemp;
         if (pos == node_number)
             vv.add(Arrays.copyOfRange(fDir, 0, node_number));
         else {
             int[] count = new int[node_number];
-            Arrays.fill(count, 0, count.length, 0);
+            Arrays.fill(count, 0);
             int   ncand = 0;
             // WE ARE WORKING ON THE ITH NODE
             for (i = 0; i < node_number; i++) {
@@ -109,8 +109,8 @@ public class SymmetryCondition {
                     pos++;
                     isomorphicExtensions(fDir, fRev, vv, support, pos, query);
                     pos--;
-                    fRev[fDir[fneigh]]    = -1;
-                    fDir[neigh_max_count] = -1;
+                    fRev[fDir[neigh_max_count]] = -1;
+                    fDir[neigh_max_count]       = -1;
                 }
             }
         }

@@ -12,6 +12,8 @@ import target_graph.edges.NewEdgeAggregation;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
 
+import java.awt.*;
+
 
 public class FindCandidates {
     // NODE CHECK FOR BREAKING CONDITION
@@ -100,16 +102,20 @@ public class FindCandidates {
         IntArrayList types_reverse     = queryEdge.getType_reverse();
         AssociationIndex compatibility = edge_domain.getQuery_target_assoc().get(q_src).get(q_dst);
 
+        System.out.println(t_src + " -- " + t_dst);
+
         // UNMATCHED SRC
         if(t_src == -1) {
-            // DIRECTED PART: (-1)-[]->(t_dst=q_dst) OR (-1)<-[]-(t_dst=q_dst)
+            // DIRECTED PART: (-1)-[]->(t_dst=q_dst) OR (-1)<-[]-(t_dst=q_dst);
             Table selected_edges_by_dst  = compatibility.get_by_dst(t_dst);
+            System.out.println(compatibility.get_by_dst(t_dst));
             // REVERSE  PART: (t'_src=q_dst)<-[]-(-1) OR (t'_src=q_dst)-[]->(-1)
             Table selected_edges_reverse = compatibility.get_rev_by_src(t_dst);
             set_candidates(
                listCandidates, target_aggregation, selected_edges_by_dst, selected_edges_reverse, matchingData,
                nodes_symmetry, types, types_reverse, codificated_direction, 0, 1, q_src
             );
+            System.out.println(listCandidates);
         }
         // UNMATCHED DST
         else if(t_dst == -1) {
@@ -122,12 +128,13 @@ public class FindCandidates {
                 nodes_symmetry, types, types_reverse, codificated_direction, 1, 0, q_dst
             );
         }
-        // MATCHED BOTH SRC AND DST
+        // MATCHED BOTH SRC AND DST  TODO CHECK ME POSSIBLE BUG
         else {
             Int2ObjectOpenHashMap<IntArrayList> types_edges = target_aggregation.getSrcDstAssociations(t_src, t_dst);
-            EdgeSelections.set_edge_candidate_both_nodes_matched(
-                types_edges, types, matchingData, states, listCandidates, edges_symmetry, edge_id, codificated_direction
-            );
+            if(types_edges != null)
+                EdgeSelections.set_edge_candidate_both_nodes_matched(
+                    types_edges, types, matchingData, states, listCandidates, edges_symmetry, edge_id, codificated_direction
+                );
         }
 
         return listCandidates;
