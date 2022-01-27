@@ -45,15 +45,12 @@ public class MatchingProcedure {
          // REMOVE THE EDGE
          matchingData.matchedEdges.remove(matchingData.solution_edges[si]);
          matchingData.solution_edges[si] = -1;
-         // matchingData.candidatesIT[si]   = -1;
          // REMOVE THE NODE IF EXIST
          int selected_candidate = states.map_state_to_mnode[si];
          if(selected_candidate != -1) {
-             matchingData.matchedNodes.remove(selected_candidate);
+             matchingData.matchedNodes.remove(matchingData.solution_nodes[selected_candidate]);
              matchingData.solution_nodes[selected_candidate]=-1;
          }
-         // si--;
-         // return si;
      }
 
 
@@ -101,7 +98,6 @@ public class MatchingProcedure {
 
                      // NEXT CANDIDATE
                      matchingData.candidatesIT[si]++;
-                     System.out.println(matchingData.setCandidates[si]);
                      boolean backtrack = matchingData.candidatesIT[si] == matchingData.setCandidates[si].size();
 
                      if(backtrack)
@@ -231,12 +227,12 @@ public class MatchingProcedure {
               direction, justCount, distinct, dir_types
          );
          // REVERSE
-         //dir_types = qEdge.getType_reverse();
-         //numTotalOccs = matching_procedure(
-         //     first_compatibility.get_complete_tab_rev(), matchingData, states, target_aggregation, query_obj, aggregationDomain,
-         //     nodes_symmetry, edges_symmetry, numQueryEdges, numTotalOccs, numMaxOccs, q_src, 1, 0,
-         //     direction * -1, justCount, distinct, dir_types
-         //);
+         dir_types = qEdge.getType_reverse();
+         numTotalOccs = matching_procedure(
+              first_compatibility.get_complete_tab_rev(), matchingData, states, target_aggregation, query_obj, aggregationDomain,
+              nodes_symmetry, edges_symmetry, numQueryEdges, numTotalOccs, numMaxOccs, q_src, 1, 0,
+              direction * -1, justCount, distinct, dir_types
+         );
 
 
          /*
