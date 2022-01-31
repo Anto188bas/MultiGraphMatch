@@ -1,5 +1,6 @@
 package domain;
 
+import tech.tablesaw.api.IntColumn;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.index.IntIndex;
 
@@ -22,7 +23,13 @@ public class AssociationIndex {
     // NOTE: IF THE AGGREGATION IS BETWEEN Q_SRC-Q_DST THEN:
     //    Q_SRC->T_SRC AND Q_DST->T_DST IN target_candidate TABLE
     //    Q_SRC->T_DST AND Q_DST->T_SRC IN target_candidate_rev TABLE
-    public void add_reverse(Table table) {this.target_candidate_rev = table;}
+    public void add_reverse(Table table) {
+        if(table != null) {
+            this.target_candidate_rev = table;
+        } else {
+            this.target_candidate_rev = Table.create().addColumns(IntColumn.create("src")).addColumns(IntColumn.create("dst"));
+        }
+    }
 
     // TABLE SIZE
     public int get_table_size() {return target_candidate.rowCount();     }
