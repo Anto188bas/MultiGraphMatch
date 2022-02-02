@@ -74,7 +74,7 @@ public class NodesEdgesLabelsMaps {
     }
 
     public int createEdgeLabelIdx(String label){
-        return add_property_if_not_exists(label, this.idxToLabelEdge, this.labelToIdxEdge, 1);
+        return add_property_if_not_exists(label, this.idxToLabelEdge, this.labelToIdxEdge, 0);
     }
 
 }
