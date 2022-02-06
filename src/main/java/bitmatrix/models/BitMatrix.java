@@ -2,6 +2,7 @@ package bitmatrix.models;
 
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import target_graph.edges.NewEdgeAggregation;
 import target_graph.nodes.GraphMacroNode;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
@@ -152,12 +153,22 @@ public abstract class BitMatrix {
     }
 
     // ABSTRACT METHODS
+    // 1. FOR TARGET
     public abstract void create_bitset(
        NewEdgeAggregation edge_aggregation, NodesEdgesLabelsMaps labels_map,
        HashMap<String, GraphMacroNode> macro_nodes,
        Int2ObjectOpenHashMap<String> nodes_macro
     );
 
+    // 1.b
+    public abstract void create_bitset(
+        Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntOpenHashSet[]>> src_dst_colors,
+        NodesEdgesLabelsMaps labels_map,
+        HashMap<String, GraphMacroNode> macro_nodes,
+        Int2ObjectOpenHashMap<String> nodes_macro
+    );
+
+    // 2. FOR QUERY
     public abstract void create_bitset(
         QueryStructure query,
         NodesEdgesLabelsMaps labels_map

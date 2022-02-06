@@ -1,5 +1,7 @@
+import bitmatrix.models.TargetBitmatrix;
 import configuration.Configuration;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import reading.FileManager;
 import target_graph.edges.EdgeHandler;
 import target_graph.graph.GraphPaths;
@@ -30,17 +32,17 @@ public class test_on_syntetic_net {
         );
 
         // (OLD) EDGE ELABORATION
-//        NewEdgeAggregation graphEdge = new NewEdgeAggregation();
-//        EdgeHandler.createGraphEdge(edges_tables_properties, idx_label, graphEdge);
+        // NewEdgeAggregation graphEdge = new NewEdgeAggregation();
+        // EdgeHandler.createGraphEdge(edges_tables_properties, idx_label, graphEdge);
 
         // (NEW) EDGE ELABORATION
-        GraphPaths graphPaths = EdgeHandler.createGraphPaths(edges_tables_properties, idx_label);
-        System.out.println(graphPaths);
-
+        Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntOpenHashSet[]>> src_dst_aggregation = new Int2ObjectOpenHashMap<>();
+        GraphPaths graphPaths = EdgeHandler.createGraphPaths(edges_tables_properties, idx_label, src_dst_aggregation);
 
         // TARGET BITMATRIX
-//        TargetBitmatrix target_bitmatrix = new TargetBitmatrix();
-//        target_bitmatrix.create_bitset(graphEdge, idx_label, macro_nodes, nodes_macro);
+        TargetBitmatrix target_bitmatrix = new TargetBitmatrix();
+        target_bitmatrix.create_bitset(src_dst_aggregation, idx_label, macro_nodes, nodes_macro);
+
 //
 //        // QUERIES READING
 //        System.out.println(idx_label.getIdxToLabelEdge());

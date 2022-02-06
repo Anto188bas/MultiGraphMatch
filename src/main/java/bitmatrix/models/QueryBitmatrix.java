@@ -4,6 +4,7 @@ import cypher.models.QueryEdge;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import target_graph.edges.NewEdgeAggregation;
 import target_graph.nodes.GraphMacroNode;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
@@ -109,6 +110,13 @@ public class QueryBitmatrix extends BitMatrix {
         NodesEdgesLabelsMaps labels_map,
         HashMap<String, GraphMacroNode> macro_nodes, Int2ObjectOpenHashMap<String> nodes_macro
     ) {}
+
+    @Override
+    public void create_bitset(
+            Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntOpenHashSet[]>> src_dst_colors,
+            NodesEdgesLabelsMaps labels_map, HashMap<String, GraphMacroNode> macro_nodes,
+            Int2ObjectOpenHashMap<String> nodes_macro) {}
+
 
     // BIT-MATRIX CONFIGURATION
     public void create_bitset (

@@ -8,19 +8,24 @@ import cypher.models.QueryEdge;
 import cypher.models.QueryStructure;
 import domain.AggregationDomain;
 import domain.AssociationIndex;
+import domain.DomainTest;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import matching.models.MatchingData;
 import ordering.EdgeOrdering;
 import org.opencypher.gremlin.translation.ir.model.SumS;
 import simmetry_condition.SymmetryCondition;
 import state_machine.StateStructures;
 import target_graph.edges.NewEdgeAggregation;
+import target_graph.nodes.GraphMacroNode;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
 
+import javax.sound.midi.SysexMessage;
 import java.util.Arrays;
+import java.util.HashMap;
 
 
 public class MatchingProcedure {
@@ -77,6 +82,8 @@ public class MatchingProcedure {
              matchingData.setCandidates[0] = FindCandidates.find_first_candidate(
                  row, q_src, qs_t, qd_t, dir_types, target_aggregation, direction, matchingData, nodes_symmetry
              );
+
+
              while (matchingData.candidatesIT[0] < matchingData.setCandidates[0].size() -1) {
                  // STATE ZERO
                  matchingData.solution_edges[si] = matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
@@ -85,6 +92,7 @@ public class MatchingProcedure {
                  matchingData.matchedEdges.add(matchingData.solution_edges[si]);
                  matchingData.matchedNodes.add(matchingData.solution_nodes[0]);
                  matchingData.matchedNodes.add(matchingData.solution_nodes[1]);
+                 psi = si;
                  si++;
                  matchingData.setCandidates[si] = FindCandidates.find_candidates(
                          target_aggregation, query_obj, si, aggregationDomain,
@@ -141,7 +149,8 @@ public class MatchingProcedure {
                                      nodes_symmetry, edges_symmetry, states, matchingData
                              );
                              matchingData.candidatesIT[sip1] = -1;
-                             si++;
+                             psi = si;
+                             si  = sip1;
                          }
                      }
                  }
@@ -160,13 +169,15 @@ public class MatchingProcedure {
      }
 
      public static void matching (
-          boolean              justCount,
-          boolean              distinct,
-          long                 numMaxOccs,
-          NodesEdgesLabelsMaps labels_types_idx,
-          TargetBitmatrix      target_bitmatrix,
-          QueryStructure       query_obj,
-          NewEdgeAggregation   target_aggregation
+             boolean              justCount,
+             boolean              distinct,
+             long                 numMaxOccs,
+             NodesEdgesLabelsMaps labels_types_idx,
+             TargetBitmatrix      target_bitmatrix,
+             QueryStructure       query_obj,
+             NewEdgeAggregation   target_aggregation,
+             HashMap<String, GraphMacroNode> macro_nodes,
+             Int2ObjectOpenHashMap<String>   nodes_macro
      ) {
          // MATCHING DATA
          numTotalOccs = 0;
@@ -194,6 +205,10 @@ public class MatchingProcedure {
          ordering_stime            = (System.currentTimeMillis() - ordering_stime) / 1000;
 
 
+         // TEST
+         DomainTest.compatibility_elaboration(target_aggregation, query_obj, compatibility, target_bitmatrix, query_bitmatrix);
+
+
          // SYMMETRY CONDITION COMPUTING
          symmetry_condition = System.currentTimeMillis();
          IntArrayList[] nodes_symmetry = SymmetryCondition.getNodeSymmetryConditions(query_obj);
@@ -208,13 +223,10 @@ public class MatchingProcedure {
 
          // START MATCHING PHASE
          int si    = 0;
-         //int sip1;
-
-
          // FIRST QUERY NODES
          matching_time = System.currentTimeMillis();
-         int q_src = states.map_state_to_src[0];
-         int q_dst = states.map_state_to_dst[0];
+         int q_src = states.map_state_to_src[si];
+         int q_dst = states.map_state_to_dst[si];
          QueryEdge qEdge = query_obj.getQuery_edge(states.map_state_to_edge[si]);
          int direction   = qEdge.getCodificate_direction();
 
@@ -233,97 +245,6 @@ public class MatchingProcedure {
               nodes_symmetry, edges_symmetry, numQueryEdges, numTotalOccs, numMaxOccs, q_src, 1, 0,
               direction * -1, justCount, distinct, dir_types
          );
-
-
-         /*
-         for (Row row: first_compatibility.get_complete_table()) {
-             matchingData.setCandidates[0] = FindCandidates.find_first_candidate(
-                 row, q_src, 0, 1, dir_types, target_aggregation, direction, matchingData, nodes_symmetry
-             );
-             while (matchingData.candidatesIT[0] < matchingData.setCandidates[0].size() - 1) {
-                 // STATE ZERO
-                 matchingData.solution_edges[si] = matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
-                 matchingData.solution_nodes[states.map_state_to_src[si]] = matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
-                 matchingData.solution_nodes[states.map_state_to_dst[si]] = matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
-                 matchingData.matchedEdges.add(matchingData.solution_edges[si]);
-                 matchingData.matchedNodes.add(matchingData.solution_nodes[0]);
-                 matchingData.matchedNodes.add(matchingData.solution_nodes[1]);
-                 si++;
-                 matchingData.setCandidates[si] = FindCandidates.find_candidates(
-                       target_aggregation, query_obj, si, aggregationDomain,
-                       nodes_symmetry, edges_symmetry, states, matchingData
-                 );
-
-                 while (si > 0) {
-                     // FIND NEXT CANDIDATE
-                     matchingData.candidatesIT[si]++;
-                     boolean backtrack = matchingData.candidatesIT[si] >= matchingData.setCandidates[si].size();
-
-                     // BACK TRACKING ON EDGES
-                     if(backtrack) {
-                         // REMOVE THE EDGE
-                         matchingData.matchedEdges.remove(matchingData.solution_edges[si]);
-                         matchingData.solution_edges[si] = -1;
-                         matchingData.candidatesIT[si]   = -1;
-                         // REMOVE THE NODE IF EXIST
-                         int selected_candidate = states.map_state_to_mnode[si];
-                         if(selected_candidate != -1) {
-                             matchingData.matchedNodes.remove(selected_candidate);
-                             matchingData.solution_nodes[selected_candidate]=-1;
-                         }
-                         si--;
-                     }
-                     // FORWARD TRACKING ON EDGES
-                     else {
-                         // SET NODE AND EDGE TO MATCH
-                         matchingData.solution_edges[si] = matchingData.setCandidates[si].getInt(matchingData.candidatesIT[si]);
-                         int node_to_match = states.map_state_to_mnode[si];
-                         if(node_to_match != -1)
-                             matchingData.solution_nodes[node_to_match] =
-                                 matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
-
-                         // INCREASE OCCURRENCES
-                         if(si == numQueryEdges-1) {
-                             //New occurrence found
-                             numTotalOccs++;
-                             if(!justCount || distinct) {
-                                 // TODO implement me
-                             }
-                             if(numTotalOccs==numMaxOccs) {
-                                 report();
-                                 System.exit(0);
-                             }
-                         }
-                         // GO AHEAD
-                         else {
-                             //Update auxiliary info
-                             matchingData.matchedEdges.add(matchingData.solution_edges[si]);
-                             node_to_match = states.map_state_to_mnode[si];
-                             if(node_to_match != -1) {
-                                 matchingData.matchedNodes.add(matchingData.solution_nodes[node_to_match]);
-                             }
-                             sip1 = si+1;
-                             matchingData.setCandidates[sip1] = FindCandidates.find_candidates(
-                                 target_aggregation, query_obj, sip1, aggregationDomain,
-                                 nodes_symmetry, edges_symmetry, states, matchingData
-                             );
-                             matchingData.candidatesIT[sip1] = -1;
-                             si++;
-                         }
-                     }
-                 }
-
-                 // CLEANING OF STRUCTURES
-                 matchingData.matchedEdges.remove(matchingData.solution_edges[si]);
-                 matchingData.solution_edges[si] = -1;
-                 matchingData.matchedNodes.remove(matchingData.solution_nodes[0]);
-                 matchingData.matchedNodes.remove(matchingData.solution_nodes[1]);
-                 matchingData.solution_nodes[0] = -1;
-                 matchingData.solution_nodes[1] = -1;
-             }
-             matchingData.candidatesIT[0] = -1;
-         }
-         */
          report();
      }
 }
