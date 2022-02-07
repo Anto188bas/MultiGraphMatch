@@ -60,6 +60,7 @@ public class test_on_syntetic_net {
 
             // COMPATIBILITY
             Int2ObjectOpenHashMap<IntArrayList> compatibility = BitmatrixManager.bitmatrix_manager(query_bitmatrix, target_bitmatrix);
+            System.out.println(compatibility);
 
 
 
