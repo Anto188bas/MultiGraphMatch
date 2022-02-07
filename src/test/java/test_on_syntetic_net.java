@@ -1,6 +1,10 @@
+import bitmatrix.controller.BitmatrixManager;
+import bitmatrix.models.QueryBitmatrix;
 import bitmatrix.models.TargetBitmatrix;
 import configuration.Configuration;
+import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import reading.FileManager;
 import target_graph.edges.EdgeHandler;
@@ -43,15 +47,24 @@ public class test_on_syntetic_net {
         TargetBitmatrix target_bitmatrix = new TargetBitmatrix();
         target_bitmatrix.create_bitset(src_dst_aggregation, idx_label, macro_nodes, nodes_macro);
 
-//
-//        // QUERIES READING
-//        System.out.println(idx_label.getIdxToLabelEdge());
-//        List<String> queries = FileManager.query_reading(configuration);
-//        queries.forEach(query -> {
-//            QueryStructure query_obj = new QueryStructure();
-//            query_obj.parser(query, idx_label);
+
+        // QUERIES READING
+        List<String> queries = FileManager.query_reading(configuration);
+        queries.forEach(query -> {
+            QueryStructure query_obj = new QueryStructure();
+            query_obj.parser(query, idx_label);
+
+            // QUERY MATRIX
+            QueryBitmatrix query_bitmatrix = new QueryBitmatrix();
+            query_bitmatrix.create_bitset(query_obj, idx_label);
+
+            // COMPATIBILITY
+            Int2ObjectOpenHashMap<IntArrayList> compatibility = BitmatrixManager.bitmatrix_manager(query_bitmatrix, target_bitmatrix);
+
+
+
 //            MatchingProcedure.matching(true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, query_obj, graphEdge);
-//        });
+        });
 
     }
 }

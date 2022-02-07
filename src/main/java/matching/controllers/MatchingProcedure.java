@@ -8,7 +8,6 @@ import cypher.models.QueryEdge;
 import cypher.models.QueryStructure;
 import domain.AggregationDomain;
 import domain.AssociationIndex;
-import domain.DomainTest;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -206,7 +205,7 @@ public class MatchingProcedure {
 
 
          // TEST
-         DomainTest.compatibility_elaboration(target_aggregation, query_obj, compatibility, target_bitmatrix, query_bitmatrix);
+         //DomainTest.compatibility_elaboration(target_aggregation, query_obj, compatibility, target_bitmatrix, query_bitmatrix);
 
 
          // SYMMETRY CONDITION COMPUTING

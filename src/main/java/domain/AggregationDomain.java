@@ -90,6 +90,21 @@ public class AggregationDomain {
         });
     }
 
+    // NEW (TEST)
+    public void query_target_association_new(
+            Int2ObjectOpenHashMap<IntArrayList> compatibility,
+            TargetBitmatrix  target_matrix,
+            QueryBitmatrix   query_matrix,
+            QueryStructure   query_obj
+    ) {
+
+
+        query_matrix.getTable().forEach(row -> {
+            query_obj.getQuery_pattern().getQ_aggregation();
+        });
+    }
+
+
     // GETTER
     public Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<AssociationIndex>> getQuery_target_assoc() {return query_target_assoc;}
     public Int2ObjectOpenHashMap<Int2IntOpenHashMap> getAggregate_domain()   {return aggregate_domain;  }

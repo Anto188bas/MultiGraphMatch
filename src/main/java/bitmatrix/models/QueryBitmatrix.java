@@ -63,11 +63,11 @@ public class QueryBitmatrix extends BitMatrix {
             if (types_size > 1) {
                 for (int k = 1; k < types_size; k++){
                     BitSet new_row = (BitSet) origin_row.clone();
-                    new_row.set(offset + types.getInt(k) -1);
+                    new_row.set(offset + types.getInt(k));  //-1);
                     bit_mtx_row.add(new_row);
                 }
             }
-            origin_row.set(offset + types.getInt(0) -1);
+            origin_row.set(offset + types.getInt(0)); // -1);
         }
     }
 

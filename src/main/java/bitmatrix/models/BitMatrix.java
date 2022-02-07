@@ -17,6 +17,9 @@ import java.util.HashMap;
 
 public abstract class BitMatrix {
     private final Table             table;
+
+    // TODO NEW (IT SHOULD BE REPLACE table)
+
     private final ArrayList<BitSet> bitmatrix;
     private       IntIndex          bitmatrix_id_indexing;
     private       int[]             start_directed_pos;
