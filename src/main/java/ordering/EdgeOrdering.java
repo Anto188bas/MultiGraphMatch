@@ -13,7 +13,7 @@ public class EdgeOrdering {
     private int[] map_state_to_src;
     private int[] map_state_to_dst;
     private int[] map_state_to_unmapped_nodes;
-    private ObjectArrayList<NodesPair> pairs_ordering;
+    private ObjectArraySet<NodesPair> pairs_ordering;
 
     public EdgeOrdering(QueryStructure query_structure, Int2ObjectOpenHashMap<Int2IntOpenHashMap> aggregate_domain) {
         this.query_structure = query_structure;
@@ -36,33 +36,20 @@ public class EdgeOrdering {
         Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> in_out_edges = query_structure.getQuery_pattern().getIn_out_edges();
 
         // PAIR OF NODES HAVING AT LEAST ONE EDGE
-        ObjectArrayList<NodesPair> selected_pairs = new ObjectArrayList<>();
-        ObjectArrayList<NodesPair> unselected_pairs = new ObjectArrayList<>();
-        Int2ObjectOpenHashMap<IntArraySet> map_endpoints_to_edges = new Int2ObjectOpenHashMap<>();
-        Int2ObjectOpenHashMap<NodesPair> map_edge_to_endpoints = new Int2ObjectOpenHashMap<>();
+        ObjectArraySet<NodesPair> selected_pairs = new ObjectArraySet<>();
+        ObjectArraySet<NodesPair> unselected_pairs = query_structure.getPairs().clone();
 
+        // MAP EACH PAIR TO ITS EDGES
+        Int2ObjectOpenHashMap<IntArraySet> map_endpoints_to_edges = query_structure.getMap_endpoints_to_edges();
 
-        for (int edge_key : edge_keys) {
-            NodesPair endpoints = OrderingUtils.getEdgeEndpoints(out_edges, edge_key);
+        // MAP EACH EDGE TO ITS ENDPOINTS
+        Int2ObjectOpenHashMap<NodesPair> map_edge_to_endpoints = query_structure.getMap_edge_to_endpoints();
 
-            if (endpoints == null) { // Undirected edge
-                endpoints = OrderingUtils.getEdgeEndpoints(in_out_edges, edge_key);
-            } // Else is a directed edge
+        // MAP EACH NODE TO ITS NEIGHBORHOOD
+        Int2ObjectOpenHashMap<IntArraySet> map_node_to_neighborhood = query_structure.getMap_node_to_neighborhood();
 
-            if(map_endpoints_to_edges.containsKey(endpoints.getId().intValue())) {
-                map_endpoints_to_edges.get(endpoints.getId().intValue()).add(edge_key);
-            } else {
-                IntArraySet edge_set = new IntArraySet();
-                edge_set.add(edge_key);
-                map_endpoints_to_edges.put(endpoints.getId().intValue(), edge_set);
-            }
-
-            map_edge_to_endpoints.put(edge_key, endpoints);
-
-            if (!unselected_pairs.contains(endpoints)) {
-                unselected_pairs.push(endpoints);
-            }
-        }
+        // MAP EACH PAIR OF NODES TO ITS NEIGHBORHOOD
+        Int2ObjectOpenHashMap<ObjectArraySet<NodesPair>> map_pair_to_neighborhood = query_structure.getMap_pair_to_neighborhood();
 
         // DOMAINS CARDINALITY
         Int2IntOpenHashMap domains_cardinality = new Int2IntOpenHashMap();
@@ -76,21 +63,6 @@ public class EdgeOrdering {
                 domains_cardinality.put(pair.getId().intValue(), sub_record.getIntValue());
             });
         });
-
-        // MAP EACH NODE TO ITS NEIGHBORHOOD
-        Int2ObjectOpenHashMap<IntArraySet> map_node_to_neighborhood = new Int2ObjectOpenHashMap<>();
-        for (int node : node_keys) {
-            IntArraySet node_neighborhood = OrderingUtils.getNodeNeighborhood(node, in_edges, out_edges, in_out_edges);
-            map_node_to_neighborhood.put(node, node_neighborhood);
-        }
-
-        // MAP EACH PAIR OD NODES TO ITS NEIGHBORHOOD
-        Int2ObjectOpenHashMap<ObjectArraySet<NodesPair>> map_pair_to_neighborhood = new Int2ObjectOpenHashMap<>();
-
-        for (NodesPair pair : unselected_pairs) {
-            ObjectArraySet<NodesPair> pair_neighborhood = OrderingUtils.getPairNeighborhood(pair, map_node_to_neighborhood);
-            map_pair_to_neighborhood.put(pair.getId().intValue(), pair_neighborhood);
-        }
         //******************************************************************************************************************************************//
 
         //*************************************************************** FIRST PAIR ***************************************************************//
@@ -116,7 +88,6 @@ public class EdgeOrdering {
                 max_nodes.push(key);
             }
         }
-
 
         // There can be multiple nodes with the same max degree.
         // For each node having max-degree we consider his neighborhood.
@@ -147,7 +118,7 @@ public class EdgeOrdering {
             }
         }
 
-        selected_pairs.push(query_pair_to_add);
+        selected_pairs.add(query_pair_to_add);
         unselected_pairs.remove(query_pair_to_add);
         current_edge_set = map_endpoints_to_edges.get(query_pair_to_add.getId().intValue());
         edge_ordering.addAll(current_edge_set);
@@ -293,7 +264,7 @@ public class EdgeOrdering {
                 if (max_pairs.size() == 1 || index == 3) { // If there is no tie (cases 1, 2, 3, and 4) or there are ties in all weights (case 5)
                     query_pair_to_add = max_pairs.get(0);
                     unselected_pairs.remove(query_pair_to_add);
-                    selected_pairs.push(query_pair_to_add);
+                    selected_pairs.add(query_pair_to_add);
                     current_edge_set = map_endpoints_to_edges.get(query_pair_to_add.getId().intValue());
                     edge_ordering.addAll(current_edge_set);
 
@@ -357,7 +328,7 @@ public class EdgeOrdering {
         return inverse;
     }
 
-    public ObjectArrayList<NodesPair> getPairs_ordering() {
+    public ObjectArraySet<NodesPair> getPairs_ordering() {
         return pairs_ordering;
     }
 

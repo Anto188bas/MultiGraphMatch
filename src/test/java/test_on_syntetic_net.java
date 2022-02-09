@@ -6,6 +6,7 @@ import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import ordering.NodesPair;
 import reading.FileManager;
 import target_graph.edges.EdgeHandler;
 import target_graph.graph.GraphPaths;
@@ -60,9 +61,12 @@ public class test_on_syntetic_net {
 
             // COMPATIBILITY
             Int2ObjectOpenHashMap<IntArrayList> compatibility = BitmatrixManager.bitmatrix_manager(query_bitmatrix, target_bitmatrix);
-            System.out.println(compatibility);
+            query_obj.domains_elaboration(query_bitmatrix.getTable(), target_bitmatrix.getTable(), compatibility);
 
-
+            for(NodesPair pair: query_obj.getPairs()) {
+                System.out.println(pair);
+                System.out.println(pair.getCompatibility_domain());
+            }
 
 //            MatchingProcedure.matching(true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, query_obj, graphEdge);
         });

@@ -40,9 +40,11 @@ public class TargetBitmatrix extends BitMatrix{
         int offset_1,     int offset_2
     ){
         // OUT EDGE
-        for (int color : dir_colors[0]) bit_mtx_row.set(offset_1 + offset_2 + color);
+        if(dir_colors[0] != null)
+            for (int color : dir_colors[0]) bit_mtx_row.set(offset_1 + offset_2 + color);
         // IN EDGES
-        for (int color : dir_colors[1]) bit_mtx_row.set(offset_1 + color);
+        if(dir_colors[1] != null)
+            for (int color : dir_colors[1]) bit_mtx_row.set(offset_1 + color);
     }
 
 

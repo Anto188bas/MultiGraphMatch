@@ -4,11 +4,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.HashMap;
-
 public class query_bit_matrix_test {
     private static void create_node_colors(NodesEdgesLabelsMaps labels) {
         labels.stringVectorToIntOne("YELLOW");

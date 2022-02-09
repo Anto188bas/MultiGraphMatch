@@ -1,14 +1,14 @@
 package ordering;
 
-
-import it.unimi.dsi.fastutil.ints.IntArraySet;
-import it.unimi.dsi.fastutil.ints.IntCollection;
+import tech.tablesaw.api.Table;
 
 public class NodesPair {
     private final Integer firstEndpoint;
     private final Integer secondEndpoint;
 
     private final Integer id;
+
+    private Table compatibility_domain;
 
     public NodesPair() {
         this.firstEndpoint = -1;
@@ -29,19 +29,6 @@ public class NodesPair {
         // Cantor pairing function
         this.id = (int) (0.5 * (this.firstEndpoint + this.secondEndpoint) * (this.firstEndpoint + this.secondEndpoint + 1) + this.secondEndpoint);
     }
-
-    public Integer getFirstEndpoint() {
-        return this.firstEndpoint;
-    }
-
-    public Integer getSecondEndpoint() {
-        return this.secondEndpoint;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
 
     public boolean hasCommonNodes(NodesPair a) {
         return (this.getFirstEndpoint().equals(a.getFirstEndpoint()) ||
@@ -72,5 +59,24 @@ public class NodesPair {
         return (this.getId() == q.getId());
     }
 
+    public Integer getFirstEndpoint() {
+        return this.firstEndpoint;
+    }
+
+    public Integer getSecondEndpoint() {
+        return this.secondEndpoint;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public Table getCompatibility_domain() {
+        return compatibility_domain;
+    }
+
+    public void setCompatibility_domain(Table compatibility_domain) {
+        this.compatibility_domain = compatibility_domain;
+    }
 
 }

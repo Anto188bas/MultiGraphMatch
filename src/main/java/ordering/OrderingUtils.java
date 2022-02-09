@@ -7,44 +7,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class OrderingUtils {
 
-    public static NodesPair getEdgeEndpoints(Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> edges, int edgeId) {
-        AtomicReference<NodesPair> endpoints = new AtomicReference<>();
-
-        edges.int2ObjectEntrySet().fastForEach(record -> {
-            int first_endpoint = record.getIntKey();
-
-            record.getValue().int2ObjectEntrySet().fastForEach(sub_record -> {
-                int second_endpoint = sub_record.getIntKey();
-
-                for(int _edge_id: sub_record.getValue()) {
-                    if (_edge_id == edgeId) {
-                        endpoints.set(new NodesPair(first_endpoint, second_endpoint));  // Endpoints are lexicographically ordered
-                    }
-                }
-            });
-        });
-
-        return endpoints.get();
-    }
-
-    public static ObjectArraySet<NodesPair> getPairNeighborhood(NodesPair pair, Int2ObjectOpenHashMap<IntArraySet> map_node_to_neighborhood) {
-        ObjectArraySet<NodesPair> neighborhood = new ObjectArraySet<>();
-
-        int node = pair.getFirstEndpoint().intValue();
-
-        for (int neighbour : map_node_to_neighborhood.get(node)) {
-            neighborhood.add(new NodesPair(node, neighbour));
-        }
-
-        node = pair.getSecondEndpoint().intValue();
-
-        for (int neighbour : map_node_to_neighborhood.get(node)) {
-            neighborhood.add(new NodesPair(node, neighbour));
-        }
-
-        return neighborhood;
-    }
-
     public static Double computeSetWeight(ObjectArraySet<NodesPair> pair_set, Int2IntOpenHashMap domains) {
         double w = 0d;
         for (NodesPair pair : pair_set) {
@@ -54,24 +16,6 @@ public class OrderingUtils {
         }
 
         return w;
-    }
-
-    public static IntArraySet getNodeNeighborhood(int nodeKey, Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> inEdges, Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> outEdges, Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> inOutEdges) {
-        IntArraySet neighborhood = new IntArraySet();
-
-        if (inEdges.containsKey(nodeKey)) {
-            neighborhood.addAll(inEdges.get(nodeKey).keySet());
-        }
-
-        if (outEdges.containsKey(nodeKey)) {
-            neighborhood.addAll(outEdges.get(nodeKey).keySet());
-        }
-
-        if (inOutEdges.containsKey(nodeKey)) {
-            neighborhood.addAll(inOutEdges.get(nodeKey).keySet());
-        }
-
-        return neighborhood;
     }
 
     public static IntArraySet intArraySetUnion(IntArraySet a, IntArraySet b) {
@@ -128,5 +72,4 @@ public class OrderingUtils {
 
         return ((neighborhoodsIntersectionCardinality + 0.5d) / (neighborhoodsUnionCardinality + 0.5d)) * (1d / domainSize);
     }
-
 }
