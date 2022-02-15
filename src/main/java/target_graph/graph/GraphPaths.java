@@ -2,8 +2,12 @@ package target_graph.graph;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntListIterator;
+import tech.tablesaw.api.IntColumn;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.index.IntIndex;
+import tech.tablesaw.selection.BitmapBackedSelection;
+import tech.tablesaw.selection.Selection;
 
 
 public class GraphPaths {
@@ -41,11 +45,33 @@ public class GraphPaths {
         this.dst_index = new IntIndex(this.map_pair_to_key.intColumn("dst"));
     }
 
+    // in SEARCHING DEFINITION
+    private Selection in(IntColumn column_values, IntIndex index) {
+        Selection selection  = new BitmapBackedSelection();
+        IntArrayList values  = new IntArrayList();
+        column_values.forEach(value -> values.addAll((IntArrayList) index.get(value)));
+        IntListIterator var2 = values.iterator();
+        while(var2.hasNext())
+            selection.add(var2.nextInt());
+        return selection;
+    }
+
+    private Selection inSRC(IntColumn column_values) {return in(column_values, this.src_index);}
+    private Selection inDST(IntColumn column_values) {return in(column_values, this.dst_index);}
+
+
     // GETTER
     public Table            getMap_pair_to_key()      {return map_pair_to_key;}
     public IntArrayList[][] getMap_key_to_edge_list() {
         return map_key_to_edge_list;
     }
+    // USING INDEX ON SINGLE COLUMN
+    public Table            getBySRC(int value)       {return map_pair_to_key.where(src_index.get(value));}
+    public Table            getByDST(int value)       {return map_pair_to_key.where(dst_index.get(value));}
+    // USING INDEX ON BOTH COLUMN
+    public Table            getBySRCandDSTs(int src, IntColumn dsts) {return map_pair_to_key.where(src_index.get(src).and(inDST(dsts)));}
+    public Table            getByDSTandSRCs(int dst, IntColumn srcs) {return map_pair_to_key.where(src_index.get(dst).and(inDST(srcs)));}
+    public Table            getBySRCandDST (int src, int dst)        {return map_pair_to_key.where(src_index.get(src).and(dst_index.get(dst)));}
 
     // PRINTING
     @Override
