@@ -65,7 +65,7 @@ public class test_on_syntetic_net {
 
             for(NodesPair pair: query_obj.getPairs()) {
                 System.out.println(pair);
-                System.out.println(pair.getCompatibility_domain());
+                // System.out.println(pair.getCompatibility_domain());
             }
 
 //            MatchingProcedure.matching(true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, query_obj, graphEdge);
