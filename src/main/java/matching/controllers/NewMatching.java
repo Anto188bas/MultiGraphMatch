@@ -3,11 +3,15 @@ package matching.controllers;
 import bitmatrix.controller.BitmatrixManager;
 import bitmatrix.models.QueryBitmatrix;
 import bitmatrix.models.TargetBitmatrix;
+import cypher.models.QueryEdge;
 import cypher.models.QueryStructure;
 import domain.AggregationDomain;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import matching.models.MatchingData;
+import ordering.EdgeOrdering;
+import ordering.NodesPair;
+import simmetry_condition.SymmetryCondition;
 import state_machine.StateStructures;
 import target_graph.edges.NewEdgeAggregation;
 import target_graph.graph.GraphPaths;
@@ -177,6 +181,41 @@ public class NewMatching {
 
         // EDGE ORDERING AND STATE OBJECT CREATION
         ordering_stime            = System.currentTimeMillis();
+        EdgeOrdering edgeOrdering = new EdgeOrdering(query_obj);
+        StateStructures states    = new StateStructures();
+        states.map_state_to_edge  = edgeOrdering.getMap_state_to_edge();
+        states.map_edge_to_state  = edgeOrdering.getMap_edge_to_state();
+        states.map_state_to_src   = edgeOrdering.getMap_state_to_src();
+        states.map_state_to_dst   = edgeOrdering.getMap_state_to_dst();
+        states.map_state_to_mnode = edgeOrdering.getMap_state_to_unmapped_nodes();
+        ordering_stime            = (System.currentTimeMillis() - ordering_stime) / 1000;
 
+        // SYMMETRY CONDITION COMPUTING
+        symmetry_condition = System.currentTimeMillis();
+        IntArrayList[] nodes_symmetry = SymmetryCondition.getNodeSymmetryConditions(query_obj);
+        IntArrayList[] edges_symmetry = SymmetryCondition.getEdgeSymmetryConditions(query_obj);
+        symmetry_condition = (System.currentTimeMillis() - symmetry_condition) / 1000;
+
+        // QUERY INFORMATION
+        int numQueryEdges = query_obj.getQuery_edges().size();
+
+        // OTHER CONFIGURATION
+        MatchingData matchingData = new MatchingData(query_obj);
+
+        // START MATCHING PHASE
+        int si    = 0;
+        // FIRST QUERY NODES
+        matching_time = System.currentTimeMillis();
+        int q_src = states.map_state_to_src[si];
+        int q_dst = states.map_state_to_dst[si];
+        QueryEdge qEdge = query_obj.getQuery_edge(states.map_state_to_edge[si]);
+
+        NodesPair first_compatibility = query_obj.getMap_edge_to_endpoints().get(states.map_state_to_edge[si]);
+        matching_procedure(
+            first_compatibility.getCompatibility_domain(), matchingData, states, graphPaths,
+            query_obj, nodes_symmetry, edges_symmetry, numQueryEdges, numTotalOccs, numMaxOccs,
+            q_src, q_dst, true, false
+        );
+        report();
     }
 }
