@@ -8,6 +8,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 public class EdgeOrdering {
     private final QueryStructure query_structure;
     private int[] map_edge_to_state;
+    private EdgeDirection[] map_edge_to_direction;
     private int[] map_state_to_edge;
     private int[] map_state_to_src;
     private int[] map_state_to_dst;
@@ -286,6 +287,7 @@ public class EdgeOrdering {
 
         map_state_to_src        = new int[edge_keys.size()];
         map_state_to_dst        = new int[edge_keys.size()];
+        map_edge_to_direction   = new EdgeDirection[edge_keys.size()];
 
 
         int i = 0;
@@ -294,6 +296,7 @@ public class EdgeOrdering {
 
             map_state_to_src[i] = pair.getFirstEndpoint().intValue();
             map_state_to_dst[i] = pair.getSecondEndpoint().intValue();
+            map_edge_to_direction[edge] = query_structure.getDirection(pair.getFirstEndpoint(), pair.getSecondEndpoint(), edge);
 
             i++;
         }
@@ -331,4 +334,6 @@ public class EdgeOrdering {
     public int[] getMap_state_to_unmapped_nodes() {
         return map_state_to_unmapped_nodes;
     }
+
+    public EdgeDirection[] getMap_edge_to_direction() { return map_edge_to_direction; }
 }

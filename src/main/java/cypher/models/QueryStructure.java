@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import ordering.EdgeDirection;
 import ordering.NodesPair;
 import org.opencypher.v9_0.ast.*;
 import org.opencypher.v9_0.expressions.*;
@@ -332,6 +333,19 @@ public class QueryStructure {
             }
 
             pair.setCompatibility_domain(domain_table);
+        }
+    }
+
+    public EdgeDirection getDirection(int src, int dst, int edgeId) {
+        QueryEdge edge = this.query_edges.get(edgeId);
+        if(edge.getDirection() == "BOTH") {
+            return EdgeDirection.BOTH;
+        } else {
+            if(this.query_pattern.getOut_edges().containsKey(src) && this.query_pattern.getOut_edges().get(src).containsKey(dst) && this.query_pattern.getOut_edges().get(src).get(dst).contains(edgeId)) {
+                return EdgeDirection.OUT;
+            } else {
+                return EdgeDirection.IN;
+            }
         }
     }
 
