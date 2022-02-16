@@ -27,6 +27,7 @@ public class QueryStructure {
     private final Int2ObjectOpenHashMap<QueryEdge>                  query_edges;
     private final QueryEdgeAggregation                              query_pattern;
     private final ObjectArraySet<NodesPair>                         pairs;
+    private final Int2ObjectOpenHashMap<NodesPair>                  map_id_to_pair;
     private final Int2ObjectOpenHashMap<IntArraySet>                map_endpoints_to_edges;
     private final Int2ObjectOpenHashMap<NodesPair>                  map_edge_to_endpoints;
     private final Int2ObjectOpenHashMap<IntArraySet>                map_node_to_neighborhood;
@@ -38,6 +39,7 @@ public class QueryStructure {
         query_edges                 = new Int2ObjectOpenHashMap<>();
         query_pattern               = new QueryEdgeAggregation();
         pairs                       = new ObjectArraySet<>();
+        map_id_to_pair              = new Int2ObjectOpenHashMap<>();
         map_endpoints_to_edges      = new Int2ObjectOpenHashMap<>();
         map_edge_to_endpoints       = new Int2ObjectOpenHashMap<>();
         map_node_to_neighborhood    = new Int2ObjectOpenHashMap<>();
@@ -88,6 +90,7 @@ public class QueryStructure {
             }
         }
         pairs_elaboration();
+        map_id_to_pair_elaboration();
         neighborhoods_elaboration();
     }
 
@@ -180,6 +183,12 @@ public class QueryStructure {
         for (NodesPair pair : pairs) {
             ObjectArraySet<NodesPair> pair_neighborhood = getPairNeighborhood(pair, map_node_to_neighborhood);
             map_pair_to_neighborhood.put(pair.getId().intValue(), pair_neighborhood);
+        }
+    }
+
+    private void map_id_to_pair_elaboration() {
+        for(NodesPair pair: pairs) {
+            this.map_id_to_pair.put(pair.getId().intValue(), pair);
         }
     }
 
@@ -343,6 +352,7 @@ public class QueryStructure {
     public Int2ObjectOpenHashMap<NodesPair>                 getMap_edge_to_endpoints()      {return map_edge_to_endpoints;}
     public Int2ObjectOpenHashMap<IntArraySet>               getMap_node_to_neighborhood()   {return map_node_to_neighborhood;}
     public Int2ObjectOpenHashMap<ObjectArraySet<NodesPair>> getMap_pair_to_neighborhood()   {return map_pair_to_neighborhood;}
+    public Int2ObjectOpenHashMap<NodesPair>                 getMap_id_to_pair()             {return map_id_to_pair;}
 
     // TO STRING
     @Override

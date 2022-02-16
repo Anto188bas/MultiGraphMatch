@@ -7,12 +7,11 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class OrderingUtils {
 
-    public static Double computeSetWeight(ObjectArraySet<NodesPair> pair_set, Int2IntOpenHashMap domains) {
+    public static Double computeSetWeight(ObjectArraySet<NodesPair> pair_set, Int2ObjectOpenHashMap<NodesPair> map_id_to_pair) {
         double w = 0d;
         for (NodesPair pair : pair_set) {
-            int domain_size = domains.get(pair.getId().intValue());
+            int domain_size = map_id_to_pair.get(pair.getId().intValue()).getCompatibility_domain().rowCount();
             w += 1d / domain_size;
-
         }
 
         return w;

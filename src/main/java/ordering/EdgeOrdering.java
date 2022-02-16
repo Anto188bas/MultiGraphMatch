@@ -7,7 +7,6 @@ import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 
 public class EdgeOrdering {
     private final QueryStructure query_structure;
-    private final Int2ObjectOpenHashMap<Int2IntOpenHashMap> aggregate_domain;
     private int[] map_edge_to_state;
     private int[] map_state_to_edge;
     private int[] map_state_to_src;
@@ -15,9 +14,8 @@ public class EdgeOrdering {
     private int[] map_state_to_unmapped_nodes;
     private ObjectArraySet<NodesPair> pairs_ordering;
 
-    public EdgeOrdering(QueryStructure query_structure, Int2ObjectOpenHashMap<Int2IntOpenHashMap> aggregate_domain) {
+    public EdgeOrdering(QueryStructure query_structure) {
         this.query_structure = query_structure;
-        this.aggregate_domain = aggregate_domain;
 
         this.computePairsOrdering();
     }
@@ -51,18 +49,9 @@ public class EdgeOrdering {
         // MAP EACH PAIR OF NODES TO ITS NEIGHBORHOOD
         Int2ObjectOpenHashMap<ObjectArraySet<NodesPair>> map_pair_to_neighborhood = query_structure.getMap_pair_to_neighborhood();
 
-        // DOMAINS CARDINALITY
-        Int2IntOpenHashMap domains_cardinality = new Int2IntOpenHashMap();
+        // MAP AN ID TO THE CORRESPONDING PAIR
+        Int2ObjectOpenHashMap<NodesPair> map_id_to_pair = query_structure.getMap_id_to_pair();
 
-        aggregate_domain.int2ObjectEntrySet().fastForEach(record -> {
-            int src = record.getIntKey();
-            record.getValue().int2IntEntrySet().fastForEach(sub_record -> {
-                int dst = sub_record.getIntKey();
-
-                NodesPair pair = new NodesPair(src, dst);
-                domains_cardinality.put(pair.getId().intValue(), sub_record.getIntValue());
-            });
-        });
         //******************************************************************************************************************************************//
 
         //*************************************************************** FIRST PAIR ***************************************************************//
@@ -98,7 +87,7 @@ public class EdgeOrdering {
 
             for (int neighbour : neighborhood) {
                 NodesPair current_endpoints = new NodesPair(node, neighbour);
-                int domain_size = domains_cardinality.get(current_endpoints.getId().intValue());
+                int domain_size = map_id_to_pair.get(current_endpoints.getId().intValue()).getCompatibility_domain().rowCount();
 
                 Double jaccard_similarity = OrderingUtils.computeJaccardSimilarity(node, neighbour, map_node_to_neighborhood, domain_size);
                 map_pair_to_jaccard_similarity.put(current_endpoints.getId().intValue(), jaccard_similarity.doubleValue());
@@ -174,7 +163,7 @@ public class EdgeOrdering {
                 // Let's remove the OS pairs from the neighborhood. OS, NS and RS must be pairwise disjoint.
                 current_pair_neighborhood.removeAll(os); //// We use this IntArraySet because we can't remove elements during a for-each loop (tests have already been done)
 
-                w_os = OrderingUtils.computeSetWeight(os, domains_cardinality);
+                w_os = OrderingUtils.computeSetWeight(os, map_id_to_pair);
                 weights[0] = w_os;
 
                 // NS (neighbour pairs having at least a common node with at least one pair into OS)
@@ -190,7 +179,7 @@ public class EdgeOrdering {
                 // Let's remove the NS pairs from the neighborhood. OS, NS and RS must be pairwise disjoint.
                 current_pair_neighborhood.removeAll(ns);
 
-                w_ns = OrderingUtils.computeSetWeight(ns, domains_cardinality);
+                w_ns = OrderingUtils.computeSetWeight(ns, map_id_to_pair);
                 weights[1] = w_ns;
 
                 // RS (neighbour pairs having no common nodes with pairs into OS and NS)
@@ -226,11 +215,11 @@ public class EdgeOrdering {
                 // Let's remove the RS pairs from the neighborhood. OS, NS and RS must be pairwise disjoint
                 current_pair_neighborhood.removeAll(rs);
 
-                w_rs = OrderingUtils.computeSetWeight(rs, domains_cardinality);
+                w_rs = OrderingUtils.computeSetWeight(rs, map_id_to_pair);
                 weights[2] = w_rs;
 
                 // Domain size reciprocal
-                int domain_size = domains_cardinality.get(current_pair.getId().intValue());
+                int domain_size = map_id_to_pair.get(current_pair.getId().intValue()).getCompatibility_domain().rowCount();
                 weights[3] = 1d / domain_size;
 
                 neighborhood_weights.put(current_pair.getId().intValue(), weights);
@@ -303,16 +292,9 @@ public class EdgeOrdering {
         for (int edge: edge_ordering) {
             NodesPair pair = map_edge_to_endpoints.get(edge);
 
-            int first_endpoint = pair.getFirstEndpoint().intValue();
-            int second_endpoint = pair.getSecondEndpoint().intValue();
+            map_state_to_src[i] = pair.getFirstEndpoint().intValue();
+            map_state_to_dst[i] = pair.getSecondEndpoint().intValue();
 
-            if (aggregate_domain.containsKey(first_endpoint) && aggregate_domain.get(first_endpoint).containsKey(second_endpoint)) {
-                map_state_to_src[i] = first_endpoint;
-                map_state_to_dst[i] = second_endpoint;
-            } else {
-                map_state_to_src[i] = second_endpoint;
-                map_state_to_dst[i] = first_endpoint;
-            }
             i++;
         }
     }

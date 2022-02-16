@@ -194,7 +194,7 @@ public class MatchingProcedure {
 
          // EDGE ORDERING AND STATE OBJECT CREATION
          ordering_stime            = System.currentTimeMillis();
-         EdgeOrdering edgeOrdering = new EdgeOrdering(query_obj, aggregationDomain.getAggregate_domain());
+         EdgeOrdering edgeOrdering = new EdgeOrdering(query_obj);
          StateStructures states    = new StateStructures();
          states.map_state_to_edge  = edgeOrdering.getMap_state_to_edge();
          states.map_edge_to_state  = edgeOrdering.getMap_edge_to_state();
