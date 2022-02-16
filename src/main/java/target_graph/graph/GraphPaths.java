@@ -76,7 +76,7 @@ public class GraphPaths {
     public Table            getByDST(int value)       {return map_pair_to_key.where(dst_index.get(value));}
     // USING INDEX ON BOTH COLUMN
     public Table            getBySRCandDSTs(int src, IntColumn dsts) {return map_pair_to_key.where(src_index.get(src).and(inDST(dsts)));}
-    public Table            getByDSTandSRCs(int dst, IntColumn srcs) {return map_pair_to_key.where(src_index.get(dst).and(inDST(srcs)));}
+    public Table            getByDSTandSRCs(int dst, IntColumn srcs) {return map_pair_to_key.where(dst_index.get(dst).and(inSRC(srcs)));}
     public Table            getBySRCandDST (int src, int dst)        {return map_pair_to_key.where(src_index.get(src).and(dst_index.get(dst)));}
 
     // PRINTING

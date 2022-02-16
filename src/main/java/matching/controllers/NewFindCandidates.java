@@ -45,9 +45,6 @@ public class NewFindCandidates {
         int t_src                      = matchingData.solution_nodes[q_src];
         int t_dst                      = matchingData.solution_nodes[q_dst];
 
-        //System.out.println("t_src: " + t_src + "\tt_dst: " + t_dst);
-        //System.out.println(direction);
-
         ArrayList<Table> edges_submap  = new ArrayList<>();
         String[]         cols_name;
         // A. t_dst IS MATCHED

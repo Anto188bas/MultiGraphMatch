@@ -64,8 +64,6 @@ public class NewMatching {
                  query_obj, graphPaths, matchingData, nodes_symmetry, states
               );
 
-
-
               while (matchingData.candidatesIT[0] < matchingData.setCandidates[0].size() -1) {
                   // STATE ZERO
                   matchingData.solution_edges[si] = matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
@@ -74,12 +72,8 @@ public class NewMatching {
                   matchingData.matchedEdges.add(matchingData.solution_edges[si]);
                   matchingData.matchedNodes.add(matchingData.solution_nodes[0]);
                   matchingData.matchedNodes.add(matchingData.solution_nodes[1]);
-
-                  System.out.println(Arrays.toString(matchingData.solution_nodes));
-
                   psi = si;
                   si++;
-
                   matchingData.setCandidates[si] = NewFindCandidates.find_candidates(
                        graphPaths, query_obj, si, nodes_symmetry, edges_symmetry, states, matchingData
                   );
@@ -99,10 +93,7 @@ public class NewMatching {
 
                       // NEXT CANDIDATE
                       matchingData.candidatesIT[si]++;
-                      System.out.println("si:" + si);
-                      System.out.println(matchingData.setCandidates[si].size());
                       boolean backtrack = matchingData.candidatesIT[si] == matchingData.setCandidates[si].size();
-                      System.out.println(backtrack);
 
                       if(backtrack)
                       {
