@@ -289,8 +289,8 @@ public class QueryStructure {
             int dst = pair.getSecondEndpoint();
 
             Table domain_table = Table.create()
-                    .addColumns(IntColumn.create("first"))
-                    .addColumns(IntColumn.create("second"));
+                .addColumns(IntColumn.create("first"))
+                .addColumns(IntColumn.create("second"));
 
             for(Row query_row: query_bitmatrix_table.where(query_src_index.get(src).and(query_dst_index.get(dst)))) {
                 int directed_id = query_row.getInt("btx_id");
