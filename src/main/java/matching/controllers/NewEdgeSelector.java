@@ -35,7 +35,8 @@ public class NewEdgeSelector {
                 condCheck = false;
                 break;
             }
-        } return condCheck;
+        }
+        return condCheck;
     }
 
     // 1A. TYPE VECTOR IS EMPTY
@@ -138,20 +139,22 @@ public class NewEdgeSelector {
             MatchingData     matchingData,
             IntArrayList[]   nodes_symmetry,
             IntArrayList     listCandidates,
-            QueryEdge        query_edge
+            QueryEdge        query_edge,
+            int              t_src,
+            int              t_dst
     ){
         for(int i = 0; i < query_nodes.length; i++) {
-            for (Row row : candidates.get(i)) {
-                int t_node = row.getInt(0);
-                if (nodeCondCheck(query_nodes[i], t_node, matchingData, nodes_symmetry)){
-                    IntArrayList[] colors_edges = graphPaths.getMap_key_to_edge_list()[row.getInt(2)];
+            if (nodeCondCheck(query_nodes[i], t_src, matchingData, nodes_symmetry)){
+                for (Row row : candidates.get(i)) {
+                    int key = row.getInt(2);
+                    IntArrayList[] colors_edges = graphPaths.getMap_key_to_edge_list()[key];
                     for(int color: query_edge.getEdge_label()) {
                         IntArrayList edges = colors_edges[color];
                         if (edges == null) continue;
                         for(int idEdge: edges) {
                             listCandidates.add(idEdge);
-                            listCandidates.add(t_node);
-                            listCandidates.add(row.getInt(1));
+                            listCandidates.add(t_src);
+                            listCandidates.add(t_dst);
                         }
                     }
                 }
@@ -195,18 +198,19 @@ public class NewEdgeSelector {
             int              q_edge,
             QueryEdge        query_edge
     ){
-        for (Table candidate: candidates)
-            for (Row row: candidate) {
+        for (Table candidate: candidates) {
+            for (Row row : candidate) {
                 IntArrayList[] colors_edges = graphPaths.getMap_key_to_edge_list()[row.getInt(2)];
-                for(int color: query_edge.getEdge_label()) {
+                for (int color : query_edge.getEdge_label()) {
                     IntArrayList edges = colors_edges[color];
                     if (edges == null) continue;
-                    for(int idEdge : edges) {
-                        if(!matchingData.matchedEdges.contains(idEdge) &&
-                           condCheckEdges(q_edge, idEdge, matchingData, edges_symmetry, states))
-                           listCandidates.add(idEdge);
+                    for (int idEdge : edges) {
+                        if (!matchingData.matchedEdges.contains(idEdge) &&
+                            condCheckEdges(q_edge, idEdge, matchingData, edges_symmetry, states))
+                            listCandidates.add(idEdge);
                     }
                 }
             }
+        }
     }
 }

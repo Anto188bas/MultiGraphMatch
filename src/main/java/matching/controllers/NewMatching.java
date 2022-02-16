@@ -20,6 +20,7 @@ import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class NewMatching {
@@ -60,8 +61,10 @@ public class NewMatching {
           for (Row row: first_compatibility) {
               matchingData.setCandidates[0] = NewFindCandidates.find_first_candidates(
                  q_src, q_dst, row.getInt(0), row.getInt(1), states.map_state_to_edge[0],
-                 query_obj, graphPaths, matchingData, nodes_symmetry
+                 query_obj, graphPaths, matchingData, nodes_symmetry, states
               );
+
+
 
               while (matchingData.candidatesIT[0] < matchingData.setCandidates[0].size() -1) {
                   // STATE ZERO
@@ -71,6 +74,9 @@ public class NewMatching {
                   matchingData.matchedEdges.add(matchingData.solution_edges[si]);
                   matchingData.matchedNodes.add(matchingData.solution_nodes[0]);
                   matchingData.matchedNodes.add(matchingData.solution_nodes[1]);
+
+                  System.out.println(Arrays.toString(matchingData.solution_nodes));
+
                   psi = si;
                   si++;
 
@@ -78,7 +84,6 @@ public class NewMatching {
                        graphPaths, query_obj, si, nodes_symmetry, edges_symmetry, states, matchingData
                   );
                   matchingData.candidatesIT[si] = -1;
-
                   while (si > 0) {
                       // BACK TRACKING ON EDGES
                       if(psi >= si) {
@@ -94,7 +99,10 @@ public class NewMatching {
 
                       // NEXT CANDIDATE
                       matchingData.candidatesIT[si]++;
+                      System.out.println("si:" + si);
+                      System.out.println(matchingData.setCandidates[si].size());
                       boolean backtrack = matchingData.candidatesIT[si] == matchingData.setCandidates[si].size();
+                      System.out.println(backtrack);
 
                       if(backtrack)
                       {
@@ -110,7 +118,6 @@ public class NewMatching {
                           if(node_to_match != -1)
                               matchingData.solution_nodes[node_to_match] =
                                  matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
-
                           // INCREASE OCCURRENCES
                           if(si == numQueryEdges-1) {
                               //New occurrence found
@@ -176,19 +183,34 @@ public class NewMatching {
         QueryBitmatrix query_bitmatrix = new QueryBitmatrix();
         query_bitmatrix.create_bitset(query_obj, labels_types_idx);
         Int2ObjectOpenHashMap<IntArrayList> compatibility = BitmatrixManager.bitmatrix_manager(query_bitmatrix, target_bitmatrix);
+        System.out.println(compatibility);
+        System.out.println(query_bitmatrix.getTable());
         query_obj.domains_elaboration(query_bitmatrix.getTable(), target_bitmatrix.getTable(), compatibility);
         domain_time = (System.currentTimeMillis() - domain_time) / 1000;
+
+        /*
+        query_obj.getPairs().forEach(record -> {
+             System.out.println(record);
+             System.out.println(record.getCompatibility_domain());
+        });
+        */
+
 
         // EDGE ORDERING AND STATE OBJECT CREATION
         ordering_stime            = System.currentTimeMillis();
         EdgeOrdering edgeOrdering = new EdgeOrdering(query_obj);
         StateStructures states    = new StateStructures();
+
+        System.out.println("E:" + edgeOrdering.getPairs_ordering());
+
         states.map_state_to_edge  = edgeOrdering.getMap_state_to_edge();
         states.map_edge_to_state  = edgeOrdering.getMap_edge_to_state();
         states.map_state_to_src   = edgeOrdering.getMap_state_to_src();
         states.map_state_to_dst   = edgeOrdering.getMap_state_to_dst();
         states.map_state_to_mnode = edgeOrdering.getMap_state_to_unmapped_nodes();
+        states.map_edge_to_direction = edgeOrdering.getMap_edge_to_direction();
         ordering_stime            = (System.currentTimeMillis() - ordering_stime) / 1000;
+
 
         // SYMMETRY CONDITION COMPUTING
         symmetry_condition = System.currentTimeMillis();
@@ -206,15 +228,14 @@ public class NewMatching {
         int si    = 0;
         // FIRST QUERY NODES
         matching_time = System.currentTimeMillis();
-        int q_src = states.map_state_to_src[si];
-        int q_dst = states.map_state_to_dst[si];
-        QueryEdge qEdge = query_obj.getQuery_edge(states.map_state_to_edge[si]);
-
         NodesPair first_compatibility = query_obj.getMap_edge_to_endpoints().get(states.map_state_to_edge[si]);
-        matching_procedure(
+        int q_src = first_compatibility.getFirstEndpoint();
+        int q_dst = first_compatibility.getSecondEndpoint();
+
+        numTotalOccs = matching_procedure(
             first_compatibility.getCompatibility_domain(), matchingData, states, graphPaths,
             query_obj, nodes_symmetry, edges_symmetry, numQueryEdges, numTotalOccs, numMaxOccs,
-            q_src, q_dst, true, false
+            q_src, q_dst, justCount, distinct
         );
         report();
     }

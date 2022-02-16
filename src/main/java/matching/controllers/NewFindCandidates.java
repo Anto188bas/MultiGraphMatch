@@ -4,6 +4,7 @@ import cypher.models.QueryEdge;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import matching.models.MatchingData;
+import ordering.EdgeDirection;
 import ordering.NodesPair;
 import state_machine.StateStructures;
 import target_graph.graph.GraphPaths;
@@ -31,18 +32,21 @@ public class NewFindCandidates {
     ) {
         // PARAMETERS
         IntArrayList listCandidates    = new IntArrayList();
-        int          edge_id           = states.map_state_to_edge[sel_state];
-        NodesPair    edge_data         = query.getMap_edge_to_endpoints().get(edge_id);
-        QueryEdge    queryEdge         = query.getQuery_edge(edge_id);
-        int          direction         = queryEdge.getCodificate_direction();
-        IntArrayList edge_type         = queryEdge.getEdge_label();
+        int           edge_id           = states.map_state_to_edge[sel_state];
+        NodesPair     edge_data         = query.getMap_edge_to_endpoints().get(edge_id);
+        QueryEdge     queryEdge         = query.getQuery_edge(edge_id);
+        EdgeDirection direction         = states.map_edge_to_direction[edge_id];
+        IntArrayList  edge_type         = queryEdge.getEdge_label();
 
         // QUERY NODES
-        int q_src                      = states.map_state_to_src[sel_state];
-        int q_dst                      = states.map_state_to_dst[sel_state];
+        int q_src                      = edge_data.getFirstEndpoint();
+        int q_dst                      = edge_data.getSecondEndpoint();
         // TARGET NODES
         int t_src                      = matchingData.solution_nodes[q_src];
         int t_dst                      = matchingData.solution_nodes[q_dst];
+
+        //System.out.println("t_src: " + t_src + "\tt_dst: " + t_dst);
+        //System.out.println(direction);
 
         ArrayList<Table> edges_submap  = new ArrayList<>();
         String[]         cols_name;
@@ -50,12 +54,12 @@ public class NewFindCandidates {
         if(t_src == -1) {
            Table compatible_subtable   = edge_data.getBySecondValue(t_dst);
            // 1. EDGE FROM q_src TO q_dst (OUTBOUND)
-           if (direction == 1) {          // src to match
+           if (direction == EdgeDirection.OUT) {          // src to match
                edges_submap.add(graphPaths.getByDSTandSRCs(t_dst, compatible_subtable.intColumn("first")));
                cols_name = src_vet;
            }
            // 2. EDGE FROM q_dst TO q_src (INBOUND)
-           else if (direction == -1) {    // dst to match
+           else if (direction == EdgeDirection.IN) {    // dst to match
                edges_submap.add(graphPaths.getBySRCandDSTs(t_dst, compatible_subtable.intColumn("first")));
                cols_name = dst_vet;
            }
@@ -76,12 +80,12 @@ public class NewFindCandidates {
         else if (t_dst == -1){
             Table compatible_subtable   = edge_data.getByFirstValue(t_src);
             // 1. EDGE FROM q_src TO q_dst (OUTBOUND)
-            if (direction == 1) {
+            if (direction == EdgeDirection.OUT) {
                 edges_submap.add(graphPaths.getBySRCandDSTs(t_src, compatible_subtable.intColumn("second")));
                 cols_name = dst_vet;
             }
             // 2. EDGE FROM q_dst TO q_src (INBOUND)
-            else if (direction == -1) {
+            else if (direction == EdgeDirection.IN) {
                 edges_submap.add(graphPaths.getByDSTandSRCs(t_src, compatible_subtable.intColumn("second")));
                 cols_name = src_vet;
             }
@@ -99,10 +103,10 @@ public class NewFindCandidates {
         }
         else {
             // 1. EDGE FROM q_src TO q_dst (OUTBOUND)
-            if (direction == 1)
+            if (direction == EdgeDirection.OUT)
                 edges_submap.add(graphPaths.getBySRCandDST(t_src, t_dst));
             // 2. EDGE FROM q_dst TO q_src (INBOUND)
-            else if (direction == -1)
+            else if (direction == EdgeDirection.IN)
                 edges_submap.add(graphPaths.getBySRCandDST(t_dst, t_src));
             // 3. UNDIRECTED CASE          (BOTH)
             else {
@@ -124,34 +128,35 @@ public class NewFindCandidates {
         QueryStructure query,
         GraphPaths     graphPaths,
         MatchingData   matchingData,
-        IntArrayList[] nodes_symmetry
+        IntArrayList[] nodes_symmetry,
+        StateStructures states
     ){
         IntArrayList listCandidates    = new IntArrayList();
         QueryEdge        queryEdge     = query.getQuery_edge(edge_id);
-        int              direction     = queryEdge.getCodificate_direction();
+        EdgeDirection    direction     = states.map_edge_to_direction[edge_id];
         IntArrayList     edge_type     = queryEdge.getEdge_label();
         ArrayList<Table> edges_submap  = new ArrayList<>();
         int[]            q_node;
 
         // q_src = t_src AND q_dst = t_dst
-        if (direction == 1) {
+        if (direction == EdgeDirection.OUT) {
             edges_submap.add(graphPaths.getBySRCandDST(t_src, t_dst));
             q_node = new int[] {q_src};
         }
-        else if (direction == -1) {
+        else if (direction == EdgeDirection.IN) {
             edges_submap.add(graphPaths.getBySRCandDST(t_dst, t_src));
-            q_node = new int[] {q_dst};
+            q_node = new int[] {q_src};
         }
         else {
             edges_submap.add(graphPaths.getBySRCandDST(t_src, t_dst));
             edges_submap.add(graphPaths.getBySRCandDST(t_dst, t_src));
-            q_node = new int[] {q_src, q_dst};
+            q_node = new int[] {q_src, q_src};
         }
 
         if (edge_type.size() == 0)
             NewEdgeSelector.no_type_case(edges_submap, q_node, graphPaths, matchingData, nodes_symmetry, listCandidates);
         else
-            NewEdgeSelector.types_case(edges_submap, q_node, graphPaths, matchingData, nodes_symmetry, listCandidates, queryEdge);
+            NewEdgeSelector.types_case(edges_submap, q_node, graphPaths, matchingData, nodes_symmetry, listCandidates, queryEdge, t_src, t_dst);
         return listCandidates;
     }
 

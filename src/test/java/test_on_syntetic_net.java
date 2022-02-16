@@ -6,6 +6,7 @@ import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import matching.controllers.NewMatching;
 import ordering.NodesPair;
 import reading.FileManager;
 import target_graph.edges.EdgeHandler;
@@ -55,18 +56,24 @@ public class test_on_syntetic_net {
             QueryStructure query_obj = new QueryStructure();
             query_obj.parser(query, idx_label);
 
+            // MATCHING
+            NewMatching.matching(
+                true, false, Long.MAX_VALUE, idx_label, target_bitmatrix,
+                query_obj, graphPaths, macro_nodes, nodes_macro
+            );
+
             // QUERY MATRIX
-            QueryBitmatrix query_bitmatrix = new QueryBitmatrix();
-            query_bitmatrix.create_bitset(query_obj, idx_label);
+            //QueryBitmatrix query_bitmatrix = new QueryBitmatrix();
+            //query_bitmatrix.create_bitset(query_obj, idx_label);
 
             // COMPATIBILITY
-            Int2ObjectOpenHashMap<IntArrayList> compatibility = BitmatrixManager.bitmatrix_manager(query_bitmatrix, target_bitmatrix);
-            query_obj.domains_elaboration(query_bitmatrix.getTable(), target_bitmatrix.getTable(), compatibility);
+            //Int2ObjectOpenHashMap<IntArrayList> compatibility = BitmatrixManager.bitmatrix_manager(query_bitmatrix, target_bitmatrix);
+            //query_obj.domains_elaboration(query_bitmatrix.getTable(), target_bitmatrix.getTable(), compatibility);
 
-            for(NodesPair pair: query_obj.getPairs()) {
-                System.out.println(pair);
+            //for(NodesPair pair: query_obj.getPairs()) {
+            //    System.out.println(pair);
                 // System.out.println(pair.getCompatibility_domain());
-            }
+            //}
 
 //            MatchingProcedure.matching(true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, query_obj, graphEdge);
         });

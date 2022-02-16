@@ -2,6 +2,7 @@ package target_graph.graph;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntListIterator;
 import tech.tablesaw.api.IntColumn;
 import tech.tablesaw.api.Table;
@@ -49,7 +50,12 @@ public class GraphPaths {
     private Selection in(IntColumn column_values, IntIndex index) {
         Selection selection  = new BitmapBackedSelection();
         IntArrayList values  = new IntArrayList();
-        column_values.forEach(value -> values.addAll((IntArrayList) index.get(value)));
+        column_values.forEach(value -> {
+            Selection sel = index.get(value);
+            IntIterator sel_iter = sel.iterator();
+            while (sel_iter.hasNext())
+                values.add(sel_iter.nextInt());
+        });
         IntListIterator var2 = values.iterator();
         while(var2.hasNext())
             selection.add(var2.nextInt());
