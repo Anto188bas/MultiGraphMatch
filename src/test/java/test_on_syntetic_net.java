@@ -1,14 +1,11 @@
-import bitmatrix.controller.BitmatrixManager;
-import bitmatrix.models.QueryBitmatrix;
 import bitmatrix.models.TargetBitmatrix;
 import configuration.Configuration;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import matching.controllers.NewMatching;
-import ordering.NodesPair;
 import reading.FileManager;
+
 import target_graph.edges.EdgeHandler;
 import target_graph.graph.GraphPaths;
 import target_graph.nodes.GraphMacroNode;
@@ -44,6 +41,7 @@ public class test_on_syntetic_net {
         // (NEW) EDGE ELABORATION
         Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntOpenHashSet[]>> src_dst_aggregation = new Int2ObjectOpenHashMap<>();
         GraphPaths graphPaths = EdgeHandler.createGraphPaths(edges_tables_properties, idx_label, src_dst_aggregation);
+
 
         // TARGET BITMATRIX
         TargetBitmatrix target_bitmatrix = new TargetBitmatrix();

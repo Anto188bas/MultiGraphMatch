@@ -1,5 +1,6 @@
 package target_graph.edges;
 
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -8,7 +9,6 @@ import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import tech.tablesaw.api.IntColumn;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
-import tech.tablesaw.index.IntIndex;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -76,17 +76,16 @@ public class EdgeHandler {
 
     // ADD EDGE IN LIST (NEW SOLUTION)
     private static void new_add_edge_in_list(
-            Row                     row,
-            List<String>            header,
-            String                  type_str,
-            NodesEdgesLabelsMaps    idx_label,
-            AtomicInteger           count,
-            IntColumn               edgeId,
-            Table                   map_pair_to_key,
-            Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> map_key_to_edge_list,
-            AtomicInteger           key_count,
-            IntIndex                src_index,
-            Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntOpenHashSet[]>> src_dst_aggregation
+            Row                                                             row,
+            List<String>                                                    header,
+            String                                                          type_str,
+            NodesEdgesLabelsMaps                                            idx_label,
+            AtomicInteger                                                   count,
+            IntColumn                                                       edgeId,
+            Int2ObjectOpenHashMap<Int2IntOpenHashMap>                       map_pair_to_key,
+            Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>>      map_key_to_edge_list,
+            AtomicInteger                                                   key_count,
+            Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntOpenHashSet[]>>  src_dst_aggregation
     ){
         int src  = str2int(row, header.get(0));
         int dst  = str2int(row, header.get(1));
@@ -96,15 +95,17 @@ public class EdgeHandler {
         add_color_for_aggregation(src, dst, type, src_dst_aggregation);
 
         int key;
-        if(!src_index.get(src).contains(dst)) {
+
+        if(!map_pair_to_key.containsKey(src)) {
+            map_pair_to_key.put(src, new Int2IntOpenHashMap());
+        }
+
+        if(!map_pair_to_key.get(src).containsKey(dst)) {
             key = key_count.getAndIncrement();
-            IntColumn src_column = IntColumn.create("src", new int[]{src});
-            IntColumn dst_column = IntColumn.create("dst", new int[]{dst});
-            IntColumn key_column = IntColumn.create("key", new int[]{key});
-            map_pair_to_key.append(Table.create().addColumns(src_column, dst_column, key_column));
+            map_pair_to_key.get(src).put(dst, key);
             map_key_to_edge_list.put(key, new Int2ObjectOpenHashMap<>());
         } else {
-            key = src_index.get(src).get(dst);
+            key = map_pair_to_key.get(src).get(dst);
         }
 
         Int2ObjectOpenHashMap<IntArrayList> map_color_to_edge_list = map_key_to_edge_list.get(key);
@@ -155,11 +156,8 @@ public class EdgeHandler {
     ){
         if(tables == null) return null;
         Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> tmp_map_key_to_edge_list = new Int2ObjectOpenHashMap<>();
-        Table map_pair_to_key = Table.create()
-           .addColumns(IntColumn.create("src"))
-           .addColumns(IntColumn.create("dst"))
-           .addColumns(IntColumn.create("key"));
-        IntIndex src_index            = new IntIndex(map_pair_to_key.intColumn("src"));
+        Int2ObjectOpenHashMap<Int2IntOpenHashMap> tmp_map_pair_to_key = new Int2ObjectOpenHashMap<>();
+
         AtomicInteger edge_id_count   = new AtomicInteger(0);
         AtomicInteger pair_key_count  = new AtomicInteger(0);
 
@@ -171,8 +169,8 @@ public class EdgeHandler {
                 table.forEach(row ->
                     new_add_edge_in_list(
                         row, header, row.getString(header.get(2)), idx_label,
-                        edge_id_count, edgeId, map_pair_to_key, tmp_map_key_to_edge_list,
-                        pair_key_count, src_index, src_dst_aggregation
+                        edge_id_count, edgeId, tmp_map_pair_to_key, tmp_map_key_to_edge_list,
+                        pair_key_count, src_dst_aggregation
                     )
                 );
                 table.removeColumns(header.get(0), header.get(1), header.get(2));
@@ -182,14 +180,14 @@ public class EdgeHandler {
                 table.forEach(row ->
                     new_add_edge_in_list(
                        row, header, "none", idx_label, edge_id_count,
-                       edgeId, map_pair_to_key, tmp_map_key_to_edge_list,
-                       pair_key_count, src_index, src_dst_aggregation
+                       edgeId, tmp_map_pair_to_key, tmp_map_key_to_edge_list,
+                       pair_key_count, src_dst_aggregation
                     )
                 );
                 table.removeColumns(header.get(0), header.get(1));
             }
             table.addColumns(edgeId);
         }
-        return new GraphPaths(map_pair_to_key, tmp_map_key_to_edge_list,idx_label.getLabelToIdxEdge().size());
+        return new GraphPaths(tmp_map_pair_to_key, tmp_map_key_to_edge_list,idx_label.getLabelToIdxEdge().size(), pair_key_count.get());
     }
 }
