@@ -5,10 +5,13 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntListIterator;
 import tech.tablesaw.api.IntColumn;
+import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.index.IntIndex;
 import tech.tablesaw.selection.BitmapBackedSelection;
 import tech.tablesaw.selection.Selection;
+
+import java.util.stream.Stream;
 
 
 public class GraphPaths {
@@ -75,9 +78,18 @@ public class GraphPaths {
     public Table            getBySRC(int value)       {return map_pair_to_key.where(src_index.get(value));}
     public Table            getByDST(int value)       {return map_pair_to_key.where(dst_index.get(value));}
     // USING INDEX ON BOTH COLUMN
-    public Table            getBySRCandDSTs(int src, IntColumn dsts) {return map_pair_to_key.where(src_index.get(src).and(inDST(dsts)));}
-    public Table            getByDSTandSRCs(int dst, IntColumn srcs) {return map_pair_to_key.where(dst_index.get(dst).and(inSRC(srcs)));}
-    public Table            getBySRCandDST (int src, int dst)        {return map_pair_to_key.where(src_index.get(src).and(dst_index.get(dst)));}
+    public Stream<Row> getBySRCandDSTs(int src, IntColumn dsts) {
+        return map_pair_to_key.where(src_index.get(src)).stream().filter(row ->dsts.contains(row.getInt("dst")));
+        // return map_pair_to_key.where(src_index.get(src).and(inDST(dsts)));
+    }
+    public Stream<Row> getByDSTandSRCs(int dst, IntColumn srcs) {
+        return map_pair_to_key.where(dst_index.get(dst)).stream().filter(row ->srcs.contains(row.getInt("src")));
+        // return map_pair_to_key.where(dst_index.get(dst).and(inSRC(srcs)));
+    }
+    public Stream<Row> getBySRCandDST (int src, int dst)        {
+        return map_pair_to_key.where(src_index.get(src).and(dst_index.get(dst))).stream();
+        //return map_pair_to_key.where(src_index.get(src).and(dst_index.get(dst)));
+    }
 
     // PRINTING
     @Override

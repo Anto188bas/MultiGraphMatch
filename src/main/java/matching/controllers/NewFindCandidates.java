@@ -8,8 +8,10 @@ import ordering.EdgeDirection;
 import ordering.NodesPair;
 import state_machine.StateStructures;
 import target_graph.graph.GraphPaths;
+import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
 import java.util.ArrayList;
+import java.util.stream.Stream;
 
 
 public class NewFindCandidates {
@@ -45,11 +47,12 @@ public class NewFindCandidates {
         int t_src                      = matchingData.solution_nodes[q_src];
         int t_dst                      = matchingData.solution_nodes[q_dst];
 
-        ArrayList<Table> edges_submap  = new ArrayList<>();
+        ArrayList<Stream<Row>> edges_submap  = new ArrayList<>();
         String[]         cols_name;
         // A. t_dst IS MATCHED
         if(t_src == -1) {
            Table compatible_subtable   = edge_data.getBySecondValue(t_dst);
+
            // 1. EDGE FROM q_src TO q_dst (OUTBOUND)
            if (direction == EdgeDirection.OUT) {          // src to match
                edges_submap.add(graphPaths.getByDSTandSRCs(t_dst, compatible_subtable.intColumn("first")));
@@ -132,7 +135,7 @@ public class NewFindCandidates {
         QueryEdge        queryEdge     = query.getQuery_edge(edge_id);
         EdgeDirection    direction     = states.map_edge_to_direction[edge_id];
         IntArrayList     edge_type     = queryEdge.getEdge_label();
-        ArrayList<Table> edges_submap  = new ArrayList<>();
+        ArrayList<Stream<Row>> edges_submap  = new ArrayList<>();
         int[]            q_node;
 
         // q_src = t_src AND q_dst = t_dst

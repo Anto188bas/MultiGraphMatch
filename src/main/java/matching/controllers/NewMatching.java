@@ -179,21 +179,11 @@ public class NewMatching {
         query_obj.domains_elaboration(query_bitmatrix.getTable(), target_bitmatrix.getTable(), compatibility);
         domain_time = (System.currentTimeMillis() - domain_time) / 1000;
 
-        /*
-        query_obj.getPairs().forEach(record -> {
-             System.out.println(record);
-             System.out.println(record.getCompatibility_domain());
-        });
-        */
-
 
         // EDGE ORDERING AND STATE OBJECT CREATION
         ordering_stime            = System.currentTimeMillis();
         EdgeOrdering edgeOrdering = new EdgeOrdering(query_obj);
         StateStructures states    = new StateStructures();
-
-        System.out.println("E:" + edgeOrdering.getPairs_ordering());
-
         states.map_state_to_edge  = edgeOrdering.getMap_state_to_edge();
         states.map_edge_to_state  = edgeOrdering.getMap_edge_to_state();
         states.map_state_to_src   = edgeOrdering.getMap_state_to_src();
