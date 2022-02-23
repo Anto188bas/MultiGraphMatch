@@ -48,7 +48,7 @@ public class NewEdgeSelector {
           IntArrayList[]   nodes_symmetry,
           IntArrayList     listCandidates,
           int              q_node,
-          int[]         cols,
+          int[]            cols,
           GraphPaths       graphPaths
     ) {
         // NOTE: cols_name has size 1 if the query is directed, otherwise 2. it contains the column name
@@ -106,7 +106,7 @@ public class NewEdgeSelector {
            IntArrayList[]   nodes_symmetry,
            IntArrayList     listCandidates,
            int              q_node,
-           int[]         cols,
+           int[]            cols,
            GraphPaths       graphPaths,
            QueryEdge        query_edge
     ) {

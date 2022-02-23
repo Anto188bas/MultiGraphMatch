@@ -43,7 +43,8 @@ public class NewMatching {
 
 
     private static int matching_procedure(
-            Table              first_compatibility,
+            // Table              first_compatibility,
+            Int2ObjectOpenHashMap<IntArrayList> first_compatibility,
             MatchingData       matchingData,
             StateStructures    states,
             GraphPaths         graphPaths,
@@ -58,11 +59,19 @@ public class NewMatching {
           int psi = -1;
           int sip1;
 
-          for (Row row: first_compatibility) {
-              matchingData.setCandidates[0] = NewFindCandidates.find_first_candidates(
-                 q_src, q_dst, row.getInt(0), row.getInt(1), states.map_state_to_edge[0],
-                 query_obj, graphPaths, matchingData, nodes_symmetry, states
-              );
+          for (int f_node: first_compatibility.keySet()) {
+               for (int s_node: first_compatibility.get(f_node)) {
+
+          // for (Row row: first_compatibility) {
+              //matchingData.setCandidates[0] = NewFindCandidates.find_first_candidates(
+              //   q_src, q_dst, row.getInt(0), row.getInt(1), states.map_state_to_edge[0],
+              //   query_obj, graphPaths, matchingData, nodes_symmetry, states
+              //);
+
+               matchingData.setCandidates[0] = NewFindCandidates.find_first_candidates(
+                    q_src, q_dst, f_node, s_node, states.map_state_to_edge[0],
+                    query_obj, graphPaths, matchingData, nodes_symmetry, states
+               );
 
               while (matchingData.candidatesIT[0] < matchingData.setCandidates[0].size() -1) {
                   // STATE ZERO
@@ -150,6 +159,7 @@ public class NewMatching {
               }
               matchingData.candidatesIT[0] = -1;
           }
+        }
         return numTotalOccs;
     }
 
@@ -174,8 +184,6 @@ public class NewMatching {
         QueryBitmatrix query_bitmatrix = new QueryBitmatrix();
         query_bitmatrix.create_bitset(query_obj, labels_types_idx);
         Int2ObjectOpenHashMap<IntArrayList> compatibility = BitmatrixManager.bitmatrix_manager(query_bitmatrix, target_bitmatrix);
-        System.out.println(compatibility);
-        System.out.println(query_bitmatrix.getTable());
         query_obj.domains_elaboration(query_bitmatrix.getTable(), target_bitmatrix.getTable(), compatibility);
         domain_time = (System.currentTimeMillis() - domain_time) / 1000;
 
@@ -213,8 +221,15 @@ public class NewMatching {
         int q_src = first_compatibility.getFirstEndpoint();
         int q_dst = first_compatibility.getSecondEndpoint();
 
+        /*
         numTotalOccs = matching_procedure(
             first_compatibility.getCompatibility_domain(), matchingData, states, graphPaths,
+            query_obj, nodes_symmetry, edges_symmetry, numQueryEdges, numTotalOccs, numMaxOccs,
+            q_src, q_dst, justCount, distinct
+        );
+        */
+        numTotalOccs = matching_procedure(
+            first_compatibility.getFirst_second(), matchingData, states, graphPaths,
             query_obj, nodes_symmetry, edges_symmetry, numQueryEdges, numTotalOccs, numMaxOccs,
             q_src, q_dst, justCount, distinct
         );

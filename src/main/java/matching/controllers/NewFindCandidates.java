@@ -53,55 +53,70 @@ public class NewFindCandidates {
         int[]         cols;
         // A. t_dst IS MATCHED
         if(t_src == -1) {
-           Table compatible_subtable   = edge_data.getBySecondValue(t_dst);
+           IntArrayList compatible_list   = edge_data.getBySecondValueNew(t_dst);
+           if(compatible_list != null) {
+               // Table compatible_subtable   = edge_data.getBySecondValue(t_dst);
 
-           // 1. EDGE FROM q_src TO q_dst (OUTBOUND)
-           if (direction == EdgeDirection.OUT) {          // src to match
-               edges_submap.addAll(graphPaths.getByDSTandSRCs(t_dst, compatible_subtable.intColumn("first")));
-               cols = src_vet;
+               // 1. EDGE FROM q_src TO q_dst (OUTBOUND)
+               if (direction == EdgeDirection.OUT) {          // src to match
+                   // edges_submap.addAll(graphPaths.getByDSTandSRCs(t_dst, compatible_subtable.intColumn("first")));
+                   edges_submap.addAll(graphPaths.getByDSTandSRCsNew(t_dst, compatible_list));
+                   cols = src_vet;
+               }
+               // 2. EDGE FROM q_dst TO q_src (INBOUND)
+               else if (direction == EdgeDirection.IN) {    // dst to match
+                   // edges_submap.addAll(graphPaths.getBySRCandDSTs(t_dst, compatible_subtable.intColumn("first")));
+                   edges_submap.addAll(graphPaths.getBySRCandDSTsNew(t_dst, compatible_list));
+                   cols = dst_vet;
+               }
+               // 3. UNDIRECTED CASE          (BOTH)
+               else {                        // 1. src to match and 2. dst to match
+                   // edges_submap.addAll(graphPaths.getByDSTandSRCs(t_dst, compatible_subtable.intColumn("first")));
+                   // edges_submap.addAll(graphPaths.getBySRCandDSTs(t_dst, compatible_subtable.intColumn("first")));
+                   edges_submap.addAll(graphPaths.getByDSTandSRCsNew(t_dst, compatible_list));
+                   edges_submap.addAll(graphPaths.getBySRCandDSTsNew(t_dst, compatible_list));
+                   cols = src_dst;
+               }
+               // CANDIDATE CONFIGURATION
+               if (edge_type.size() == 0)
+                   NewEdgeSelector.no_types_case(edges_submap, matchingData, nodes_symmetry, listCandidates, q_src, cols, graphPaths);
+               else
+                   NewEdgeSelector.types_case(edges_submap, matchingData, nodes_symmetry, listCandidates, q_src, cols, graphPaths, queryEdge);
            }
-           // 2. EDGE FROM q_dst TO q_src (INBOUND)
-           else if (direction == EdgeDirection.IN) {    // dst to match
-               edges_submap.addAll(graphPaths.getBySRCandDSTs(t_dst, compatible_subtable.intColumn("first")));
-               cols = dst_vet;
-           }
-           // 3. UNDIRECTED CASE          (BOTH)
-           else {                        // 1. src to match and 2. dst to match
-               edges_submap.addAll(graphPaths.getByDSTandSRCs(t_dst, compatible_subtable.intColumn("first")));
-               edges_submap.addAll(graphPaths.getBySRCandDSTs(t_dst, compatible_subtable.intColumn("first")));
-               cols = src_dst;
-           }
-           // CANDIDATE CONFIGURATION
-           if (edge_type.size() == 0)
-               NewEdgeSelector.no_types_case(edges_submap, matchingData, nodes_symmetry, listCandidates, q_src, cols, graphPaths);
-           else
-               NewEdgeSelector.types_case(edges_submap, matchingData, nodes_symmetry, listCandidates, q_src, cols, graphPaths, queryEdge);
         }
 
         // B. t_src IS MATCHED
         else if (t_dst == -1){
-            Table compatible_subtable   = edge_data.getByFirstValue(t_src);
-            // 1. EDGE FROM q_src TO q_dst (OUTBOUND)
-            if (direction == EdgeDirection.OUT) {
-                edges_submap.addAll(graphPaths.getBySRCandDSTs(t_src, compatible_subtable.intColumn("second")));
-                cols = dst_vet;
+            // Table compatible_subtable   = edge_data.getByFirstValue(t_src);
+            IntArrayList compatible_subtable = edge_data.getByFirstValueNew(t_src);
+            if(compatible_subtable != null) {
+
+                // 1. EDGE FROM q_src TO q_dst (OUTBOUND)
+                if (direction == EdgeDirection.OUT) {
+                    // edges_submap.addAll(graphPaths.getBySRCandDSTs(t_src, compatible_subtable.intColumn("second")));
+                    edges_submap.addAll(graphPaths.getBySRCandDSTsNew(t_src, compatible_subtable));
+                    cols = dst_vet;
+                }
+                // 2. EDGE FROM q_dst TO q_src (INBOUND)
+                else if (direction == EdgeDirection.IN) {
+                    // edges_submap.addAll(graphPaths.getByDSTandSRCs(t_src, compatible_subtable.intColumn("second")));
+                    edges_submap.addAll(graphPaths.getByDSTandSRCsNew(t_src, compatible_subtable));
+                    cols = src_vet;
+                }
+                // 3. UNDIRECTED CASE          (BOTH)
+                else {
+                    // edges_submap.addAll(graphPaths.getBySRCandDSTs(t_src, compatible_subtable.intColumn("second")));
+                    // edges_submap.addAll(graphPaths.getByDSTandSRCs(t_src, compatible_subtable.intColumn("second")));
+                    edges_submap.addAll(graphPaths.getBySRCandDSTsNew(t_src, compatible_subtable));
+                    edges_submap.addAll(graphPaths.getByDSTandSRCsNew(t_src, compatible_subtable));
+                    cols = dst_src;
+                }
+                // CANDIDATE CONFIGURATION
+                if (edge_type.size() == 0)
+                    NewEdgeSelector.no_types_case(edges_submap, matchingData, nodes_symmetry, listCandidates, q_dst, cols, graphPaths);
+                else
+                    NewEdgeSelector.types_case(edges_submap, matchingData, nodes_symmetry, listCandidates, q_dst, cols, graphPaths, queryEdge);
             }
-            // 2. EDGE FROM q_dst TO q_src (INBOUND)
-            else if (direction == EdgeDirection.IN) {
-                edges_submap.addAll(graphPaths.getByDSTandSRCs(t_src, compatible_subtable.intColumn("second")));
-                cols = src_vet;
-            }
-            // 3. UNDIRECTED CASE          (BOTH)
-            else {
-                edges_submap.addAll(graphPaths.getBySRCandDSTs(t_src, compatible_subtable.intColumn("second")));
-                edges_submap.addAll(graphPaths.getByDSTandSRCs(t_src, compatible_subtable.intColumn("second")));
-                cols = dst_src;
-            }
-            // CANDIDATE CONFIGURATION
-            if (edge_type.size() == 0)
-                NewEdgeSelector.no_types_case(edges_submap, matchingData, nodes_symmetry, listCandidates, q_dst, cols, graphPaths);
-            else
-                NewEdgeSelector.types_case(edges_submap, matchingData, nodes_symmetry, listCandidates, q_dst, cols, graphPaths, queryEdge);
         }
         else {
             // 1. EDGE FROM q_src TO q_dst (OUTBOUND)

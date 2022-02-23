@@ -88,7 +88,7 @@ public class EdgeOrdering {
 
             for (int neighbour : neighborhood) {
                 NodesPair current_endpoints = new NodesPair(node, neighbour);
-                int domain_size = map_id_to_pair.get(current_endpoints.getId().intValue()).getCompatibility_domain().rowCount();
+                int domain_size = map_id_to_pair.get(current_endpoints.getId().intValue()).getDomain_size();
 
                 Double jaccard_similarity = OrderingUtils.computeJaccardSimilarity(node, neighbour, map_node_to_neighborhood, domain_size);
                 map_pair_to_jaccard_similarity.put(current_endpoints.getId().intValue(), jaccard_similarity.doubleValue());
@@ -220,7 +220,7 @@ public class EdgeOrdering {
                 weights[2] = w_rs;
 
                 // Domain size reciprocal
-                int domain_size = map_id_to_pair.get(current_pair.getId().intValue()).getCompatibility_domain().rowCount();
+                int domain_size = map_id_to_pair.get(current_pair.getId().intValue()).getDomain_size();
                 weights[3] = 1d / domain_size;
 
                 neighborhood_weights.put(current_pair.getId().intValue(), weights);

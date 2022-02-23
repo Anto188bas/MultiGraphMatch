@@ -87,13 +87,20 @@ public class GraphPaths {
         return result;
     }
 
+    // TODO it will replace getBySRCandDSTs
+    public ArrayList<Triplet<Integer, Integer, Integer>> getBySRCandDSTsNew(int src, IntArrayList dsts) {
+        ArrayList<Triplet<Integer, Integer, Integer>> result = new ArrayList<>();
+        Int2IntOpenHashMap src_map = this.map_pair_to_key.get(src);
+        for (int dst: dsts)
+            result.add(new Triplet<>(src, dst, src_map.get(dst)));
+        return result;
+    }
+
     public ArrayList<Triplet<Integer, Integer, Integer>> getByDSTandSRCs(int dst, IntColumn srcs) {
         ArrayList<Triplet<Integer, Integer, Integer>> result = new ArrayList<>();
-
         srcs.forEach((src) -> {
             if(this.map_pair_to_key.containsKey(src.intValue())) {
                 Int2IntOpenHashMap src_map = this.map_pair_to_key.get(src.intValue());
-
                 if(src_map.containsKey(dst)) {
                     result.add(new Triplet<>(src, dst, src_map.get(dst)));
                 }
@@ -101,18 +108,29 @@ public class GraphPaths {
         });
         return result;
     }
+
+    // TODO it will replace getByDSTandSRCs
+    public ArrayList<Triplet<Integer, Integer, Integer>> getByDSTandSRCsNew(int dst, IntArrayList srcs) {
+        ArrayList<Triplet<Integer, Integer, Integer>> result = new ArrayList<>();
+        for (int src: srcs) {
+            Int2IntOpenHashMap src_map = this.map_pair_to_key.get(src);
+            result.add(new Triplet<>(src, dst, src_map.get(dst)));
+        }
+        return result;
+    }
+
+
     public Triplet<Integer, Integer, Integer> getBySRCandDST (int src, int dst) {
         Triplet<Integer, Integer, Integer> result = null;
-
         if(this.map_pair_to_key.containsKey(src)) {
             Int2IntOpenHashMap src_map = this.map_pair_to_key.get(src);
-
             if(src_map.containsKey(dst)) {
                 result = new Triplet<>(src, dst, src_map.get(dst));
             }
         }
         return result;
     }
+
 
     // PRINTING
     @Override

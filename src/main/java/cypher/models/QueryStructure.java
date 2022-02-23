@@ -289,6 +289,28 @@ public class QueryStructure {
                (edges_set_1 != null && !edges_equivalent_to(edges_set_1, edges_set_1));
     }
 
+
+    private void domain_population(
+       Table query_bitmatrix_table, Table target_bitmatrix_table,
+       Int2ObjectOpenHashMap<IntArrayList> compatibility,
+       IntIndex query_src_index, IntIndex query_dst_index, IntIndex target_id_index,
+       Int2ObjectOpenHashMap<IntArrayList> first_second,
+       Int2ObjectOpenHashMap<IntArrayList> second_first,
+       int c1, int c2, String c1_name, String c2_name
+    ) {
+        for(Row query_row: query_bitmatrix_table.where(query_src_index.get(c1).and(query_dst_index.get(c2))))
+            for (int target_id : compatibility.get(query_row.getInt("btx_id")))
+                for(Row target_row : target_bitmatrix_table.where(target_id_index.get(target_id))){
+                    int t_src = target_row.getInt(c1_name);
+                    int t_dst = target_row.getInt(c2_name);
+                    if (!first_second.containsKey(t_src)) first_second.put(t_src, new IntArrayList());
+                    if (!second_first.containsKey(t_dst)) second_first.put(t_dst, new IntArrayList());
+                    first_second.get(t_src).add(t_dst);
+                    second_first.get(t_dst).add(t_src);
+                }
+    }
+
+
     public void domains_elaboration(Table query_bitmatrix_table, Table target_bitmatrix_table, Int2ObjectOpenHashMap<IntArrayList> compatibility) {
         IntIndex query_src_index = new IntIndex(query_bitmatrix_table.intColumn("src"));
         IntIndex query_dst_index = new IntIndex(query_bitmatrix_table.intColumn("dst"));
@@ -298,6 +320,28 @@ public class QueryStructure {
             int src = pair.getFirstEndpoint();
             int dst = pair.getSecondEndpoint();
 
+            Int2ObjectOpenHashMap<IntArrayList> first_second = new Int2ObjectOpenHashMap<>();
+            Int2ObjectOpenHashMap<IntArrayList> second_first = new Int2ObjectOpenHashMap<>();
+
+            // DIRECTED POPULATION
+            domain_population(
+                query_bitmatrix_table, target_bitmatrix_table, compatibility,
+                query_src_index, query_dst_index, target_id_index, first_second,
+                second_first, src, dst, "src", "dst"
+            );
+
+            // REVERSE POPULATION
+            domain_population(
+                query_bitmatrix_table, target_bitmatrix_table, compatibility,
+                query_src_index, query_dst_index, target_id_index, first_second,
+                second_first, dst, src, "dst", "src"
+            );
+
+            pair.setNewCompatibilityDomain(first_second, second_first);
+
+
+            // TODO it will be replaced with maps
+            /*
             Table domain_table = Table.create()
                 .addColumns(IntColumn.create("first"))
                 .addColumns(IntColumn.create("second"));
@@ -333,6 +377,7 @@ public class QueryStructure {
             }
 
             pair.setCompatibility_domain(domain_table);
+            */
         }
     }
 
