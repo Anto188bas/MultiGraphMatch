@@ -4,6 +4,7 @@ import bitmatrix.controller.BitmatrixManager;
 import bitmatrix.models.QueryBitmatrix;
 import bitmatrix.models.TargetBitmatrix;
 import cypher.models.QueryEdge;
+import cypher.models.QueryNode;
 import cypher.models.QueryStructure;
 import domain.AggregationDomain;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -164,6 +165,14 @@ public class NewMatching {
     }
 
 
+    private static boolean check_nodes_labels(QueryStructure query_object){
+        for (QueryNode node: query_object.getQuery_nodes().values()) {
+            for(int label: node.getLabels())
+                if(label == -1) return true;
+        }
+        return false;
+    }
+
     public static void matching (
             boolean                         justCount,
             boolean                         distinct,
@@ -177,6 +186,11 @@ public class NewMatching {
     ) {
         // MATCHING DATA
         numTotalOccs = 0;
+
+        if(check_nodes_labels(query_obj)) {
+            report();
+            return;
+        }
 
         // DOMAIN COMPUTING
         // QUERY BITMATRIX COMPUTING
