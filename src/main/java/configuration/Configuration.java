@@ -7,11 +7,13 @@ public class Configuration {
     public String edges_main_directory;
     public String query_file;
     public String result_file;
+    public String out_file;
     public int    timeout;
 
     public Configuration(String[] args){
         set_error();
         timeout = 1800;
+        out_file = null;
         for(int i = 0; i < args.length; i++)
             option_setting(args[i], args[++i]);
         validate_input_parameter();
@@ -24,6 +26,7 @@ public class Configuration {
             case "-q"   -> query_file           = value;
             case "-r"   -> result_file          = value;
             case "-t"   -> timeout              = Integer.parseInt(value);
+            case "-o"   -> out_file             = value;
             default     -> printHelp(key);
         }
     }

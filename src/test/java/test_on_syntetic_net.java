@@ -4,6 +4,7 @@ import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import matching.controllers.NewMatching;
+import matching.models.OutData;
 import reading.FileManager;
 
 import target_graph.edges.EdgeHandler;
@@ -31,14 +32,10 @@ public class test_on_syntetic_net {
         Int2ObjectOpenHashMap<String>            nodes_macro  = new Int2ObjectOpenHashMap<>();
         Int2ObjectOpenHashMap<ArrayList<String>> level_nodeId = new Int2ObjectOpenHashMap<>();
         int max_deep_level = MacroNodeHandler.graph_macro_node_creation(
-            nodes_tables,"type", idx_label, macro_nodes, level_nodeId, nodes_macro
+                nodes_tables,"type", idx_label, macro_nodes, level_nodeId, nodes_macro
         );
 
-        // (OLD) EDGE ELABORATION
-        // NewEdgeAggregation graphEdge = new NewEdgeAggregation();
-        // EdgeHandler.createGraphEdge(edges_tables_properties, idx_label, graphEdge);
-
-        // (NEW) EDGE ELABORATION
+        // EDGE ELABORATION
         Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntOpenHashSet[]>> src_dst_aggregation = new Int2ObjectOpenHashMap<>();
         GraphPaths graphPaths = EdgeHandler.createGraphPaths(edges_tables_properties, idx_label, src_dst_aggregation);
 
@@ -55,25 +52,18 @@ public class test_on_syntetic_net {
             query_obj.parser(query, idx_label);
 
             // MATCHING
-            NewMatching.matching(
-                true, false, Long.MAX_VALUE, idx_label, target_bitmatrix,
-                query_obj, graphPaths, macro_nodes, nodes_macro
+            OutData outData = NewMatching.matching(
+                    true, false, Long.MAX_VALUE, idx_label, target_bitmatrix,
+                    query_obj, graphPaths, macro_nodes, nodes_macro
             );
 
-            // QUERY MATRIX
-            //QueryBitmatrix query_bitmatrix = new QueryBitmatrix();
-            //query_bitmatrix.create_bitset(query_obj, idx_label);
-
-            // COMPATIBILITY
-            //Int2ObjectOpenHashMap<IntArrayList> compatibility = BitmatrixManager.bitmatrix_manager(query_bitmatrix, target_bitmatrix);
-            //query_obj.domains_elaboration(query_bitmatrix.getTable(), target_bitmatrix.getTable(), compatibility);
-
-            //for(NodesPair pair: query_obj.getPairs()) {
-            //    System.out.println(pair);
-                // System.out.println(pair.getCompatibility_domain());
-            //}
-
-//            MatchingProcedure.matching(true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, query_obj, graphEdge);
+            if(configuration.out_file != null) {
+                try {
+                    FileManager.saveIntoCSV(query, configuration.out_file, outData);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         });
 
     }

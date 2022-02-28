@@ -6,13 +6,13 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvValidationException;
 import configuration.Configuration;
+import matching.models.OutData;
 import target_graph.TableTypes;
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.io.csv.CsvReadOptions;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -46,5 +46,12 @@ public class FileManager {
         String path = configuration.query_file + "/query.txt";
         List<String> lines = Files.readAllLines(Path.of(path));
         return lines;
+    }
+
+    public static void saveIntoCSV(String query, String path, OutData outData) throws IOException {
+        final BufferedWriter writer = new BufferedWriter(new FileWriter(path, true));
+        String result = query + "\t" + outData.num_occurrences+ "\t" + outData.domain_time + "\t" + outData.ordering_time + "\t" + outData.symmetry_time + "\t" + outData.matching_time;
+        writer.write(result + "\n");
+        writer.close();
     }
 }

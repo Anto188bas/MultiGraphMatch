@@ -10,8 +10,10 @@ import domain.AggregationDomain;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import matching.models.MatchingData;
+import matching.models.OutData;
 import ordering.EdgeOrdering;
 import ordering.NodesPair;
+import reading.FileManager;
 import simmetry_condition.SymmetryCondition;
 import state_machine.StateStructures;
 import target_graph.edges.NewEdgeAggregation;
@@ -25,21 +27,16 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 public class NewMatching {
-    public static int     numTotalOccs;
-    public static double  domain_time;
-    public static double  ordering_stime;
-    public static double  symmetry_condition;
-    public static double  matching_time;
-
+    public static OutData outData;
 
     public static void report(){
-        matching_time = (System.currentTimeMillis() - matching_time) /1000;
+        outData.matching_time = (System.currentTimeMillis() - outData.matching_time) /1000;
         System.out.println("MATCHING REPORT:");
-        System.out.println("\t-domain computing time: "   + domain_time );
-        System.out.println("\t-ordering computing time: " + ordering_stime);
-        System.out.println("\t-symmetry computing time: " + symmetry_condition);
-        System.out.println("\t-matching computing time: " + matching_time);
-        System.out.println("\t-occurrences: "             + numTotalOccs);
+        System.out.println("\t-domain computing time: "   + outData.domain_time );
+        System.out.println("\t-ordering computing time: " + outData.ordering_time);
+        System.out.println("\t-symmetry computing time: " + outData.symmetry_time);
+        System.out.println("\t-matching computing time: " + outData.matching_time);
+        System.out.println("\t-occurrences: "             + outData.num_occurrences);
     }
 
 
@@ -173,7 +170,7 @@ public class NewMatching {
         return false;
     }
 
-    public static void matching (
+    public static OutData matching (
             boolean                         justCount,
             boolean                         distinct,
             long                            numMaxOccs,
@@ -184,26 +181,25 @@ public class NewMatching {
             HashMap<String, GraphMacroNode> macro_nodes,
             Int2ObjectOpenHashMap<String>   nodes_macro
     ) {
-        // MATCHING DATA
-        numTotalOccs = 0;
+        outData = new OutData();
 
         if(check_nodes_labels(query_obj)) {
             report();
-            return;
+            return outData;
         }
 
         // DOMAIN COMPUTING
         // QUERY BITMATRIX COMPUTING
-        domain_time = System.currentTimeMillis();
+        outData.domain_time = System.currentTimeMillis();
         QueryBitmatrix query_bitmatrix = new QueryBitmatrix();
         query_bitmatrix.create_bitset(query_obj, labels_types_idx);
         Int2ObjectOpenHashMap<IntArrayList> compatibility = BitmatrixManager.bitmatrix_manager(query_bitmatrix, target_bitmatrix);
         query_obj.domains_elaboration(query_bitmatrix.getTable(), target_bitmatrix.getTable(), compatibility);
-        domain_time = (System.currentTimeMillis() - domain_time) / 1000;
+        outData.domain_time = (System.currentTimeMillis() - outData.domain_time) / 1000;
 
 
         // EDGE ORDERING AND STATE OBJECT CREATION
-        ordering_stime            = System.currentTimeMillis();
+        outData.ordering_time     = System.currentTimeMillis();
         EdgeOrdering edgeOrdering = new EdgeOrdering(query_obj);
         StateStructures states    = new StateStructures();
         states.map_state_to_edge  = edgeOrdering.getMap_state_to_edge();
@@ -212,14 +208,14 @@ public class NewMatching {
         states.map_state_to_dst   = edgeOrdering.getMap_state_to_dst();
         states.map_state_to_mnode = edgeOrdering.getMap_state_to_unmapped_nodes();
         states.map_edge_to_direction = edgeOrdering.getMap_edge_to_direction();
-        ordering_stime            = (System.currentTimeMillis() - ordering_stime) / 1000;
+        outData.ordering_time        = (System.currentTimeMillis() - outData.ordering_time) / 1000;
 
 
         // SYMMETRY CONDITION COMPUTING
-        symmetry_condition = System.currentTimeMillis();
+        outData.symmetry_time = System.currentTimeMillis();
         IntArrayList[] nodes_symmetry = SymmetryCondition.getNodeSymmetryConditions(query_obj);
         IntArrayList[] edges_symmetry = SymmetryCondition.getEdgeSymmetryConditions(query_obj);
-        symmetry_condition = (System.currentTimeMillis() - symmetry_condition) / 1000;
+        outData.symmetry_time = (System.currentTimeMillis() - outData.symmetry_time) / 1000;
 
         // QUERY INFORMATION
         int numQueryEdges = query_obj.getQuery_edges().size();
@@ -230,7 +226,7 @@ public class NewMatching {
         // START MATCHING PHASE
         int si    = 0;
         // FIRST QUERY NODES
-        matching_time = System.currentTimeMillis();
+        outData.matching_time = System.currentTimeMillis();
         NodesPair first_compatibility = query_obj.getMap_edge_to_endpoints().get(states.map_state_to_edge[si]);
         int q_src = first_compatibility.getFirstEndpoint();
         int q_dst = first_compatibility.getSecondEndpoint();
@@ -242,11 +238,12 @@ public class NewMatching {
             q_src, q_dst, justCount, distinct
         );
         */
-        numTotalOccs = matching_procedure(
+        outData.num_occurrences = matching_procedure(
             first_compatibility.getFirst_second(), matchingData, states, graphPaths,
-            query_obj, nodes_symmetry, edges_symmetry, numQueryEdges, numTotalOccs, numMaxOccs,
+            query_obj, nodes_symmetry, edges_symmetry, numQueryEdges, outData.num_occurrences, numMaxOccs,
             q_src, q_dst, justCount, distinct
         );
         report();
+        return outData;
     }
 }
