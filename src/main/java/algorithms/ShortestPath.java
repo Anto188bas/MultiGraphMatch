@@ -8,27 +8,30 @@ import java.util.List;
 import java.util.Set;
 
 public class ShortestPath {
-    final private Graph<String, DefaultEdge> graph;
+    final private Graph<String, RelationshipEdge> graph;
     final private Set<String> GraphSet;
-    public ShortestPath(Graph<String,DefaultEdge> graph){
+    public ShortestPath(Graph<String, RelationshipEdge> graph){
         this.graph = graph;
         GraphSet = graph.vertexSet();
     }
 
     public String DijkstraSP(String source, String destination){
-        DijkstraShortestPath<String, DefaultEdge> dijkstraAlg = new DijkstraShortestPath<>(graph);
-        SingleSourcePaths<String, DefaultEdge> iPathsDijkstra = dijkstraAlg.getPaths(source);
+        DijkstraShortestPath<String, RelationshipEdge> dijkstraAlg = new DijkstraShortestPath<>(graph);
+        SingleSourcePaths<String, RelationshipEdge> iPathsDijkstra = dijkstraAlg.getPaths(source);
+        System.out.println(dijkstraAlg.getPathWeight(source, destination));
         return String.valueOf(iPathsDijkstra.getPath(destination));
     }
 
     //return shortest path from source to all other nodes using Dijkstra
     public List<String> DijkstraAllSP(String source){
         List<String> AllSP = new ArrayList<>();
-        DijkstraShortestPath<String, DefaultEdge> dijkstraAlg = new DijkstraShortestPath<>(graph);
+        DijkstraShortestPath<String, RelationshipEdge> dijkstraAlg = new DijkstraShortestPath<>(graph);
         for (String destination : GraphSet){
             if(!destination.equals(source)){   //exclude cases where source = destination
-                SingleSourcePaths<String, DefaultEdge> iPathsDijkstra = dijkstraAlg.getPaths(source);
+                AllSP.add(destination);
+                SingleSourcePaths<String, RelationshipEdge> iPathsDijkstra = dijkstraAlg.getPaths(source);
                 AllSP.add(String.valueOf(iPathsDijkstra.getPath(destination)));
+                AllSP.add("\n");
             }
         }
         return AllSP;
@@ -46,8 +49,10 @@ public class ShortestPath {
         BellmanFordShortestPath<String, DefaultEdge> BellmanFordAlg = new BellmanFordShortestPath(graph);
         for (String destination : GraphSet){
             if(!destination.equals(source)){   //exclude cases where source = destination
+                AllSP.add(destination);
                 SingleSourcePaths<String, DefaultEdge> iPathsBellmanFord = BellmanFordAlg.getPaths(source);
                 AllSP.add(String.valueOf(iPathsBellmanFord.getPath(destination)));
+                AllSP.add("\n");
             }
         }
         return AllSP;
@@ -55,7 +60,7 @@ public class ShortestPath {
 
     public List<String> FloydWarshallSP() {
         List<String> AllSP = new ArrayList<>();
-        FloydWarshallShortestPaths<String, DefaultEdge> FloydWarshallAlg = new FloydWarshallShortestPaths<>(graph);
+        FloydWarshallShortestPaths<String, DefaultEdge> FloydWarshallAlg = new FloydWarshallShortestPaths(graph);
         for (String tempSource : GraphSet) {
             AllSP.add("\n from: "+tempSource+"\n");
             for (String tempDest : GraphSet) {

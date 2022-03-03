@@ -1,12 +1,14 @@
 import algorithms.Centrality;
+import algorithms.RelationshipEdge;
 import algorithms.ShortestPath;
 import org.jgrapht.*;
-import org.jgrapht.graph.DefaultDirectedGraph;
-import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.*;
 
 public class algorithms_test {
     public static void main(String[] args) {
-        Graph<String, DefaultEdge> directedGraph = new DefaultDirectedGraph<>(DefaultEdge.class);
+       Graph<String, RelationshipEdge> directedGraph = new SimpleDirectedGraph<String, RelationshipEdge>(RelationshipEdge.class);
+
+
         directedGraph.addVertex("a");
         directedGraph.addVertex("b");
         directedGraph.addVertex("c");
@@ -16,16 +18,15 @@ public class algorithms_test {
         directedGraph.addVertex("g");
         directedGraph.addVertex("h");
         directedGraph.addVertex("i");
-        directedGraph.addEdge("a", "b");
-        directedGraph.addEdge("b", "d");
-        directedGraph.addEdge("d", "c");
-        directedGraph.addEdge("c", "a");
-        directedGraph.addEdge("e", "d");
-        directedGraph.addEdge("e", "f");
-        directedGraph.addEdge("f", "g");
-        directedGraph.addEdge("g", "e");
-        directedGraph.addEdge("h", "e");
-        directedGraph.addEdge("i", "h");
+        directedGraph.addEdge("a", "b", new RelationshipEdge("FRIEND"));
+        directedGraph.addEdge("b", "d",new RelationshipEdge("RELATIVE"));
+        directedGraph.addEdge("d", "c",new RelationshipEdge("ACQUAINTANCE"));
+        directedGraph.addEdge("c", "a",new RelationshipEdge("FRIEND"));
+        directedGraph.addEdge("e", "d",new RelationshipEdge("FRIEND"));
+        directedGraph.addEdge("e", "f",new RelationshipEdge("RELATIVE"));
+        directedGraph.addEdge("f", "g",new RelationshipEdge("RELATIVE"));
+        directedGraph.addEdge("g", "e",new RelationshipEdge("ACQUAINTANCE"));
+        directedGraph.addEdge("h", "e",new RelationshipEdge("FRIEND"));
 
         ShortestPath s = new ShortestPath(directedGraph);
 
@@ -55,8 +56,7 @@ public class algorithms_test {
         System.out.println(c.AverageClusteringCoefficient());
 
 
-/*
-
+      /*
         //create a set which contain all vertex of the graph
         Set<String> GraphSet= directedGraph.vertexSet();
 
@@ -71,7 +71,7 @@ public class algorithms_test {
             for(String tempDest : GraphSet){
                 if(!tempSource.equals(tempDest)){   //exclude cases where source = destination
                     System.out.println("shortest path from " + tempSource + " to " + tempDest);
-                    SingleSourcePaths<String, DefaultEdge> iPathsDijkstra = dijkstraAlg.getPaths(tempSource);
+                    ShortestPathAlgorithm.SingleSourcePaths<String, DefaultEdge> iPathsDijkstra = dijkstraAlg.getPaths(tempSource);
                     System.out.println(iPathsDijkstra.getPath(tempDest) + "\n");
                 }
             }
