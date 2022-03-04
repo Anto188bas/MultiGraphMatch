@@ -4,9 +4,10 @@ import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import org.w3c.dom.Node;
 
 public class EdgeOrdering {
-    private  ObjectArraySet<NodesPair> selected_pairs;
+    private ObjectArraySet<NodesPair> selected_pairs;
     private ObjectArraySet<NodesPair> unselected_pairs;
     private Int2ObjectOpenHashMap<IntArraySet> map_endpoints_to_edges;
     private IntArrayList edge_ordering;
@@ -67,7 +68,7 @@ public class EdgeOrdering {
         Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> in_out_edges = query_structure.getQuery_pattern().getIn_out_edges();
 
         // PAIR OF NODES HAVING AT LEAST ONE EDGE
-       selected_pairs = new ObjectArraySet<>();
+        selected_pairs = new ObjectArraySet<>();
         unselected_pairs = query_structure.getPairs().clone();
 
         // MAP EACH PAIR TO ITS EDGES
@@ -140,19 +141,7 @@ public class EdgeOrdering {
             }
         }
 
-        selected_pairs.add(query_pair_to_add);
-        unselected_pairs.remove(query_pair_to_add);
-        current_edge_set = map_endpoints_to_edges.get(query_pair_to_add.getId().intValue());
-        edge_ordering.addAll(current_edge_set);
-
-
-        for (state_index = 0; state_index < current_edge_set.size(); state_index++) {
-            map_state_to_unmapped_nodes[state_index] = -1;
-        }
-
-        ordered_nodes.add(query_pair_to_add.getFirstEndpoint().intValue());
-        ordered_nodes.add(query_pair_to_add.getSecondEndpoint().intValue());
-
+        addPairToTheOrdering(query_pair_to_add);
         //******************************************************************************************************************************************//
 
         //************************************************************* RESIDUAL PAIRS *************************************************************//
@@ -182,9 +171,9 @@ public class EdgeOrdering {
                 int minimum_domain_size = Integer.MAX_VALUE;
                 NodesPair selected_pair = null;
 
-                for(NodesPair pair: pairs_with_both_endpoints_matched) {
+                for (NodesPair pair : pairs_with_both_endpoints_matched) {
                     int domain_size = map_id_to_pair.get(pair.getId().intValue()).getDomain_size();
-                    if(domain_size < minimum_domain_size) {
+                    if (domain_size < minimum_domain_size) {
                         minimum_domain_size = domain_size;
                         selected_pair = pair;
                     }
@@ -193,22 +182,14 @@ public class EdgeOrdering {
                 addPairToTheOrdering(selected_pair);
             } else { // If there aren't pairs with both endpoint matched, we select the next pair of the ordering using OS, RS and NS
                 // For each of these pairs, we compute four weights
-                Int2ObjectOpenHashMap<double[]> neighborhood_weights = new Int2ObjectOpenHashMap<>();
+                Int2DoubleOpenHashMap neighborhood_weights = new Int2DoubleOpenHashMap();
 
                 for (NodesPair current_pair : ordered_pairs_neighborhood) {
                     ObjectArraySet<NodesPair> current_pair_neighborhood = map_pair_to_neighborhood.get(current_pair.getId().intValue()).clone(); // We clone the neighborhood because we modify it while we calculate weights
 
                     ObjectArraySet<NodesPair> os = new ObjectArraySet<>();
-                    ObjectArraySet<NodesPair> ns = new ObjectArraySet<>();
-                    ObjectArraySet<NodesPair> rs = new ObjectArraySet<>();
 
-                    // weights[0] = w_os
-                    // weights[1] = w_ns
-                    // weights[2] = w_rs
-                    // weights[3] = domain cardinality reciprocal
-                    double[] weights = new double[4];
-
-                    Double w_os, w_ns, w_rs;
+                    double w_os;
 
                     // OS (neighbour pairs already selected for the ordering)
                     for (NodesPair neighbour : current_pair_neighborhood) {
@@ -221,99 +202,28 @@ public class EdgeOrdering {
                     current_pair_neighborhood.removeAll(os); //// We use this IntArraySet because we can't remove elements during a for-each loop (tests have already been done)
 
                     w_os = OrderingUtils.computeSetWeight(os, map_id_to_pair);
-                    weights[0] = w_os;
 
-                    // NS (neighbour pairs having at least a common node with at least one pair into OS)
-                    for (NodesPair neighbour : current_pair_neighborhood) {
-                        for (NodesPair os_pair : os) {
-                            if (neighbour.hasCommonNodes(os_pair)) {
-                                ns.add(neighbour);
-                                break;
-                            }
-                        }
-                    }
-
-                    // Let's remove the NS pairs from the neighborhood. OS, NS and RS must be pairwise disjoint.
-                    current_pair_neighborhood.removeAll(ns);
-
-                    w_ns = OrderingUtils.computeSetWeight(ns, map_id_to_pair);
-                    weights[1] = w_ns;
-
-                    // RS (neighbour pairs having no common nodes with pairs into OS and NS)
-                    for (NodesPair neighbour : current_pair_neighborhood) {
-                        boolean commonNodes = false;
-
-                        // Searching common nodes between current pair and pairs into OS
-                        for (NodesPair os_pair : os) {
-
-                            if (neighbour.hasCommonNodes(os_pair)) {
-                                ns.add(neighbour);
-                                break;
-                            }
-                        }
-
-                        // Searching for common nodes between the current pair and pairs into NS.
-                        // We don't need to execute this piece of code if we have already found common nodes.
-                        if (!commonNodes) {
-                            for (NodesPair ns_pair : ns) {
-                                if (neighbour.hasCommonNodes(ns_pair)) {
-                                    ns.add(neighbour);
-                                    break;
-                                }
-                            }
-                        }
-
-                        // If there are no common nodes, we can add current pair to RS
-                        if (!commonNodes) {
-                            rs.add(neighbour);
-                        }
-                    }
-
-                    // Let's remove the RS pairs from the neighborhood. OS, NS and RS must be pairwise disjoint
-                    current_pair_neighborhood.removeAll(rs);
-
-                    w_rs = OrderingUtils.computeSetWeight(rs, map_id_to_pair);
-                    weights[2] = w_rs;
-
-                    // Domain size reciprocal
-                    int domain_size = map_id_to_pair.get(current_pair.getId().intValue()).getDomain_size();
-                    weights[3] = 1d / domain_size;
-
-                    neighborhood_weights.put(current_pair.getId().intValue(), weights);
+                    neighborhood_weights.put(current_pair.getId().intValue(), w_os);
                 }
 
-            /*
-             Here we select the next pair of the ordering.
-             Criteria:
-             1. pair with maximum w_os;
-             2. in case of a tie, pair with maximum w_ns;
-             3. in case of a tie, pair with maximum w_rs;
-             4. in case of a tie, pair with maximum domain cardinality reciprocal
-             5. in case of a tie, first pair between pairs having maximum domain cardinality reciprocal
-             */
-                for (int index = 0; index < 4; index++) {
-                    double max_weight = -1;
-                    ObjectArrayList<NodesPair> max_pairs = new ObjectArrayList<>();
+                /*
+                 Here we select the next pair of the ordering.
+                 Criteria: pair with maximum w_os.
+                 */
 
-                    for (NodesPair current_pair : ordered_pairs_neighborhood) {
-                        double[] weights = neighborhood_weights.get(current_pair.getId().intValue());
+                double max_weight = -1;
+                NodesPair max_pair = null;
+                for (NodesPair current_pair : ordered_pairs_neighborhood) {
+                    double weight = neighborhood_weights.get(current_pair.getId().intValue());
 
-                        if (weights[index] > max_weight) {
-                            max_weight = weights[index];
-                            max_pairs = new ObjectArrayList<>();
-                            max_pairs.add(current_pair);
-                        } else if (weights[index] == max_weight) {
-                            max_pairs.add(current_pair);
-                        }
-
+                    if (weight > max_weight) {
+                        max_weight = weight;
+                        max_pair = current_pair;
                     }
-                    if (max_pairs.size() == 1 || index == 3) { // If there is no tie (cases 1, 2, 3, and 4) or there are ties in all weights (case 5)
-                        query_pair_to_add = max_pairs.get(0);
 
-                        addPairToTheOrdering(query_pair_to_add);
-                        break;
-                    }
                 }
+                addPairToTheOrdering(max_pair);
+
 
             }
 
