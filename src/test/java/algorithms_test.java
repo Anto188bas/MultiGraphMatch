@@ -6,8 +6,9 @@ import org.jgrapht.graph.*;
 
 public class algorithms_test {
     public static void main(String[] args) {
-       Graph<String, RelationshipEdge> directedGraph = new SimpleDirectedGraph<String, RelationshipEdge>(RelationshipEdge.class);
-
+        // TODO create the graph using the index value as vertex name
+             //Integer
+        Graph<String, RelationshipEdge> directedGraph = new SimpleDirectedGraph<String, RelationshipEdge>(RelationshipEdge.class);
 
         directedGraph.addVertex("a");
         directedGraph.addVertex("b");
@@ -18,6 +19,7 @@ public class algorithms_test {
         directedGraph.addVertex("g");
         directedGraph.addVertex("h");
         directedGraph.addVertex("i");
+
         directedGraph.addEdge("a", "b", new RelationshipEdge("FRIEND"));
         directedGraph.addEdge("b", "d",new RelationshipEdge("RELATIVE"));
         directedGraph.addEdge("d", "c",new RelationshipEdge("ACQUAINTANCE"));
