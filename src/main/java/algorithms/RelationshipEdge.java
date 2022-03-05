@@ -5,6 +5,7 @@ public class RelationshipEdge extends DefaultEdge{
     private String label;
 
     /**
+     *
      * Constructs a relationship edge
      *
      * @param label the label of the new edge.

@@ -5,6 +5,7 @@ import org.jgrapht.graph.DefaultEdge;
 import java.util.HashMap;
 import java.util.Set;
 
+//this class implements various centrality measure for the network
 public class Centrality{
     final private Graph<String, RelationshipEdge> graph;
     final private Set<String> GraphSet;

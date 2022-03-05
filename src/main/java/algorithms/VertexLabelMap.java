@@ -1,5 +1,4 @@
 package algorithms;
-
 import java.util.HashMap;
 
 public class VertexLabelMap {
@@ -12,4 +11,5 @@ public class VertexLabelMap {
     void setVertexLabel(Integer vertexId, String vertexLabel){ map.put(vertexId, vertexLabel); }
 
     // TODO reading the .csv create the hashmap that contain the couple id / label
+    // using the hashmap could reduce the time and space complexity instead of using a list of vertex
 }

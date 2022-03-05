@@ -22,7 +22,7 @@ public class ShortestPath {
         return String.valueOf(iPathsDijkstra.getPath(destination));
     }
 
-    //return shortest path from source to all other nodes using Dijkstra
+    //return shortest path from source to all other nodes using Dijkstra algorithm
     public List<String> DijkstraAllSP(String source){
         List<String> AllSP = new ArrayList<>();
         DijkstraShortestPath<String, RelationshipEdge> dijkstraAlg = new DijkstraShortestPath<>(graph);

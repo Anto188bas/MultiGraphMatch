@@ -1,4 +1,5 @@
 import algorithms.Centrality;
+import algorithms.Clustering;
 import algorithms.RelationshipEdge;
 import algorithms.ShortestPath;
 import org.jgrapht.*;
@@ -57,6 +58,14 @@ public class algorithms_test {
         System.out.println("\nAverage clustering coefficient\n");
         System.out.println(c.AverageClusteringCoefficient());
 
+        Clustering C = new Clustering(directedGraph, 3);
+        System.out.println("\n"+ C.getClustering());
+
+        Clustering C2 = new Clustering(directedGraph);
+        System.out.println(C2.getClustering());
+
+        C2.setClusterNumber(4);
+        System.out.println(C2.getClustering());
 
       /*
         //create a set which contain all vertex of the graph
