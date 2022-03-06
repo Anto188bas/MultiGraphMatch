@@ -1,9 +1,9 @@
-import algorithms.Centrality;
-import algorithms.Clustering;
-import algorithms.RelationshipEdge;
-import algorithms.ShortestPath;
+import algorithms.*;
 import org.jgrapht.*;
 import org.jgrapht.graph.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class algorithms_test {
     public static void main(String[] args) {
@@ -66,6 +66,14 @@ public class algorithms_test {
 
         C2.setClusterNumber(4);
         System.out.println(C2.getClustering());
+
+        //have to change the node name with the id
+        VertexLabelMap vertexMap = new VertexLabelMap();
+        System.out.println("label of vertex 0:"+vertexMap.getVertexLabel(0));
+        //for(String iterator : directedGraph.vertexSet())
+        //    System.out.println("label of vertex: "+iterator+":"+vertexMap.getVertexLabel(Integer.valueOf(iterator)));
+
+
 
       /*
         //create a set which contain all vertex of the graph
