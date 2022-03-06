@@ -2,62 +2,59 @@ import algorithms.*;
 import org.jgrapht.*;
 import org.jgrapht.graph.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class algorithms_test {
     public static void main(String[] args) {
-        // TODO create the graph using the index value as vertex name
-             //Integer
-        Graph<String, RelationshipEdge> directedGraph = new SimpleDirectedGraph<String, RelationshipEdge>(RelationshipEdge.class);
 
-        directedGraph.addVertex("a");
-        directedGraph.addVertex("b");
-        directedGraph.addVertex("c");
-        directedGraph.addVertex("d");
-        directedGraph.addVertex("e");
-        directedGraph.addVertex("f");
-        directedGraph.addVertex("g");
-        directedGraph.addVertex("h");
-        directedGraph.addVertex("i");
+        Graph<Integer, RelationshipEdge> directedGraph = new SimpleDirectedGraph<>(RelationshipEdge.class);
+        directedGraph.addVertex(0);
+        directedGraph.addVertex(1);
+        directedGraph.addVertex(2);
+        directedGraph.addVertex(3);
+        directedGraph.addVertex(4);
+        directedGraph.addVertex(5);
+        directedGraph.addVertex(6);
+        directedGraph.addVertex(7);
+        directedGraph.addVertex(8);
 
-        directedGraph.addEdge("a", "b", new RelationshipEdge("FRIEND"));
-        directedGraph.addEdge("b", "d",new RelationshipEdge("RELATIVE"));
-        directedGraph.addEdge("d", "c",new RelationshipEdge("ACQUAINTANCE"));
-        directedGraph.addEdge("c", "a",new RelationshipEdge("FRIEND"));
-        directedGraph.addEdge("e", "d",new RelationshipEdge("FRIEND"));
-        directedGraph.addEdge("e", "f",new RelationshipEdge("RELATIVE"));
-        directedGraph.addEdge("f", "g",new RelationshipEdge("RELATIVE"));
-        directedGraph.addEdge("g", "e",new RelationshipEdge("ACQUAINTANCE"));
-        directedGraph.addEdge("h", "e",new RelationshipEdge("FRIEND"));
+        directedGraph.addEdge(0,1, new RelationshipEdge("FRIEND"));
+        directedGraph.addEdge(1, 3,new RelationshipEdge("RELATIVE"));
+        directedGraph.addEdge(3, 2,new RelationshipEdge("ACQUAINTANCE"));
+        directedGraph.addEdge(2, 0,new RelationshipEdge("FRIEND"));
+        directedGraph.addEdge(4, 3,new RelationshipEdge("FRIEND"));
+        directedGraph.addEdge(4, 5,new RelationshipEdge("RELATIVE"));
+        directedGraph.addEdge(5, 6,new RelationshipEdge("RELATIVE"));
+        directedGraph.addEdge(6, 4,new RelationshipEdge("ACQUAINTANCE"));
+        directedGraph.addEdge(7, 4,new RelationshipEdge("FRIEND"));
 
+        //ShortestPath testing
         ShortestPath s = new ShortestPath(directedGraph);
-
         System.out.println("Dijkstra Shortest Path");
-        System.out.println(s.DijkstraSP("a", "c"));
+        System.out.println(s.DijkstraSP(0, 2));
         System.out.println("\n"+"Dijkstra All Shortest Path");
-        System.out.println(s.DijkstraAllSP("a"));
+        System.out.println(s.DijkstraAllSP(0));
         System.out.println("\n"+"Bellman-Ford Shortest Path");
-        System.out.println(s.BellmanFordSP("a","c"));
+        System.out.println(s.BellmanFordSP(0,2));
         System.out.println("\n"+"Bellman-Ford All Shortest Path");
-        System.out.println(s.BellmanFordAllSP("a"));
+        System.out.println(s.BellmanFordAllSP(0));
         System.out.println("\n"+"Floyd-Warshall Shortest Path");
         System.out.println(s.FloydWarshallSP());
 
+        //Centrality testing
         Centrality c = new Centrality(directedGraph);
-        System.out.println("\nBetweenness centrality\n");
+        System.out.println("\nBetweenness centrality:");
         System.out.println(c.Betweenness());
-        System.out.println("\nCloseness centrality\n");
+        System.out.println("\nCloseness centrality:");
         System.out.println(c.Closeness());
-        System.out.println("\nEigenVector centrality\n");
+        System.out.println("\nEigenVector centrality:");
         System.out.println(c.EigenVector());
-        System.out.println("\nPageRank centrality\n");
+        System.out.println("\nPageRank centrality:");
         System.out.println(c.PageRank());
-        System.out.println("\nClustering coefficient\n");
+        System.out.println("\nClustering coefficient:");
         System.out.println(c.ClusteringCoefficient());
-        System.out.println("\nAverage clustering coefficient\n");
+        System.out.println("\nAverage clustering coefficient:");
         System.out.println(c.AverageClusteringCoefficient());
 
+        //Clustering testing
         Clustering C = new Clustering(directedGraph, 3);
         System.out.println("\n"+ C.getClustering());
 
@@ -65,90 +62,13 @@ public class algorithms_test {
         System.out.println(C2.getClustering());
 
         C2.setClusterNumber(4);
-        System.out.println(C2.getClustering());
-
-        //have to change the node name with the id
+        System.out.println(C2.getClustering()+"\n");
+        System.out.println("Cluster number: "+C2.getClusterNumber()+"\n");
+        //Label Hashmap testing
         VertexLabelMap vertexMap = new VertexLabelMap();
-        System.out.println("label of vertex 0:"+vertexMap.getVertexLabel(0));
-        //for(String iterator : directedGraph.vertexSet())
-        //    System.out.println("label of vertex: "+iterator+":"+vertexMap.getVertexLabel(Integer.valueOf(iterator)));
-
-
-
-      /*
-        //create a set which contain all vertex of the graph
-        Set<String> GraphSet= directedGraph.vertexSet();
-
-        // Use dijkstra algorithm for searching all shortest path
-        System.out.println("all shortest path using Dijkstra\n");
-        DijkstraShortestPath<String, DefaultEdge> dijkstraAlg = new DijkstraShortestPath<>(directedGraph);
-
-
-
-
-        for (String tempSource : GraphSet){
-            for(String tempDest : GraphSet){
-                if(!tempSource.equals(tempDest)){   //exclude cases where source = destination
-                    System.out.println("shortest path from " + tempSource + " to " + tempDest);
-                    ShortestPathAlgorithm.SingleSourcePaths<String, DefaultEdge> iPathsDijkstra = dijkstraAlg.getPaths(tempSource);
-                    System.out.println(iPathsDijkstra.getPath(tempDest) + "\n");
-                }
-            }
+        vertexMap.setVertexLabel(0,"a");
+        for(Integer iterator : directedGraph.vertexSet()) {
+            System.out.println("label of vertex: "+iterator+":"+vertexMap.getVertexLabel(iterator));
         }
-
-
-        // Use Bellman-Ford algorithm for searching all shortest path
-        System.out.println("all shortest path using Bellman-Ford\n");
-        BellmanFordShortestPath<String, Object> BellmanFordAlg = new BellmanFordShortestPath(directedGraph);
-
-        for (String tempSource : GraphSet){
-            for(String tempDest : GraphSet){
-                if(!tempSource.equals(tempDest)){   //exclude cases where source = destination
-                    System.out.println("shortest path from " + tempSource + " to " + tempDest);
-                    SingleSourcePaths<String, Object> iPathsBellmanFord = BellmanFordAlg.getPaths(tempSource);
-                    System.out.println(iPathsBellmanFord.getPath(tempDest) + "\n");
-                }
-            }
-        }
-
-
-        // Use Floyd-Warshall algorithm for searching all shortest
-        System.out.println("all shortest path using Floyd-Warshall\n");
-        FloydWarshallShortestPaths<String, DefaultEdge> FloydWarshallAlg = new FloydWarshallShortestPaths<>(directedGraph);
-
-        for(String tempSource : GraphSet){
-            for(String tempDest : GraphSet){
-                if(!tempSource.equals(tempDest)){
-                    System.out.println("shortest path from " + tempSource + " to "+ tempDest );
-                    SingleSourcePaths<String, DefaultEdge> iPathsFloydWarshall = FloydWarshallAlg.getPaths(tempSource);
-                    System.out.println(iPathsFloydWarshall.getPath(tempDest) + "\n");
-                }
-            }
-        }
-
-
-
-        //calculate Betweenness centrality for all the vertex of the graph
-        BetweennessCentrality<String, DefaultEdge> BetweennessCentralityMeasure = new BetweennessCentrality<>(directedGraph);
-        System.out.println("\nBetweenness Centrality\n"+BetweennessCentralityMeasure.getScores());
-
-        //calculate Closeness centrality for all the vertex of the graph
-        ClosenessCentrality<String,DefaultEdge> ClosenessCentralityMeasure = new ClosenessCentrality<>(directedGraph);
-        System.out.println("\nCloseness Centrality\n"+ClosenessCentralityMeasure.getScores());
-
-        //calculate EigenVector centrality for all the vertex of the graph
-        EigenvectorCentrality<String,DefaultEdge>  EigenvectorCentralityMeasure= new EigenvectorCentrality<>(directedGraph);
-        System.out.println("\nEigenVector Centrality\n"+EigenvectorCentralityMeasure.getScores());
-
-        //calculate PageRank centrality for all the vertex of the graph
-        PageRank<String, DefaultEdge> PageRankMeasure = new PageRank<>(directedGraph);
-        System.out.println("\nPage Rank Centrality\n"+PageRankMeasure.getScores());
-
-        //calculate Clustering coefficient for all the vertex of the graph and Average coefficient of the network
-        ClusteringCoefficient<String, DefaultEdge> ClusteringCoefficientMeasure = new ClusteringCoefficient<>(directedGraph);
-        System.out.println("\nClustering coefficient\n"+ClusteringCoefficientMeasure.getScores());
-        System.out.println("\nAverage Clustering coefficient\n"+ClusteringCoefficientMeasure.getAverageClusteringCoefficient());
-
- */
     }
 }

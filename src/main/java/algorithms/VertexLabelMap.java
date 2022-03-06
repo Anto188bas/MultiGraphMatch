@@ -2,11 +2,11 @@ package algorithms;
 import java.util.HashMap;
 
 public class VertexLabelMap {
-    private HashMap<Integer, String> hash = new HashMap<>();
+    private final HashMap<Integer, String> hash = new HashMap<>();
 
     public VertexLabelMap(){
         //test map
-        //inside the main create the map reading by the csv
+        //inside the constructor create the map reading by the csv
         hash.put(0,"a");
         hash.put(1,"b");
         hash.put(2,"c");

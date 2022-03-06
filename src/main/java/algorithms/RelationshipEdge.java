@@ -2,8 +2,7 @@ package algorithms;
 import org.jgrapht.graph.DefaultEdge;
 
 public class RelationshipEdge extends DefaultEdge{
-    private String label;
-
+    private final String label;
     /**
      *
      * Constructs a relationship edge
