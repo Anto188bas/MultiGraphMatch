@@ -23,15 +23,16 @@ public class ShortestPath {
     }
 
     //return shortest path from source to all other nodes using Dijkstra algorithm
-    // TODO return an object to create a json
-    public List<String> DijkstraAllSP(Integer source){
-        List<String> AllSP = new ArrayList<>();
+    //from x -> y
+    //     x -> z
+    //     ...
+    public List<GraphPath<Integer, RelationshipEdge>> DijkstraAllSP(Integer source){
+        List<GraphPath<Integer, RelationshipEdge>> AllSP = new ArrayList<>();
         DijkstraShortestPath<Integer, RelationshipEdge> dijkstraAlg = new DijkstraShortestPath<>(graph);
         for (Integer destination : GraphSet){
             if(!destination.equals(source)){   //exclude cases where source = destination
-                AllSP.add(String.valueOf(destination)+": ");
                 SingleSourcePaths<Integer, RelationshipEdge> iPathsDijkstra = dijkstraAlg.getPaths(source);
-                AllSP.add(String.valueOf(iPathsDijkstra.getPath(destination)));
+                AllSP.add(iPathsDijkstra.getPath(destination));
             }
         }
         return AllSP;
@@ -43,37 +44,39 @@ public class ShortestPath {
         return iPathsBellmanFord.getPath(destination);
     }
 
-    // TODO return an object to create a json
-    //return shortest path from source to all other nodes using Bellman-Ford
-    public List<String> BellmanFordAllSP(Integer source){
-        List<String> AllSP = new ArrayList<>();
+    //return shortest path from source to all other nodes using Bellman-Ford Algorithm
+    //from x -> y
+    //     x -> z
+    //     ...
+    public List<GraphPath<Integer, DefaultEdge>> BellmanFordAllSP(Integer source){
+        List<GraphPath<Integer, DefaultEdge>> AllSP = new ArrayList<>();
         BellmanFordShortestPath<Integer, DefaultEdge> BellmanFordAlg = new BellmanFordShortestPath(graph);
         for (Integer destination : GraphSet){
             if(!destination.equals(source)){   //exclude cases where source = destination
-                AllSP.add(String.valueOf(destination));
+                //AllSP.add(String.valueOf(destination));
                 SingleSourcePaths<Integer, DefaultEdge> iPathsBellmanFord = BellmanFordAlg.getPaths(source);
-                AllSP.add(String.valueOf(iPathsBellmanFord.getPath(destination)));
-                AllSP.add("\n");
+                AllSP.add(iPathsBellmanFord.getPath(destination));
+                //AllSP.add("\n");
             }
         }
         return AllSP;
     }
 
-    // TODO return an object to create a json
-    public List<String> FloydWarshallSP() {
-        List<String> AllSP = new ArrayList<>();
-        FloydWarshallShortestPaths<Integer, DefaultEdge> FloydWarshallAlg = new FloydWarshallShortestPaths(graph);
+    public List<GraphPath<Integer, RelationshipEdge>> FloydWarshallSP() {
+        List<GraphPath<Integer, RelationshipEdge>> AllSP = new ArrayList<>();
+        FloydWarshallShortestPaths<Integer, RelationshipEdge> FloydWarshallAlg = new FloydWarshallShortestPaths(graph);
         for (Integer tempSource : GraphSet) {
-            AllSP.add("\n from: "+tempSource+"\n");
+            //AllSP.add("\n from: "+tempSource+"\n");
             for (Integer tempDest : GraphSet) {
                 if (!tempSource.equals(tempDest)) {
-                    AllSP.add("to: "+tempDest+": ");
-                    SingleSourcePaths<Integer, DefaultEdge> iPathsFloydWarshall = FloydWarshallAlg.getPaths(tempSource);
-                    AllSP.add(String.valueOf(iPathsFloydWarshall.getPath(tempDest)));
-                    AllSP.add("\n");
+                    //AllSP.add("to: "+tempDest+": ");
+                    SingleSourcePaths<Integer, RelationshipEdge> iPathsFloydWarshall = FloydWarshallAlg.getPaths(tempSource);
+                    AllSP.add(iPathsFloydWarshall.getPath(tempDest));
+                    //AllSP.add("\n");
                 }
             }
         }
         return AllSP;
     }
+
 }
