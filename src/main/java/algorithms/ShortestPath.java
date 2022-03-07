@@ -16,33 +16,34 @@ public class ShortestPath {
         GraphSet = graph.vertexSet();
     }
 
-    public String DijkstraSP(Integer source, Integer destination){
+    public GraphPath<Integer, RelationshipEdge> DijkstraSP(Integer source, Integer destination){
         DijkstraShortestPath<Integer, RelationshipEdge> dijkstraAlg = new DijkstraShortestPath<>(graph);
         SingleSourcePaths<Integer, RelationshipEdge> iPathsDijkstra = dijkstraAlg.getPaths(source);
-        return (iPathsDijkstra.getPath(destination) +"\npathLength: "+dijkstraAlg.getPathWeight(source, destination));
+        return iPathsDijkstra.getPath(destination);
     }
 
     //return shortest path from source to all other nodes using Dijkstra algorithm
+    // TODO return an object to create a json
     public List<String> DijkstraAllSP(Integer source){
         List<String> AllSP = new ArrayList<>();
         DijkstraShortestPath<Integer, RelationshipEdge> dijkstraAlg = new DijkstraShortestPath<>(graph);
         for (Integer destination : GraphSet){
             if(!destination.equals(source)){   //exclude cases where source = destination
-                AllSP.add(String.valueOf(destination));
+                AllSP.add(String.valueOf(destination)+": ");
                 SingleSourcePaths<Integer, RelationshipEdge> iPathsDijkstra = dijkstraAlg.getPaths(source);
                 AllSP.add(String.valueOf(iPathsDijkstra.getPath(destination)));
-                AllSP.add("\n");
             }
         }
         return AllSP;
     }
 
-    public String BellmanFordSP(Integer source, Integer destination){
+    public GraphPath<Integer, Object> BellmanFordSP(Integer source, Integer destination){
         BellmanFordShortestPath<Integer, Object> BellmanFordAlg = new BellmanFordShortestPath(graph);
         SingleSourcePaths<Integer, Object> iPathsBellmanFord = BellmanFordAlg.getPaths(source);
-        return String.valueOf(iPathsBellmanFord.getPath(destination)+"\npathLength: "+BellmanFordAlg.getPathWeight(source, destination));
+        return iPathsBellmanFord.getPath(destination);
     }
 
+    // TODO return an object to create a json
     //return shortest path from source to all other nodes using Bellman-Ford
     public List<String> BellmanFordAllSP(Integer source){
         List<String> AllSP = new ArrayList<>();
@@ -58,6 +59,7 @@ public class ShortestPath {
         return AllSP;
     }
 
+    // TODO return an object to create a json
     public List<String> FloydWarshallSP() {
         List<String> AllSP = new ArrayList<>();
         FloydWarshallShortestPaths<Integer, DefaultEdge> FloydWarshallAlg = new FloydWarshallShortestPaths(graph);
