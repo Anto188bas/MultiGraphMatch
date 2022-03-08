@@ -5,13 +5,13 @@ public class OutData {
     public double ordering_time;
     public double symmetry_time;
     public double matching_time;
-    public int num_occurrences;
+    public long num_occurrences;
 
     public OutData() {
         this.domain_time = 0d;
         this.ordering_time = 0d;
         this.symmetry_time = 0d;
         this.matching_time = 0d;
-        this.num_occurrences = 0;
+        this.num_occurrences = 0l;
     }
 }

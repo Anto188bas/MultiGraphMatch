@@ -40,7 +40,7 @@ public class NewMatching {
     }
 
 
-    private static int matching_procedure(
+    private static long matching_procedure(
             // Table              first_compatibility,
             Int2ObjectOpenHashMap<IntArrayList> first_compatibility,
             MatchingData       matchingData,
@@ -49,7 +49,7 @@ public class NewMatching {
             QueryStructure     query_obj,
             IntArrayList[]     nodes_symmetry,
             IntArrayList[]     edges_symmetry,
-            int numQueryEdges, int numTotalOccs, long numMaxOccs,
+            int numQueryEdges, long numTotalOccs, long numMaxOccs,
             int q_src        , int q_dst,
             boolean justCount, boolean distinct
     ) {
