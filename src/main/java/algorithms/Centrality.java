@@ -1,4 +1,5 @@
 package algorithms;
+
 import org.jgrapht.*;
 import org.jgrapht.alg.scoring.*;
 import org.jgrapht.graph.DefaultEdge;
@@ -6,10 +7,10 @@ import java.util.HashMap;
 import java.util.Set;
 
 //this class implements various centrality measure for the network
-public class Centrality{
+public class Centrality {
     final private Graph<Integer, RelationshipEdge> graph;
     final private Set<Integer> GraphSet;
-    public Centrality(Graph<Integer, RelationshipEdge> graph){
+    public Centrality(Graph<Integer, RelationshipEdge> graph) {
         this.graph = graph;
         GraphSet = graph.vertexSet();
     }
@@ -45,6 +46,16 @@ public class Centrality{
             centralityValue.put(index, String.valueOf(PageRankMeasure.getVertexScore(index)));
         return centralityValue;
     }
+
+    public HashMap<Integer, String> Katz(){
+        HashMap<Integer, String> centralityValue = new HashMap<>();
+        KatzCentrality<Integer, DefaultEdge> KatzMeasure = new KatzCentrality(graph);
+        for (Integer index : GraphSet)
+            centralityValue.put(index, String.valueOf(KatzMeasure.getVertexScore(index)));
+        return centralityValue;
+    }
+
+
 
     public HashMap<Integer, String> ClusteringCoefficient(){
         HashMap<Integer, String> centralityValue = new HashMap<>();

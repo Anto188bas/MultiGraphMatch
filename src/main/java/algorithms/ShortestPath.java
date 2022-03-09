@@ -1,4 +1,5 @@
 package algorithms;
+
 import org.jgrapht.*;
 import org.jgrapht.alg.interfaces.ShortestPathAlgorithm.*;
 import org.jgrapht.alg.shortestpath.*;
@@ -11,12 +12,12 @@ public class ShortestPath {
     final private Graph<Integer, RelationshipEdge> graph;
     final private Set<Integer> GraphSet;
 
-    public ShortestPath(Graph<Integer, RelationshipEdge> graph){
+    public ShortestPath(Graph<Integer, RelationshipEdge> graph) {
         this.graph = graph;
         GraphSet = graph.vertexSet();
     }
 
-    public GraphPath<Integer, RelationshipEdge> DijkstraSP(Integer source, Integer destination){
+    public GraphPath<Integer, RelationshipEdge> DijkstraSP(Integer source, Integer destination) {
         DijkstraShortestPath<Integer, RelationshipEdge> dijkstraAlg = new DijkstraShortestPath<>(graph);
         SingleSourcePaths<Integer, RelationshipEdge> iPathsDijkstra = dijkstraAlg.getPaths(source);
         return iPathsDijkstra.getPath(destination);
@@ -26,7 +27,7 @@ public class ShortestPath {
     //from x -> y
     //     x -> z
     //     ...
-    public List<GraphPath<Integer, RelationshipEdge>> DijkstraAllSP(Integer source){
+    public List<GraphPath<Integer, RelationshipEdge>> DijkstraAllSP(Integer source) {
         List<GraphPath<Integer, RelationshipEdge>> AllSP = new ArrayList<>();
         DijkstraShortestPath<Integer, RelationshipEdge> dijkstraAlg = new DijkstraShortestPath<>(graph);
         for (Integer destination : GraphSet){
@@ -38,7 +39,7 @@ public class ShortestPath {
         return AllSP;
     }
 
-    public GraphPath<Integer, Object> BellmanFordSP(Integer source, Integer destination){
+    public GraphPath<Integer, Object> BellmanFordSP(Integer source, Integer destination) {
         BellmanFordShortestPath<Integer, Object> BellmanFordAlg = new BellmanFordShortestPath(graph);
         SingleSourcePaths<Integer, Object> iPathsBellmanFord = BellmanFordAlg.getPaths(source);
         return iPathsBellmanFord.getPath(destination);
@@ -48,15 +49,13 @@ public class ShortestPath {
     //from x -> y
     //     x -> z
     //     ...
-    public List<GraphPath<Integer, DefaultEdge>> BellmanFordAllSP(Integer source){
+    public List<GraphPath<Integer, DefaultEdge>> BellmanFordAllSP(Integer source) {
         List<GraphPath<Integer, DefaultEdge>> AllSP = new ArrayList<>();
         BellmanFordShortestPath<Integer, DefaultEdge> BellmanFordAlg = new BellmanFordShortestPath(graph);
         for (Integer destination : GraphSet){
             if(!destination.equals(source)){   //exclude cases where source = destination
-                //AllSP.add(String.valueOf(destination));
                 SingleSourcePaths<Integer, DefaultEdge> iPathsBellmanFord = BellmanFordAlg.getPaths(source);
                 AllSP.add(iPathsBellmanFord.getPath(destination));
-                //AllSP.add("\n");
             }
         }
         return AllSP;
@@ -66,13 +65,10 @@ public class ShortestPath {
         List<GraphPath<Integer, RelationshipEdge>> AllSP = new ArrayList<>();
         FloydWarshallShortestPaths<Integer, RelationshipEdge> FloydWarshallAlg = new FloydWarshallShortestPaths(graph);
         for (Integer tempSource : GraphSet) {
-            //AllSP.add("\n from: "+tempSource+"\n");
             for (Integer tempDest : GraphSet) {
                 if (!tempSource.equals(tempDest)) {
-                    //AllSP.add("to: "+tempDest+": ");
                     SingleSourcePaths<Integer, RelationshipEdge> iPathsFloydWarshall = FloydWarshallAlg.getPaths(tempSource);
                     AllSP.add(iPathsFloydWarshall.getPath(tempDest));
-                    //AllSP.add("\n");
                 }
             }
         }
