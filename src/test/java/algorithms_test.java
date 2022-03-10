@@ -49,15 +49,31 @@ public class algorithms_test {
                 .forEach(i -> System.out.println(i+": "+nodes_macro.get(i)));
 
         //adding edge
-        for(int i = 0; i < nodes_macro.size(); i++){
+        /*
+        for(int i = 0; i < nodes_macro.size(); i++) {
             var test = src_dst_aggregation.get(i);
-            if(test != null){
+            if(test != null) {
+                int finalI = i;
+                test.keySet().stream().forEach(j -> testGraph.addEdge(finalI, j, new RelationshipEdge("A")));
+            }
+        }
+        */
+
+        for(int i = 0; i < nodes_macro.size(); i++) {
+            var test = src_dst_aggregation.get(i);
+            if(test != null) {
                 var arr =  test.keySet().stream().toArray();
                 for(var j: arr)
                     testGraph.addEdge(i, (Integer) j, new RelationshipEdge("A"));
             }
         }
 
+
+
+
+
+
+        System.out.println(testGraph.edgeSet());
         //algorithms implementation testing
         Algorithms a = new Algorithms(testGraph);
         a.DijsktraShortestPath(4532,5632);
