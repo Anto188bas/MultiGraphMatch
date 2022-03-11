@@ -48,6 +48,7 @@ public class algorithms_test {
         testGraph.vertexSet().stream()                                              //vertex label printing
                 .forEach(i -> System.out.println(i+": "+nodes_macro.get(i)));
 
+
         //adding edge
         /*
         for(int i = 0; i < nodes_macro.size(); i++) {
@@ -68,10 +69,75 @@ public class algorithms_test {
             }
         }
 
+        //Multithreading
+        Runnable runnableShortestPath =
+                () -> {
+                    Algorithms a = new Algorithms(testGraph);
+                    try {
+                        a.DijsktraShortestPath(4532,5632);
+                        a.DijsktraAllShortestPath(0);
+                        a.BellmanFordShortestPath(0,3);
+                        a.BellmanFordAllShortestPath(0);
+                        a.FloydWarshallShortestPath();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                };
+
+
+        Runnable runnableCentrality =
+                () -> {
+                    Algorithms a = new Algorithms(testGraph);
+                    try {
+                        a.EigenVectorCentrality();
+                        a.BetweennessCentrality();
+                        a.ClosenessCentrality();
+                        a.PageRankCentrality();
+                        a.KatzCentrality();
+                        a.ClusteringCoefficient();
+                        a.AverageClusteringCoefficient();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                };
+
+        Runnable runnableClustering =
+                () -> {
+                    Algorithms a = new Algorithms(testGraph);
+                    try {
+                        a.LabelPropagationClustering();
+                        a.KSpanningTreeClustering(3);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                };
+
+        Runnable runnableLinkPrediction =
+                () -> {
+                    Algorithms a = new Algorithms(testGraph);
+                    try {
+                        a.PreferentialAttachmentPrediction(0,1);
+                        a.CommonNeighborsPrediction(0,1);
+                        a.JaccardCoefficientPrediction(0,1);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                };
+
+
+        Thread threadShortestPath = new Thread(runnableShortestPath);
+        Thread threadCentrality = new Thread(runnableCentrality);
+        Thread threadClustering = new Thread(runnableClustering);
+        Thread threadLinkPrediction = new Thread(runnableLinkPrediction);
+        threadShortestPath.start();
+        threadCentrality.start();
+        threadClustering.start();
+        threadLinkPrediction.start();
 
 
 
 
+        /*
 
         System.out.println(testGraph.edgeSet());
         //algorithms implementation testing
@@ -96,7 +162,7 @@ public class algorithms_test {
         a.PreferentialAttachmentPrediction(0,1);
         a.CommonNeighborsPrediction(0,1);
         a.JaccardCoefficientPrediction(0,1);
-
+        */
         // TODO read edge labels
 
 
