@@ -81,12 +81,11 @@ public class algorithms_test {
                 () -> {
                     Algorithms a = new Algorithms(testGraph);
                     try {
-                        //a.DijsktraShortestPath(4532,5632);
-                        //a.DijsktraAllShortestPath(0);
-                        //a.BellmanFordShortestPath(0,3);
-                        //a.BellmanFordAllShortestPath(0);
+                        a.DijsktraShortestPath(4532,5632);
+                        a.DijsktraAllShortestPath(0);
+                        a.BellmanFordShortestPath(0,3);
+                        a.BellmanFordAllShortestPath(0);
                         //a.FloydWarshallShortestPath();
-                        a.JohnsonShortestPath(0);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
