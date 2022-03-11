@@ -75,4 +75,10 @@ public class ShortestPath {
         return AllSP;
     }
 
+    public SingleSourcePaths<Integer, RelationshipEdge> JohnsonSP(Integer source){
+        List<GraphPath<Integer, RelationshipEdge>> AllSP = new ArrayList<>();
+        JohnsonShortestPaths<Integer, RelationshipEdge> JohnsonAlg = new JohnsonShortestPaths<>(graph);
+        return JohnsonAlg.getPaths(source);
+    }
+
 }

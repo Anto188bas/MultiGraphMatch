@@ -15,6 +15,8 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import static java.lang.Thread.MAX_PRIORITY;
+
 public class algorithms_test {
     public static void main(String[] args) throws IOException {
 
@@ -37,6 +39,8 @@ public class algorithms_test {
         // EDGE ELABORATION
         Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntOpenHashSet[]>> src_dst_aggregation = new Int2ObjectOpenHashMap<>();
         GraphPaths graphPaths = EdgeHandler.createGraphPaths(edges_tables_properties, idx_label, src_dst_aggregation);
+
+
 
         //create a test graph reading from the hashmap
         Graph<Integer, RelationshipEdge> testGraph = new SimpleDirectedGraph<>(RelationshipEdge.class);
@@ -63,22 +67,26 @@ public class algorithms_test {
         for(int i = 0; i < nodes_macro.size(); i++) {
             var test = src_dst_aggregation.get(i);
             if(test != null) {
-                var arr =  test.keySet().stream().toArray();
+                var arr = test.keySet().toArray();
                 for(var j: arr)
                     testGraph.addEdge(i, (Integer) j, new RelationshipEdge("A"));
             }
         }
 
-        //Multithreading
+        System.out.println(testGraph.edgeSet());
+
+
+        //Multithreading algorithm testing
         Runnable runnableShortestPath =
                 () -> {
                     Algorithms a = new Algorithms(testGraph);
                     try {
-                        a.DijsktraShortestPath(4532,5632);
-                        a.DijsktraAllShortestPath(0);
-                        a.BellmanFordShortestPath(0,3);
-                        a.BellmanFordAllShortestPath(0);
-                        a.FloydWarshallShortestPath();
+                        //a.DijsktraShortestPath(4532,5632);
+                        //a.DijsktraAllShortestPath(0);
+                        //a.BellmanFordShortestPath(0,3);
+                        //a.BellmanFordAllShortestPath(0);
+                        //a.FloydWarshallShortestPath();
+                        a.JohnsonShortestPath(0);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -124,29 +132,26 @@ public class algorithms_test {
                     }
                 };
 
-
         Thread threadShortestPath = new Thread(runnableShortestPath);
         Thread threadCentrality = new Thread(runnableCentrality);
         Thread threadClustering = new Thread(runnableClustering);
         Thread threadLinkPrediction = new Thread(runnableLinkPrediction);
+        threadShortestPath.setPriority(MAX_PRIORITY);
+
         threadShortestPath.start();
         threadCentrality.start();
         threadClustering.start();
         threadLinkPrediction.start();
 
-
-
-
         /*
-
-        System.out.println(testGraph.edgeSet());
         //algorithms implementation testing
         Algorithms a = new Algorithms(testGraph);
-        a.DijsktraShortestPath(4532,5632);
-        a.DijsktraAllShortestPath(0);
-        a.BellmanFordShortestPath(0,3);
-        a.BellmanFordAllShortestPath(0);
-        a.FloydWarshallShortestPath();
+
+        //a.DijsktraShortestPath(4532,5632);
+        //a.DijsktraAllShortestPath(0);
+        //a.BellmanFordShortestPath(0,3);
+        //a.BellmanFordAllShortestPath(0);
+        //a.FloydWarshallShortestPath();
 
         a.EigenVectorCentrality();
         a.BetweennessCentrality();

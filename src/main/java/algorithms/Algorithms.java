@@ -74,6 +74,17 @@ public class Algorithms {
         writer.close();
     }
 
+    public void JohnsonShortestPath(int source) throws IOException {
+        s = new ShortestPath(graph);
+        File JohnsonSP = new File("./OutputTest/ShortestPath/JohnsonSP.json");
+        writer = new FileWriter(JohnsonSP);
+        writer.write(gson.toJson(s.JohnsonSP(source)));
+        writer.flush();
+        writer.close();
+    }
+
+
+
     public void BetweennessCentrality() throws IOException {
         c = new Centrality(graph);
         File Betweenness = new File("./OutputTest/Centrality/Betweenness.json");
