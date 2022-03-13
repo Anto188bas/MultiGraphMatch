@@ -5,6 +5,11 @@ import org.jgrapht.alg.linkprediction.CommonNeighborsLinkPrediction;
 import org.jgrapht.alg.linkprediction.JaccardCoefficientLinkPrediction;
 import org.jgrapht.alg.linkprediction.PreferentialAttachmentLinkPrediction;
 
+/**
+ *
+ * This class include most of the popular Link prediction algorithm implementations
+ *
+ */
 public class LinkPrediction {
     final private Graph<Integer, RelationshipEdge> graph;
 

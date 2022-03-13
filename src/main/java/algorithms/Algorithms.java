@@ -6,6 +6,11 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+/**
+ *
+ * This class is and interface which unify all the operation of the package
+ *
+ */
 public class Algorithms {
     private FileWriter writer;
     final private Gson gson = new Gson();
@@ -38,11 +43,11 @@ public class Algorithms {
 
     /**
      *
-     * Invoke the DijsktraSP method, convert to json format the output and save it on the DijkstraSP.json file
+     * Invoke the DijsktraSP method from the class ShortestPath, convert to json format the output and save it on the DijkstraSP.json file
      *
      * @param source the source vertex id
      * @param destination the destination vertex id
-     * @throws IOException if the directory doesn't exist
+     * @throws IOException if the directory "ShortestPath" doesn't exist
      *
      */
     public void DijsktraShortestPath(int source, int destination) throws IOException {
@@ -56,10 +61,10 @@ public class Algorithms {
 
     /**
      *
-     * Invoke the DijsktraAllSP method, convert to json format the output and save it on the DijkstraAllSP.json file
+     * Invoke the DijsktraAllSP method from the class ShortestPath, convert to json format the output and save it on the DijkstraAllSP.json file
      *
      * @param source the source vertex id
-     * @throws IOException if the directory doesn't exist
+     * @throws IOException if the directory "ShortestPath" doesn't exist
      *
      */
     public void DijsktraAllShortestPath(int source) throws IOException {
@@ -73,11 +78,11 @@ public class Algorithms {
 
     /**
      *
-     * Invoke the BellmanFordSP method, convert to json format the output and save it on the BellmanFordSP.json file
+     * Invoke the BellmanFordSP method from the class ShortestPath, convert to json format the output and save it on the BellmanFordSP.json file
      *
      * @param source the source vertex id
      * @param destination the destination vertex id
-     * @throws IOException if the directory doesn't exist
+     * @throws IOException if the directory "ShortestPath" doesn't exist
      *
      */
     public void BellmanFordShortestPath(int source, int destination) throws IOException {
@@ -91,10 +96,10 @@ public class Algorithms {
 
     /**
      *
-     * Invoke the BellmanFordAllSP method, convert to json format the output and save it on the BellmanFordAllSP.json file
+     * Invoke the BellmanFordAllSP method from the class ShortestPath, convert to json format the output and save it on the BellmanFordAllSP.json file
      *
      * @param source the source vertex id
-     * @throws IOException if the directory doesn't exist
+     * @throws IOException if the directory "ShortestPath" doesn't exist
      *
      */
     public void BellmanFordAllShortestPath(int source) throws  IOException {
@@ -108,9 +113,9 @@ public class Algorithms {
 
     /**
      *
-     * Invoke the FloydWarshallSP method, convert to json format the output and save it on the FloydWarshallSP.json file
+     * Invoke the FloydWarshallSP method from the class ShortestPath, convert to json format the output and save it on the FloydWarshallSP.json file
      *
-     * @throws IOException if the directory doesn't exist
+     * @throws IOException if the directory "ShortestPath" doesn't exist
      */
     public void FloydWarshallShortestPath() throws IOException {
         s = new ShortestPath(graph);
@@ -123,9 +128,9 @@ public class Algorithms {
 
     /**
      *
-     * Invoke the Betweenness method, convert to json format the output and save it on the Betweenness.json file
+     * Invoke the Betweenness method from the class Centrality, convert to json format the output and save it on the Betweenness.json file
      *
-     * @throws IOException if the directory doesn't exist
+     * @throws IOException if the directory "Centrality" doesn't exist
      *
      */
     public void BetweennessCentrality() throws IOException {
@@ -138,8 +143,11 @@ public class Algorithms {
     }
 
     /**
-     * TODO complete the javadoc
-     * @throws IOException
+     *
+     * Invoke the Closeness method from the class Centrality, convert to json format the output and save it on the Closeness.json file
+     *
+     * @throws IOException if the directory "Centrality" doesn't exist
+     *
      */
     public void ClosenessCentrality() throws IOException {
         c = new Centrality(graph);
@@ -150,6 +158,13 @@ public class Algorithms {
         writer.close();
     }
 
+    /**
+     *
+     * Invoke the EigenVector method from the class Centrality, convert to json format the output and save it on the EigenVector.json file
+     *
+     * @throws IOException if the directory "Centrality" doesn't exist
+     *
+     */
     public void EigenVectorCentrality() throws  IOException {
         c = new Centrality(graph);
         File EigenVector = new File("./OutputTest/Centrality/EigenVector.json");
@@ -159,6 +174,13 @@ public class Algorithms {
         writer.close();
     }
 
+    /**
+     *
+     * Invoke the PageRank method from the class Centrality, convert to json format the output and save it on the PageRank.json file
+     *
+     * @throws IOException if the directory "Centrality" doesn't exist
+     *
+     */
     public void PageRankCentrality() throws IOException {
         c = new Centrality(graph);
         File PageRank = new File("./OutputTest/Centrality/PageRank.json");
@@ -168,6 +190,13 @@ public class Algorithms {
         writer.close();
     }
 
+    /**
+     *
+     * Invoke the Katz method from the class Centrality, convert to json format the output and save it on the Katz.json file
+     *
+     * @throws IOException if the directory "Centrality" doesn't exist
+     *
+     */
     public void KatzCentrality() throws  IOException {
         c = new Centrality(graph);
         File Katz = new File("./OutputTest/Centrality/Katz.json");
@@ -177,6 +206,13 @@ public class Algorithms {
         writer.close();
     }
 
+    /**
+     *
+     * Invoke the ClusteringCoefficient method from the class Centrality, convert to json format the output and save it on the ClusteringCoefficient.json file
+     *
+     * @throws IOException if the directory"Centrality"  doesn't exist
+     *
+     */
     public void ClusteringCoefficient() throws IOException {
         c = new Centrality(graph);
         File ClusteringCoefficient = new File("./OutputTest/Centrality/ClusteringCoefficient.json");
@@ -186,6 +222,13 @@ public class Algorithms {
         writer.close();
     }
 
+    /**
+     *
+     *  Invoke the AverageClusteringCoefficient method from the class Centrality, convert to json format the output and save it on the AverageClusteringCoefficient.json file
+     *
+     * @throws IOException if the directory "Centrality" doesn't exist
+     *
+     */
     public void AverageClusteringCoefficient() throws IOException {
         c = new Centrality(graph);
         File AverageClusteringCoefficient = new File("./OutputTest/Centrality/AverageClusteringCoefficient.json");
@@ -195,6 +238,14 @@ public class Algorithms {
         writer.close();
     }
 
+    /**
+     *
+     * Invoke the KSpanningTree method from the class Clustering, convert to json format the output and save it on the KSpanningTreeClustering.json file
+     *
+     * @param clusterNumber the desired number of cluster in output
+     * @throws IOException if the directory "Clustering" doesn't exist
+     *
+     */
     public void KSpanningTreeClustering(int clusterNumber) throws IOException {
         C = new Clustering(graph, clusterNumber);
         File Clustering = new File("./OutputTest/Clustering/KSpanningTreeClustering.json");
@@ -204,6 +255,13 @@ public class Algorithms {
         writer.close();
     }
 
+    /**
+     *
+     * Invoke the LabelPropagation method from the class Clustering, convert to json format the output and save it on the LabelPropagation.json file
+     *
+     * @throws IOException if the directory "Clustering" doesn't exist
+     *
+     */
     public void LabelPropagationClustering() throws IOException {
         C = new Clustering(graph);
         File Clustering = new File("./OutputTest/Clustering/LabelPropagationClustering.json");
@@ -213,6 +271,15 @@ public class Algorithms {
         writer.close();
     }
 
+    /**
+     *
+     * Invoke the PreferentialAttachmentPrediction method from the class LinkPrediction, convert to json format the output and save it on the PreferentialAttachmentPrediction.json file
+     *
+     * @param u the source vertex id
+     * @param v the destination vertex id
+     * @throws IOException if the directory "LinkPrediction" doesn't exist
+     *
+     */
     public void PreferentialAttachmentPrediction(int u, int v) throws IOException {
         Lp = new LinkPrediction(graph);
         File LinkPrediction = new File("./OutputTest/LinkPrediction/PreferentialAttachmentPrediction.json");
@@ -222,6 +289,15 @@ public class Algorithms {
         writer.close();
     }
 
+    /**
+     *
+     * Invoke the CommonNeighborsPrediction method from the class LinkPrediction, convert to json format the output and save it on the CommonNeighborsPrediction.json file
+     *
+     * @param u the source vertex id
+     * @param v the destination vertex id
+     * @throws IOException if the directory "LinkPrediction" doesn't exist
+     *
+     */
     public void CommonNeighborsPrediction(int u, int v) throws IOException {
         Lp = new LinkPrediction(graph);
         File LinkPrediction = new File("./OutputTest/LinkPrediction/CommonNeighborsPrediction.json");
@@ -231,6 +307,15 @@ public class Algorithms {
         writer.close();
     }
 
+    /**
+     *
+     * Invoke the JaccardCoefficientPrediction method from the class LinkPrediction, convert to json format the output and save it on the JaccardCoefficientPrediction.json file
+     *
+     * @param u the source vertex id
+     * @param v the destination vertex id
+     * @throws IOException if the directory "LinkPrediction" doesn't exist
+     *
+     */
     public void JaccardCoefficientPrediction(int u, int v) throws IOException {
         Lp = new LinkPrediction(graph);
         File LinkPrediction = new File("./OutputTest/LinkPrediction/JaccardCoefficientPrediction.json");

@@ -8,6 +8,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+/**
+ *
+ * This class include most of the popular shortest path algorithm implementations
+ *
+ */
 public class ShortestPath {
     final private Graph<Integer, RelationshipEdge> graph;
     final private Set<Integer> GraphSet;

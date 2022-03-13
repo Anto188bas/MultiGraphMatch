@@ -5,7 +5,11 @@ import org.jgrapht.alg.clustering.KSpanningTreeClustering;
 import org.jgrapht.alg.clustering.LabelPropagationClustering;
 import org.jgrapht.graph.AsUndirectedGraph;
 import java.util.Set;
-
+/**
+ *
+ * This class include most of the popular clustering algorithm implementations
+ *
+ */
 public class Clustering {
     final private Graph<Integer, RelationshipEdge> graph;
     private Integer clusterNumber;
