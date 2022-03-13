@@ -18,7 +18,7 @@ import java.util.HashMap;
 import static java.lang.Thread.MAX_PRIORITY;
 
 public class algorithms_test {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args){
 
         // CONFIGURATION
         Configuration configuration     = new Configuration(args);
@@ -74,6 +74,7 @@ public class algorithms_test {
         }
 
         System.out.println(testGraph.edgeSet());
+        // TODO read edge labels
 
 
         //Multithreading algorithm testing
@@ -84,13 +85,12 @@ public class algorithms_test {
                         a.DijsktraShortestPath(4532,5632);
                         a.DijsktraAllShortestPath(0);
                         a.BellmanFordShortestPath(0,3);
-                        a.BellmanFordAllShortestPath(0);
+                        //a.BellmanFordAllShortestPath(0);
                         //a.FloydWarshallShortestPath();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 };
-
 
         Runnable runnableCentrality =
                 () -> {
@@ -141,36 +141,6 @@ public class algorithms_test {
         threadCentrality.start();
         threadClustering.start();
         threadLinkPrediction.start();
-
-        /*
-        //algorithms implementation testing
-        Algorithms a = new Algorithms(testGraph);
-
-        //a.DijsktraShortestPath(4532,5632);
-        //a.DijsktraAllShortestPath(0);
-        //a.BellmanFordShortestPath(0,3);
-        //a.BellmanFordAllShortestPath(0);
-        //a.FloydWarshallShortestPath();
-
-        a.EigenVectorCentrality();
-        a.BetweennessCentrality();
-        a.ClosenessCentrality();
-        a.PageRankCentrality();
-        a.KatzCentrality();
-        a.ClusteringCoefficient();
-        a.AverageClusteringCoefficient();
-
-        a.LabelPropagationClustering();
-        a.KSpanningTreeClustering(3);
-
-        a.PreferentialAttachmentPrediction(0,1);
-        a.CommonNeighborsPrediction(0,1);
-        a.JaccardCoefficientPrediction(0,1);
-        */
-        // TODO read edge labels
-
-
-
-
     }
+
 }

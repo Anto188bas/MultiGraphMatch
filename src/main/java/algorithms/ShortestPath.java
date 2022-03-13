@@ -12,21 +12,41 @@ public class ShortestPath {
     final private Graph<Integer, RelationshipEdge> graph;
     final private Set<Integer> GraphSet;
 
+    /**
+     *
+     * Class constructor, construct a ShortestPath object
+     *
+     * @param graph the input network
+     *
+     */
     public ShortestPath(Graph<Integer, RelationshipEdge> graph) {
         this.graph = graph;
         GraphSet = graph.vertexSet();
     }
 
+    /**
+     *
+     * Dijkstra shortest path algorithm
+     *
+     * @param source the source vertex id
+     * @param destination the destination vertex id
+     * @return return the shortest path calculated using Dijkstra algorithm
+     *
+     */
     public GraphPath<Integer, RelationshipEdge> DijkstraSP(Integer source, Integer destination) {
         DijkstraShortestPath<Integer, RelationshipEdge> dijkstraAlg = new DijkstraShortestPath<>(graph);
         SingleSourcePaths<Integer, RelationshipEdge> iPathsDijkstra = dijkstraAlg.getPaths(source);
         return iPathsDijkstra.getPath(destination);
     }
 
-    //return shortest path from source to all other nodes using Dijkstra algorithm
-    //from x -> y
-    //     x -> z
-    //     ...
+    /**
+     *
+     * Dijsktra all shortest path algorithm
+     *
+     * @param source the source vertex id
+     * @return a list which contain all the shortest path from the source to all the other network vertex
+     *
+     */
     public List<GraphPath<Integer, RelationshipEdge>> DijkstraAllSP(Integer source) {
         List<GraphPath<Integer, RelationshipEdge>> AllSP = new ArrayList<>();
         DijkstraShortestPath<Integer, RelationshipEdge> dijkstraAlg = new DijkstraShortestPath<>(graph);
@@ -39,16 +59,29 @@ public class ShortestPath {
         return AllSP;
     }
 
+    /**
+     *
+     * Bellman - Ford shortest path algorithm
+     *
+     * @param source the source vertex id
+     * @param destination the destination vertex id
+     * @return return the shortest path calculated using Bellman - Ford algorithm
+     *
+     */
     public GraphPath<Integer, Object> BellmanFordSP(Integer source, Integer destination) {
         BellmanFordShortestPath<Integer, Object> BellmanFordAlg = new BellmanFordShortestPath(graph);
         SingleSourcePaths<Integer, Object> iPathsBellmanFord = BellmanFordAlg.getPaths(source);
         return iPathsBellmanFord.getPath(destination);
     }
 
-    //return shortest path from source to all other nodes using Bellman-Ford Algorithm
-    //from x -> y
-    //     x -> z
-    //     ...
+    /**
+     *
+     *  Bellman - Ford  all shortest path algorithm
+     *
+     * @param source the source vertex id
+     * @return a list which contain all the shortest path from the source to all the other network vertex
+     *
+     */
     public List<GraphPath<Integer, DefaultEdge>> BellmanFordAllSP(Integer source) {
         List<GraphPath<Integer, DefaultEdge>> AllSP = new ArrayList<>();
         BellmanFordShortestPath<Integer, DefaultEdge> BellmanFordAlg = new BellmanFordShortestPath(graph);
@@ -61,6 +94,13 @@ public class ShortestPath {
         return AllSP;
     }
 
+    /**
+     *
+     * Floyd - Warshall shortest path algorithm
+     *
+     * @return a list which contain all the shortest path from all the vertex
+     *
+     */
     public List<GraphPath<Integer, RelationshipEdge>> FloydWarshallSP() {
         List<GraphPath<Integer, RelationshipEdge>> AllSP = new ArrayList<>();
         FloydWarshallShortestPaths<Integer, RelationshipEdge> FloydWarshallAlg = new FloydWarshallShortestPaths(graph);

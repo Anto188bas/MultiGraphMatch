@@ -15,6 +15,13 @@ public class Algorithms {
     private Clustering C;
     private LinkPrediction Lp;
 
+    /**
+     *
+     * Class constructor, constuct a Algorithms object
+     *
+     * @param graph the input network
+     *
+     */
     public Algorithms(Graph<Integer, RelationshipEdge> graph) {
         //create output directory
         File ShortestPathDir = new File("./OutputTest/ShortestPath");
@@ -29,6 +36,15 @@ public class Algorithms {
         this.graph = graph;
     }
 
+    /**
+     *
+     * Invoke the DijsktraSP method, convert to json format the output and save it on the DijkstraSP.json file
+     *
+     * @param source the source vertex id
+     * @param destination the destination vertex id
+     * @throws IOException if the directory doesn't exist
+     *
+     */
     public void DijsktraShortestPath(int source, int destination) throws IOException {
         s = new ShortestPath(graph);
         File DijkstraSP = new File("./OutputTest/ShortestPath/DijkstraSP.json");
@@ -38,6 +54,14 @@ public class Algorithms {
         writer.close();
     }
 
+    /**
+     *
+     * Invoke the DijsktraAllSP method, convert to json format the output and save it on the DijkstraAllSP.json file
+     *
+     * @param source the source vertex id
+     * @throws IOException if the directory doesn't exist
+     *
+     */
     public void DijsktraAllShortestPath(int source) throws IOException {
         s = new ShortestPath(graph);
         File DijkstraAllSP = new File("./OutputTest/ShortestPath/DijkstraAllSP.json");
@@ -47,6 +71,15 @@ public class Algorithms {
         writer.close();
     }
 
+    /**
+     *
+     * Invoke the BellmanFordSP method, convert to json format the output and save it on the BellmanFordSP.json file
+     *
+     * @param source the source vertex id
+     * @param destination the destination vertex id
+     * @throws IOException if the directory doesn't exist
+     *
+     */
     public void BellmanFordShortestPath(int source, int destination) throws IOException {
         s = new ShortestPath(graph);
         File BellmanFordSP = new File("./OutputTest/ShortestPath/BellmanFordSP.json");
@@ -56,6 +89,14 @@ public class Algorithms {
         writer.close();
     }
 
+    /**
+     *
+     * Invoke the BellmanFordAllSP method, convert to json format the output and save it on the BellmanFordAllSP.json file
+     *
+     * @param source the source vertex id
+     * @throws IOException if the directory doesn't exist
+     *
+     */
     public void BellmanFordAllShortestPath(int source) throws  IOException {
         s = new ShortestPath(graph);
         File BellmanFordAllSP = new File("./OutputTest/ShortestPath/BellmanFordAllSP.json");
@@ -65,6 +106,12 @@ public class Algorithms {
         writer.close();
     }
 
+    /**
+     *
+     * Invoke the FloydWarshallSP method, convert to json format the output and save it on the FloydWarshallSP.json file
+     *
+     * @throws IOException if the directory doesn't exist
+     */
     public void FloydWarshallShortestPath() throws IOException {
         s = new ShortestPath(graph);
         File FloydWarshallSP = new File("./OutputTest/ShortestPath/FloydWarshallSP.json");
@@ -74,6 +121,13 @@ public class Algorithms {
         writer.close();
     }
 
+    /**
+     *
+     * Invoke the Betweenness method, convert to json format the output and save it on the Betweenness.json file
+     *
+     * @throws IOException if the directory doesn't exist
+     *
+     */
     public void BetweennessCentrality() throws IOException {
         c = new Centrality(graph);
         File Betweenness = new File("./OutputTest/Centrality/Betweenness.json");
@@ -83,6 +137,10 @@ public class Algorithms {
         writer.close();
     }
 
+    /**
+     * TODO complete the javadoc
+     * @throws IOException
+     */
     public void ClosenessCentrality() throws IOException {
         c = new Centrality(graph);
         File Closeness = new File("./OutputTest/Centrality/Closeness.json");
