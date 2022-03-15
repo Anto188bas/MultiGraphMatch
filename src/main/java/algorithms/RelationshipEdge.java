@@ -1,8 +1,9 @@
 package algorithms;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import org.jgrapht.graph.DefaultEdge;
 
 public class RelationshipEdge extends DefaultEdge{
-    private final String label;
+    private final int label;
 
     /**
      *
@@ -11,8 +12,9 @@ public class RelationshipEdge extends DefaultEdge{
      * @param label the label of the new edge.
      *
      */
-    public RelationshipEdge(String label){
-        this.label = label;
+    public RelationshipEdge(IntOpenHashSet label){
+
+        this.label = (int) label.toArray()[0];
     }
 
     /**
@@ -21,7 +23,7 @@ public class RelationshipEdge extends DefaultEdge{
      * @return edge label
      *
      */
-    public String getLabel(){
+    public int getLabel(){
         return label;
     }
 

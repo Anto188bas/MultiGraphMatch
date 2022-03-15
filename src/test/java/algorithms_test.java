@@ -42,6 +42,9 @@ public class algorithms_test {
         GraphPaths graphPaths = EdgeHandler.createGraphPaths(edges_tables_properties, idx_label, src_dst_aggregation);
 
 
+         /*
+         NEW STRUCTURE
+
         int nPairs = graphPaths.getNum_pairs();
         int nEdgeColors = graphPaths.getNum_edge_colors();
         System.out.println(nPairs);
@@ -49,16 +52,13 @@ public class algorithms_test {
 
         var mat = graphPaths.getMap_key_to_edge_list();
 
-        /*
+
         for(int i=0; i<nPairs; i++){
             System.out.println();
             for(int j=0; j<nEdgeColors; j++){
                 System.out.println("Pair_id: "+i+", color_id: "+j+": "+mat[i][j]);
             }
         }
-        */
-
-
 
         //NEW STRUCTURE
         //old and new color corresponds
@@ -74,10 +74,9 @@ public class algorithms_test {
         System.out.println("Pair_id: "+994949+", color_id: "+8+", edge label: "+mat[994949][8]);
         System.out.println("Pair_id: "+994949+", color_id: "+9+", edge label: "+mat[994949][9]);
 
-        int pair_id = graphPaths.getMap_pair_to_key().get(/*src*/9984).get(/*dst*/9999);
+        int pair_id = graphPaths.getMap_pair_to_key().get(9984).get(9999);
         System.out.println("src: 9984, dst: 9999: pair_id: "+pair_id);
-
-
+        */
 
 
 
@@ -96,7 +95,7 @@ public class algorithms_test {
             if(test != null) {
                 var arr = test.keySet().toArray();
                 for(var j: arr)
-                    testGraph.addEdge(i, (Integer) j, new RelationshipEdge((String.valueOf(src_dst_aggregation.get(i).get(j)[0]))));
+                    testGraph.addEdge(i, (Integer) j, new RelationshipEdge(src_dst_aggregation.get(i).get(j)[0]));
             }
         }
 
@@ -110,7 +109,7 @@ public class algorithms_test {
                 () -> {
                     Algorithms a = new Algorithms(testGraph);
                     try {
-                        a.DijsktraShortestPath(4532,5632);
+                        a.DijsktraShortestPath(254,431);
                         a.DijsktraAllShortestPath(0);
                         a.BellmanFordShortestPath(0,3);
                         //a.BellmanFordAllShortestPath(0);
