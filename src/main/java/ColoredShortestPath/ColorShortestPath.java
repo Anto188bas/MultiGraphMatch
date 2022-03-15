@@ -2,7 +2,6 @@ package ColoredShortestPath;
 
 import com.google.common.graph.ValueGraph;
 import com.google.gson.Gson;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -14,7 +13,6 @@ public class ColorShortestPath {
     final private int colorNumber;
     private FileWriter writer;
     final private Gson gson = new Gson();
-    List<Object> output;
 
     /**
      *
@@ -27,13 +25,11 @@ public class ColorShortestPath {
         if (!ShortestPathDir.exists()){ ShortestPathDir.mkdirs(); }
         this.graph = graph;
         this.colorNumber = colorNumber;
-        output = new ArrayList<>();
     }
 
     /**
      *
      * Invoke the findShortestPath method from the class DijkstraShortestPath, convert to json format the output and save it on the ColoredPath.json file
-     *
      *
      * @param source the source vertex id
      * @param destination the destination vertex id
@@ -42,13 +38,14 @@ public class ColorShortestPath {
      *
      */
     public void ColoredShortestPath(int source, int destination, int pathColor) throws IOException {
+        List<Object> output = new ArrayList<>();
         File ColoredSP = new File("./OutputTest/ColoredShortestPath/ColoredPath.json");
         writer = new FileWriter(ColoredSP);
         output.add(source);
         output.add(destination);
         output.add(pathColor);
         output.add(DijkstraColor.findShortestPath(graph, source, destination, pathColor));
-        writer.write(gson.toJson(gson.toJson(output)));
+        writer.write(gson.toJson(output));
         writer.flush();
         writer.close();
     }
@@ -63,6 +60,7 @@ public class ColorShortestPath {
      *
      */
     public void AllColoredShortestPath(int source, int destination) throws IOException {
+        List<Object> output = new ArrayList<>();
         File ColoredSP = new File("./OutputTest/ColoredShortestPath/AllColoredPath.json");
         writer = new FileWriter(ColoredSP);
         output.add(source);
@@ -71,7 +69,7 @@ public class ColorShortestPath {
             output.add(i);
             output.add(DijkstraColor.findShortestPath(graph, source, destination, i));
         }
-        writer.write(gson.toJson(gson.toJson(output)));
+        writer.write(gson.toJson(output));
         writer.flush();
         writer.close();
     }

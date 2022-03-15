@@ -100,8 +100,8 @@ public class algorithms_test {
             }
         }
 
-        testGraph.vertexSet().forEach(i -> System.out.println(i+": "+nodes_macro.get(i)));  //vertex label printing
-        System.out.println(testGraph.edgeSet());
+        //testGraph.vertexSet().forEach(i -> System.out.println(i+": "+nodes_macro.get(i)));  //vertex label printing
+        //System.out.println(testGraph.edgeSet());
 
 
     /*****************************************************************************************************************************************/
