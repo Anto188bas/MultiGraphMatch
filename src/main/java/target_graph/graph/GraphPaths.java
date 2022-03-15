@@ -22,6 +22,14 @@ public class GraphPaths {
     private final int num_pairs;
     private final int num_edge_colors;
 
+    public int getNum_pairs() {
+        return num_pairs;
+    }
+
+    public int getNum_edge_colors() {
+        return num_edge_colors;
+    }
+
     public GraphPaths(
         Int2ObjectOpenHashMap<Int2IntOpenHashMap> map_pair_to_key,
         Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> tmp_map_key_to_edge_list,

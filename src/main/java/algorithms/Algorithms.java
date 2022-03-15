@@ -12,6 +12,7 @@ import java.io.IOException;
  *
  */
 public class Algorithms {
+
     private FileWriter writer;
     final private Gson gson = new Gson();
     final private Graph<Integer, RelationshipEdge> graph;
