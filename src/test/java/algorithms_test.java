@@ -1,5 +1,8 @@
+import ColoredShortestPath.ColorShortestPath;
 import algorithms.Algorithms;
 import algorithms.RelationshipEdge;
+import com.google.common.graph.MutableValueGraph;
+import com.google.common.graph.ValueGraphBuilder;
 import configuration.Configuration;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -42,14 +45,16 @@ public class algorithms_test {
         GraphPaths graphPaths = EdgeHandler.createGraphPaths(edges_tables_properties, idx_label, src_dst_aggregation);
 
 
-         /*
-         NEW STRUCTURE
 
+    /*******************************************************************************************************************************************/
+
+         //NEW STRUCTURE
         int nPairs = graphPaths.getNum_pairs();
         int nEdgeColors = graphPaths.getNum_edge_colors();
-        System.out.println(nPairs);
-        System.out.println(nEdgeColors);
+        //System.out.println(nPairs);
+        //System.out.println(nEdgeColors);
 
+    /*
         var mat = graphPaths.getMap_key_to_edge_list();
 
 
@@ -76,20 +81,16 @@ public class algorithms_test {
 
         int pair_id = graphPaths.getMap_pair_to_key().get(9984).get(9999);
         System.out.println("src: 9984, dst: 9999: pair_id: "+pair_id);
-        */
+        */  //NEW STRUCTURES
 
 
-
-        //OLD STRUCTURES
+        //OLD STRUCTURES ALGORITHMS
         Graph<Integer, RelationshipEdge> testGraph = new SimpleDirectedGraph<>(RelationshipEdge.class);
 
         for(int i = 0; i<nodes_macro.size(); i++)  //vertex generation
             testGraph.addVertex(i);
 
-        testGraph.vertexSet().stream()                                              //vertex label printing
-                .forEach(i -> System.out.println(i+": "+nodes_macro.get(i)));
-
-
+        //edge generation
         for(int i = 0; i < nodes_macro.size(); i++) {
             var test = src_dst_aggregation.get(i);
             if(test != null) {
@@ -99,12 +100,46 @@ public class algorithms_test {
             }
         }
 
+        testGraph.vertexSet().forEach(i -> System.out.println(i+": "+nodes_macro.get(i)));  //vertex label printing
         System.out.println(testGraph.edgeSet());
 
+
+    /*****************************************************************************************************************************************/
+
+
+        MutableValueGraph<Integer, Integer> graph = ValueGraphBuilder.directed().build();
+
+        for (int i = 0; i < nodes_macro.size(); i++)  //vertex generation
+            graph.addNode(i);
+
+        for (int i = 0; i < nodes_macro.size(); i++) {
+            var test = src_dst_aggregation.get(i);
+            if (test != null) {
+                var arr = test.keySet().toArray();
+                for (var j : arr)
+                    graph.putEdgeValue(i, (Integer) j, (int) src_dst_aggregation.get(i).get(j)[0].toArray()[0]);
+            }
+        }
+
+        //System.out.println(graph.nodes());
+        //System.out.println(graph.edges());
+
+    /*****************************************************************************************************************************************/
 
 
 
         //Multithreading algorithm testing
+        Runnable runnableColoredShortestPath =
+                () -> {
+                    ColorShortestPath csp = new ColorShortestPath(graph, nEdgeColors);
+                    try {
+                        csp.ColoredShortestPath(254, 431, 2);
+                        csp.AllColoredShortestPath(254, 431);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                };
+
         Runnable runnableShortestPath =
                 () -> {
                     Algorithms a = new Algorithms(testGraph);
@@ -112,7 +147,7 @@ public class algorithms_test {
                         a.DijsktraShortestPath(254,431);
                         a.DijsktraAllShortestPath(0);
                         a.BellmanFordShortestPath(0,3);
-                        //a.BellmanFordAllShortestPath(0);
+                        a.BellmanFordAllShortestPath(0);
                         //a.FloydWarshallShortestPath();
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -158,12 +193,15 @@ public class algorithms_test {
                     }
                 };
 
+
+        Thread threadColoredShortestPath = new Thread(runnableColoredShortestPath);
         Thread threadShortestPath = new Thread(runnableShortestPath);
         Thread threadCentrality = new Thread(runnableCentrality);
         Thread threadClustering = new Thread(runnableClustering);
         Thread threadLinkPrediction = new Thread(runnableLinkPrediction);
         threadShortestPath.setPriority(MAX_PRIORITY);
 
+        threadColoredShortestPath.start();
         threadShortestPath.start();
         threadCentrality.start();
         threadClustering.start();

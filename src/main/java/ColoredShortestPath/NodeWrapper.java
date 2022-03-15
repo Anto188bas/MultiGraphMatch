@@ -4,16 +4,16 @@ package ColoredShortestPath;
  *
  * Data structure containing a node, it's total distance from the start and its predecessor.
  *
- * <p>Used by {@link DijkstraWithTreeSet}.
+ * <p>Used by {@link DijkstraColor}.
  *
  */
-class NodeWrapperForTreeSet<N extends Comparable<N>>
-        implements Comparable<NodeWrapperForTreeSet<N>> {
+class NodeWrapper<N extends Comparable<N>>
+        implements Comparable<NodeWrapper<N>> {
     private final N node;
     private int totalDistance;
-    private NodeWrapperForTreeSet<N> predecessor;
+    private NodeWrapper<N> predecessor;
 
-    NodeWrapperForTreeSet(N node, int totalDistance, NodeWrapperForTreeSet<N> predecessor) {
+    NodeWrapper(N node, int totalDistance, NodeWrapper<N> predecessor) {
         this.node = node;
         this.totalDistance = totalDistance;
         this.predecessor = predecessor;
@@ -31,16 +31,16 @@ class NodeWrapperForTreeSet<N extends Comparable<N>>
         return totalDistance;
     }
 
-    public void setPredecessor(NodeWrapperForTreeSet<N> predecessor) {
+    public void setPredecessor(NodeWrapper<N> predecessor) {
         this.predecessor = predecessor;
     }
 
-    public NodeWrapperForTreeSet<N> getPredecessor() {
+    public NodeWrapper<N> getPredecessor() {
         return predecessor;
     }
 
     @Override
-    public int compareTo(NodeWrapperForTreeSet<N> other) {
+    public int compareTo(NodeWrapper<N> other) {
         int compare = Integer.compare(this.totalDistance, other.totalDistance);
         if (compare == 0) {
             compare = node.compareTo(other.node);
