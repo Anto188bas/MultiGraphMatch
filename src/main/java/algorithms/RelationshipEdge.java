@@ -3,18 +3,18 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import org.jgrapht.graph.DefaultEdge;
 
 public class RelationshipEdge extends DefaultEdge{
-    private final int label;
+    private final int color;
 
     /**
      *
      * Class constructor, Constructs a relationship edge
      *
-     * @param label the label of the new edge.
+     * @param color the label of the new edge.
      *
      */
-    public RelationshipEdge(IntOpenHashSet label){
+    public RelationshipEdge(IntOpenHashSet color){
 
-        this.label = (int) label.toArray()[0];
+        this.color = (int) color.toArray()[0];
     }
 
     /**
@@ -24,11 +24,11 @@ public class RelationshipEdge extends DefaultEdge{
      *
      */
     public int getLabel(){
-        return label;
+        return color;
     }
 
     @Override
     public String toString(){
-        return "(" + getSource() + " : " + getTarget() + " : " + label + ")";
+        return "(" + getSource() + " : " + getTarget() + " : " + color + ")";
     }
 }

@@ -84,6 +84,7 @@ public class algorithms_test {
         */  //NEW STRUCTURES
 
 
+
         //OLD STRUCTURES ALGORITHMS
         Graph<Integer, RelationshipEdge> testGraph = new SimpleDirectedGraph<>(RelationshipEdge.class);
 
