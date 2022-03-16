@@ -1,10 +1,5 @@
-import algorithms.ColorShortestPath;
 import algorithms.Algorithms;
 import algorithms.UtilityGraph;
-import algorithms.algorithmsUtility.RelationshipEdge;
-import com.google.common.graph.ValueGraph;
-import org.jgrapht.Graph;
-
 import java.io.IOException;
 
 import static java.lang.Thread.MAX_PRIORITY;
@@ -49,19 +44,14 @@ public class algorithms_test {
 
         UtilityGraph utilityGraph = new UtilityGraph(args);
 
-        Graph<Integer, RelationshipEdge> jGraph = utilityGraph.getJGraph();
-        ValueGraph<Integer, Integer> vGraph = utilityGraph.getVGraph();
-
-        //System.out.println(jGraph.edgeSet());
-        //System.out.println(vGraph.edges());
 
         System.out.println("...Testing begin...");
         Runnable runnableColoredShortestPath =
                 () -> {
-                    ColorShortestPath csp = new ColorShortestPath(vGraph, utilityGraph.getNEdgeColors());
+                    Algorithms a = new Algorithms(utilityGraph);
                     try {
-                        csp.ColoredShortestPath(254, 431, 2);
-                        csp.AllColoredShortestPath(254, 431);
+                        a.ColoredShortestPath(254, 431, 2);
+                        a.AllColoredShortestPath(254, 431);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -69,7 +59,7 @@ public class algorithms_test {
 
         Runnable runnableShortestPath =
                 () -> {
-                    Algorithms a = new Algorithms(jGraph);
+                    Algorithms a = new Algorithms(utilityGraph);
                     try {
                         a.DijsktraShortestPath(254,431);
                         a.BellmanFordShortestPath(0,3);
@@ -82,7 +72,7 @@ public class algorithms_test {
 
         Runnable runnableCentrality =
                 () -> {
-                    Algorithms a = new Algorithms(jGraph);
+                    Algorithms a = new Algorithms(utilityGraph);
                     try {
                         a.EigenVectorCentrality();
                         a.BetweennessCentrality();
@@ -98,7 +88,7 @@ public class algorithms_test {
 
         Runnable runnableClustering =
                 () -> {
-                    Algorithms a = new Algorithms(jGraph);
+                    Algorithms a = new Algorithms(utilityGraph);
                     try {
                         a.LabelPropagationClustering();
                         a.KSpanningTreeClustering(3);
@@ -109,7 +99,7 @@ public class algorithms_test {
 
         Runnable runnableLinkPrediction =
                 () -> {
-                    Algorithms a = new Algorithms(jGraph);
+                    Algorithms a = new Algorithms(utilityGraph);
                     try {
                         a.PreferentialAttachmentPrediction(0,1);
                         a.CommonNeighborsPrediction(0,1);
