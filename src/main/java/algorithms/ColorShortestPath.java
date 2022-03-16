@@ -1,5 +1,6 @@
-package ColoredShortestPath;
+package algorithms;
 
+import algorithms.algorithmsUtility.DijkstraColor;
 import com.google.common.graph.ValueGraph;
 import com.google.gson.Gson;
 import java.io.File;

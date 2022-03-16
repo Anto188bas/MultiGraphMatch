@@ -1,5 +1,6 @@
 package algorithms;
 
+import algorithms.algorithmsUtility.RelationshipEdge;
 import com.google.gson.Gson;
 import org.jgrapht.Graph;
 import java.io.File;

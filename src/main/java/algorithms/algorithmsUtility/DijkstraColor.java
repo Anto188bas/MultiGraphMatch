@@ -1,4 +1,4 @@
-package ColoredShortestPath;
+package algorithms.algorithmsUtility;
 import com.google.common.graph.ValueGraph;
 import java.util.*;
 

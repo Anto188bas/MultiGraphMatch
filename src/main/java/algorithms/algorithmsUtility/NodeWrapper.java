@@ -1,4 +1,4 @@
-package ColoredShortestPath;
+package algorithms.algorithmsUtility;
 
 /**
  *
