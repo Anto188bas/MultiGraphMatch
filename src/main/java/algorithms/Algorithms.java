@@ -11,15 +11,16 @@ import java.io.IOException;
  * This class is and interface which unify all the operation of the package
  *
  */
+
 public class Algorithms {
 
     private FileWriter writer;
     final private Gson gson = new Gson();
     final private Graph<Integer, RelationshipEdge> graph;
-    private ShortestPath s;
-    private Centrality c;
-    private Clustering C;
-    private LinkPrediction Lp;
+    private ShortestPath shortestPath;
+    private Centrality centrality;
+    private Clustering clustering;
+    private LinkPrediction linkPrediction;
 
     /**
      *
@@ -52,10 +53,10 @@ public class Algorithms {
      *
      */
     public void DijsktraShortestPath(int source, int destination) throws IOException {
-        s = new ShortestPath(graph);
+        shortestPath = new ShortestPath(graph);
         File DijkstraSP = new File("./OutputTest/ShortestPath/DijkstraSP.json");
         writer = new FileWriter(DijkstraSP);
-        writer.write(gson.toJson(s.DijkstraSP(source, destination)));
+        writer.write(gson.toJson(shortestPath.DijkstraSP(source, destination)));
         writer.flush();
         writer.close();
     }
@@ -69,10 +70,10 @@ public class Algorithms {
      *
      */
     public void DijsktraAllShortestPath(int source) throws IOException {
-        s = new ShortestPath(graph);
+        shortestPath = new ShortestPath(graph);
         File DijkstraAllSP = new File("./OutputTest/ShortestPath/DijkstraAllSP.json");
         writer = new FileWriter(DijkstraAllSP);
-        writer.write(gson.toJson(s.DijkstraAllSP(source)));
+        writer.write(gson.toJson(shortestPath.DijkstraAllSP(source)));
         writer.flush();
         writer.close();
     }
@@ -87,10 +88,10 @@ public class Algorithms {
      *
      */
     public void BellmanFordShortestPath(int source, int destination) throws IOException {
-        s = new ShortestPath(graph);
+        shortestPath = new ShortestPath(graph);
         File BellmanFordSP = new File("./OutputTest/ShortestPath/BellmanFordSP.json");
         writer = new FileWriter(BellmanFordSP);
-        writer.write(gson.toJson(s.BellmanFordSP(source, destination)));
+        writer.write(gson.toJson(shortestPath.BellmanFordSP(source, destination)));
         writer.flush();
         writer.close();
     }
@@ -104,25 +105,10 @@ public class Algorithms {
      *
      */
     public void BellmanFordAllShortestPath(int source) throws  IOException {
-        s = new ShortestPath(graph);
+        shortestPath = new ShortestPath(graph);
         File BellmanFordAllSP = new File("./OutputTest/ShortestPath/BellmanFordAllSP.json");
         writer = new FileWriter(BellmanFordAllSP);
-        writer.write(gson.toJson(s.BellmanFordAllSP(source)));
-        writer.flush();
-        writer.close();
-    }
-
-    /**
-     *
-     * Invoke the FloydWarshallSP method from the class ShortestPath, convert to json format the output and save it on the FloydWarshallSP.json file
-     *
-     * @throws IOException if the directory "ShortestPath" doesn't exist
-     */
-    public void FloydWarshallShortestPath() throws IOException {
-        s = new ShortestPath(graph);
-        File FloydWarshallSP = new File("./OutputTest/ShortestPath/FloydWarshallSP.json");
-        writer = new FileWriter(FloydWarshallSP);
-        writer.write(gson.toJson(s.FloydWarshallSP()));
+        writer.write(gson.toJson(shortestPath.BellmanFordAllSP(source)));
         writer.flush();
         writer.close();
     }
@@ -135,10 +121,10 @@ public class Algorithms {
      *
      */
     public void BetweennessCentrality() throws IOException {
-        c = new Centrality(graph);
+        centrality = new Centrality(graph);
         File Betweenness = new File("./OutputTest/Centrality/Betweenness.json");
         writer = new FileWriter(Betweenness);
-        writer.write(gson.toJson(c.Betweenness()));
+        writer.write(gson.toJson(centrality.Betweenness()));
         writer.flush();
         writer.close();
     }
@@ -151,10 +137,10 @@ public class Algorithms {
      *
      */
     public void ClosenessCentrality() throws IOException {
-        c = new Centrality(graph);
+        centrality = new Centrality(graph);
         File Closeness = new File("./OutputTest/Centrality/Closeness.json");
         writer = new FileWriter(Closeness);
-        writer.write(gson.toJson(c.Closeness()));
+        writer.write(gson.toJson(centrality.Closeness()));
         writer.flush();
         writer.close();
     }
@@ -167,10 +153,10 @@ public class Algorithms {
      *
      */
     public void EigenVectorCentrality() throws  IOException {
-        c = new Centrality(graph);
+        centrality = new Centrality(graph);
         File EigenVector = new File("./OutputTest/Centrality/EigenVector.json");
         writer = new FileWriter(EigenVector);
-        writer.write(gson.toJson(c.EigenVector()));
+        writer.write(gson.toJson(centrality.EigenVector()));
         writer.flush();
         writer.close();
     }
@@ -183,10 +169,10 @@ public class Algorithms {
      *
      */
     public void PageRankCentrality() throws IOException {
-        c = new Centrality(graph);
+        centrality = new Centrality(graph);
         File PageRank = new File("./OutputTest/Centrality/PageRank.json");
         writer = new FileWriter(PageRank);
-        writer.write(gson.toJson(c.PageRank()));
+        writer.write(gson.toJson(centrality.PageRank()));
         writer.flush();
         writer.close();
     }
@@ -199,10 +185,10 @@ public class Algorithms {
      *
      */
     public void KatzCentrality() throws  IOException {
-        c = new Centrality(graph);
+        centrality = new Centrality(graph);
         File Katz = new File("./OutputTest/Centrality/Katz.json");
         writer = new FileWriter(Katz);
-        writer.write(gson.toJson(c.Katz()));
+        writer.write(gson.toJson(centrality.Katz()));
         writer.flush();
         writer.close();
     }
@@ -215,10 +201,10 @@ public class Algorithms {
      *
      */
     public void ClusteringCoefficient() throws IOException {
-        c = new Centrality(graph);
+        centrality = new Centrality(graph);
         File ClusteringCoefficient = new File("./OutputTest/Centrality/ClusteringCoefficient.json");
         writer = new FileWriter(ClusteringCoefficient);
-        writer.write(gson.toJson(c.ClusteringCoefficient()));
+        writer.write(gson.toJson(centrality.ClusteringCoefficient()));
         writer.flush();
         writer.close();
     }
@@ -231,10 +217,10 @@ public class Algorithms {
      *
      */
     public void AverageClusteringCoefficient() throws IOException {
-        c = new Centrality(graph);
+        centrality = new Centrality(graph);
         File AverageClusteringCoefficient = new File("./OutputTest/Centrality/AverageClusteringCoefficient.json");
         writer = new FileWriter(AverageClusteringCoefficient);
-        writer.write(gson.toJson(c.AverageClusteringCoefficient()));
+        writer.write(gson.toJson(centrality.AverageClusteringCoefficient()));
         writer.flush();
         writer.close();
     }
@@ -248,10 +234,10 @@ public class Algorithms {
      *
      */
     public void KSpanningTreeClustering(int clusterNumber) throws IOException {
-        C = new Clustering(graph, clusterNumber);
+        clustering = new Clustering(graph, clusterNumber);
         File Clustering = new File("./OutputTest/Clustering/KSpanningTreeClustering.json");
         writer = new FileWriter(Clustering);
-        writer.write(gson.toJson(C.KSpanningTree()));
+        writer.write(gson.toJson(clustering.KSpanningTree()));
         writer.flush();
         writer.close();
     }
@@ -264,10 +250,10 @@ public class Algorithms {
      *
      */
     public void LabelPropagationClustering() throws IOException {
-        C = new Clustering(graph);
+        clustering = new Clustering(graph);
         File Clustering = new File("./OutputTest/Clustering/LabelPropagationClustering.json");
         writer = new FileWriter(Clustering);
-        writer.write(gson.toJson(C.LabelPropagation()));
+        writer.write(gson.toJson(clustering.LabelPropagation()));
         writer.flush();
         writer.close();
     }
@@ -282,10 +268,10 @@ public class Algorithms {
      *
      */
     public void PreferentialAttachmentPrediction(int u, int v) throws IOException {
-        Lp = new LinkPrediction(graph);
+        linkPrediction = new LinkPrediction(graph);
         File LinkPrediction = new File("./OutputTest/LinkPrediction/PreferentialAttachmentPrediction.json");
         writer = new FileWriter(LinkPrediction);
-        writer.write(gson.toJson(Lp.PreferentialAttachmentPrediction(u,v)));
+        writer.write(gson.toJson(linkPrediction.PreferentialAttachmentPrediction(u,v)));
         writer.flush();
         writer.close();
     }
@@ -300,10 +286,10 @@ public class Algorithms {
      *
      */
     public void CommonNeighborsPrediction(int u, int v) throws IOException {
-        Lp = new LinkPrediction(graph);
+        linkPrediction = new LinkPrediction(graph);
         File LinkPrediction = new File("./OutputTest/LinkPrediction/CommonNeighborsPrediction.json");
         writer = new FileWriter(LinkPrediction);
-        writer.write(gson.toJson(Lp.CommonNeighborsPrediction(u,v)));
+        writer.write(gson.toJson(linkPrediction.CommonNeighborsPrediction(u,v)));
         writer.flush();
         writer.close();
     }
@@ -318,10 +304,10 @@ public class Algorithms {
      *
      */
     public void JaccardCoefficientPrediction(int u, int v) throws IOException {
-        Lp = new LinkPrediction(graph);
+        linkPrediction = new LinkPrediction(graph);
         File LinkPrediction = new File("./OutputTest/LinkPrediction/JaccardCoefficientPrediction.json");
         writer = new FileWriter(LinkPrediction);
-        writer.write(gson.toJson(Lp.JaccardCoefficientPrediction(u,v)));
+        writer.write(gson.toJson(linkPrediction.JaccardCoefficientPrediction(u,v)));
         writer.flush();
         writer.close();
     }

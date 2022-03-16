@@ -98,26 +98,4 @@ public class ShortestPath {
         }
         return AllSP;
     }
-
-    /**
-     *
-     * Floyd - Warshall shortest path algorithm
-     *
-     * @return a list which contain all the shortest path from all the vertex
-     *
-     */
-    public List<GraphPath<Integer, RelationshipEdge>> FloydWarshallSP() {
-        List<GraphPath<Integer, RelationshipEdge>> AllSP = new ArrayList<>();
-        FloydWarshallShortestPaths<Integer, RelationshipEdge> FloydWarshallAlg = new FloydWarshallShortestPaths(graph);
-        for (Integer tempSource : GraphSet) {
-            for (Integer tempDest : GraphSet) {
-                if (!tempSource.equals(tempDest)) {
-                    SingleSourcePaths<Integer, RelationshipEdge> iPathsFloydWarshall = FloydWarshallAlg.getPaths(tempSource);
-                    AllSP.add(iPathsFloydWarshall.getPath(tempDest));
-                }
-            }
-        }
-        return AllSP;
-    }
-
 }

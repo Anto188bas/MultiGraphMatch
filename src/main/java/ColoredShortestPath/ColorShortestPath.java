@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+@SuppressWarnings("UnstableApiUsage")
 
 public class ColorShortestPath {
     final private ValueGraph graph;

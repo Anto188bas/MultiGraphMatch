@@ -53,7 +53,7 @@ public class Clustering {
      *
      * K-Spanning Tree clustering algorithm
      *
-     * @return a Set of Integer of {@clusternumber} element which contain all the vertex grouped by cluster
+     * @return a Set of Integer of {@param clusterNumber} which contain all the vertex grouped by cluster
      *
      */
     public Iterable<Set<Integer>> KSpanningTree() {

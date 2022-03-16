@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import static java.lang.Thread.MAX_PRIORITY;
+@SuppressWarnings("UnstableApiUsage")
 
 public class algorithms_test {
     public static void main(String[] args){
@@ -103,15 +104,11 @@ public class algorithms_test {
 
         //testGraph.vertexSet().forEach(i -> System.out.println(i+": "+nodes_macro.get(i)));  //vertex label printing
         //System.out.println(testGraph.edgeSet());
+        System.out.println("Creazione primo grafo");
 
-
-    /*****************************************************************************************************************************************/
-
+    //****************************************************************************************************************************************
 
         MutableValueGraph<Integer, Integer> graph = ValueGraphBuilder.directed().build();
-
-        for (int i = 0; i < nodes_macro.size(); i++)  //vertex generation
-            graph.addNode(i);
 
         for (int i = 0; i < nodes_macro.size(); i++) {
             var test = src_dst_aggregation.get(i);
@@ -122,12 +119,13 @@ public class algorithms_test {
             }
         }
 
+
         //System.out.println(graph.nodes());
         //System.out.println(graph.edges());
 
-    /*****************************************************************************************************************************************/
+        System.out.println("Creazione secondo grafo");
 
-
+    //*****************************************************************************************************************************************
 
         //Multithreading algorithm testing
         Runnable runnableColoredShortestPath =
@@ -146,10 +144,9 @@ public class algorithms_test {
                     Algorithms a = new Algorithms(testGraph);
                     try {
                         a.DijsktraShortestPath(254,431);
-                        a.DijsktraAllShortestPath(0);
                         a.BellmanFordShortestPath(0,3);
+                        a.DijsktraAllShortestPath(0);
                         a.BellmanFordAllShortestPath(0);
-                        //a.FloydWarshallShortestPath();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

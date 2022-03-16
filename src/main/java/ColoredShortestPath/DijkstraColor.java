@@ -7,6 +7,7 @@ import java.util.*;
  * Implementation of Dijkstra's algorithm with a {@link TreeSet} and a data structure holding the
  *
  */
+@SuppressWarnings("UnstableApiUsage")
 public class DijkstraColor {
 
     /**
@@ -32,6 +33,7 @@ public class DijkstraColor {
 
         while (!queue.isEmpty()) {
             NodeWrapper<N> nodeWrapper = queue.pollFirst();
+            assert nodeWrapper != null;
             N node = nodeWrapper.getNode();
             shortestPathFound.add(node);
 

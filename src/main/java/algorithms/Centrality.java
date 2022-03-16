@@ -10,6 +10,7 @@ import java.util.Set;
  * This class include all the popular network centrality measure implementations
  *
  */
+
 public class Centrality {
     final private Graph<Integer, RelationshipEdge> graph;
     final private Set<Integer> GraphSet;
@@ -33,11 +34,11 @@ public class Centrality {
      * @return a Hashmap which contains the betweenness centrality of each vertex of the graph
      *
      */
-    public HashMap<Integer, String> Betweenness(){
-        HashMap<Integer, String> centralityValue = new HashMap<>();
+    public HashMap<Integer, Double> Betweenness(){
+        HashMap<Integer, Double> centralityValue = new HashMap<>();
         BetweennessCentrality<Integer, DefaultEdge> BetweennessCentralityMeasure = new BetweennessCentrality(graph);
         for (Integer index : GraphSet)
-            centralityValue.put(index, String.valueOf(BetweennessCentralityMeasure.getVertexScore(index)));
+            centralityValue.put(index, BetweennessCentralityMeasure.getVertexScore(index));
         return centralityValue;
     }
 
@@ -48,11 +49,11 @@ public class Centrality {
      * @return a Hashmap which contains the Closeness centrality of each vertex of the graph
      *
      */
-    public HashMap<Integer, String> Closeness(){
-        HashMap<Integer, String> centralityValue = new HashMap<>();
+    public HashMap<Integer, Double> Closeness(){
+        HashMap<Integer, Double> centralityValue = new HashMap<>();
         ClosenessCentrality<Integer, DefaultEdge> ClosenessCentralityMeasure = new ClosenessCentrality(graph);
         for (Integer index : GraphSet)
-            centralityValue.put(index, String.valueOf(ClosenessCentralityMeasure.getVertexScore(index)));
+            centralityValue.put(index, ClosenessCentralityMeasure.getVertexScore(index));
         return centralityValue;
     }
 
@@ -63,11 +64,11 @@ public class Centrality {
      * @return a Hashmap which contains the EigenVector centrality of each vertex of the graph
      *
      */
-    public HashMap<Integer, String> EigenVector(){
-        HashMap<Integer, String> centralityValue = new HashMap<>();
+    public HashMap<Integer, Double> EigenVector(){
+        HashMap<Integer, Double> centralityValue = new HashMap<>();
         EigenvectorCentrality<Integer, DefaultEdge> EigenVectorMeasure = new EigenvectorCentrality(graph);
         for (Integer index : GraphSet)
-            centralityValue.put(index, String.valueOf(EigenVectorMeasure.getVertexScore(index)));
+            centralityValue.put(index, EigenVectorMeasure.getVertexScore(index));
         return centralityValue;
     }
 
@@ -78,11 +79,11 @@ public class Centrality {
      * @return a Hashmap which contains the PageRank centrality of each vertex of the graph
      *
      */
-    public HashMap<Integer, String> PageRank(){
-        HashMap<Integer, String> centralityValue = new HashMap<>();
+    public HashMap<Integer, Double> PageRank(){
+        HashMap<Integer, Double> centralityValue = new HashMap<>();
         PageRank<Integer, DefaultEdge> PageRankMeasure = new PageRank(graph);
         for (Integer index : GraphSet)
-            centralityValue.put(index, String.valueOf(PageRankMeasure.getVertexScore(index)));
+            centralityValue.put(index, PageRankMeasure.getVertexScore(index));
         return centralityValue;
     }
 
@@ -94,11 +95,11 @@ public class Centrality {
      * @return a Hashmap which contains the Katz centrality of each vertex of the graph
      *
      */
-    public HashMap<Integer, String> Katz(){
-        HashMap<Integer, String> centralityValue = new HashMap<>();
+    public HashMap<Integer, Double> Katz(){
+        HashMap<Integer, Double> centralityValue = new HashMap<>();
         KatzCentrality<Integer, DefaultEdge> KatzMeasure = new KatzCentrality(graph);
         for (Integer index : GraphSet)
-            centralityValue.put(index, String.valueOf(KatzMeasure.getVertexScore(index)));
+            centralityValue.put(index, KatzMeasure.getVertexScore(index));
         return centralityValue;
     }
 
@@ -109,11 +110,11 @@ public class Centrality {
      * @return a Hashmap which contains the Clustering coefficient of each vertex of the graph
      *
      */
-    public HashMap<Integer, String> ClusteringCoefficient(){
-        HashMap<Integer, String> centralityValue = new HashMap<>();
+    public HashMap<Integer, Double> ClusteringCoefficient(){
+        HashMap<Integer, Double> centralityValue = new HashMap<>();
         ClusteringCoefficient<Integer, DefaultEdge> ClusteringCoefficientMeasure = new ClusteringCoefficient(graph);
         for (Integer index : GraphSet)
-            centralityValue.put(index, String.valueOf(ClusteringCoefficientMeasure.getVertexScore(index)));
+            centralityValue.put(index, ClusteringCoefficientMeasure.getVertexScore(index));
         return centralityValue;
     }
 
