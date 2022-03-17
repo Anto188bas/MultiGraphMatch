@@ -4,7 +4,7 @@ package algorithms.algorithmsUtility;
  *
  * Data structure containing a node, it's total distance from the start and its predecessor.
  *
- * <p>Used by {@link DijkstraColor}.
+ * <p>Used by {@link ColorShortestPath}.
  *
  */
 class NodeWrapper<N extends Comparable<N>>

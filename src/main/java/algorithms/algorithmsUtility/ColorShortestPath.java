@@ -8,7 +8,7 @@ import java.util.*;
  *
  */
 @SuppressWarnings("UnstableApiUsage")
-public class DijkstraColor {
+public class ColorShortestPath<N> {
 
     /**
      *

@@ -1,6 +1,6 @@
 package algorithms;
 
-import algorithms.algorithmsUtility.DijkstraColor;
+import algorithms.algorithmsUtility.ColorShortestPath;
 import com.google.gson.Gson;
 import java.io.File;
 import java.io.FileWriter;
@@ -23,7 +23,6 @@ public class Algorithms {
     private Centrality centrality;
     private Clustering clustering;
     private LinkPrediction linkPrediction;
-
     /**
      *
      * Class constructor, constuct a Algorithms object
@@ -333,7 +332,7 @@ public class Algorithms {
         output.add(source);
         output.add(destination);
         output.add(pathColor);
-        output.add(DijkstraColor.findShortestPath(graph.getVGraph(), source, destination, pathColor));
+        output.add(ColorShortestPath.findShortestPath(graph.getVGraph(), source, destination, pathColor));
         writer.write(gson.toJson(output));
         writer.flush();
         writer.close();
@@ -356,7 +355,7 @@ public class Algorithms {
         output.add(destination);
         for(int i=0;i<graph.getNEdgeColors();i++){
             output.add(i);
-            output.add(DijkstraColor.findShortestPath(graph.getVGraph(), source, destination, i));
+            output.add(ColorShortestPath.findShortestPath(graph.getVGraph(), source, destination, i));
         }
         writer.write(gson.toJson(output));
         writer.flush();
