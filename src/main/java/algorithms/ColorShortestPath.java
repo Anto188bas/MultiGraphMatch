@@ -1,4 +1,5 @@
-package algorithms.algorithmsUtility;
+package algorithms;
+
 import com.google.common.graph.ValueGraph;
 import java.util.*;
 
@@ -8,7 +9,7 @@ import java.util.*;
  *
  */
 @SuppressWarnings("UnstableApiUsage")
-public class ColorShortestPath<N> {
+public class ColorShortestPath {
 
     /**
      *
@@ -21,7 +22,7 @@ public class ColorShortestPath<N> {
      * @return the shortest path; or {@code null} if no path was found
      *
      */
-    public static <N extends Comparable<N>> List<N> findShortestPath( ValueGraph<N, Integer> graph, N source, N target, int edgeColor) {
+    public static <N extends Comparable<N>> List<N> findShortestPath(ValueGraph<N, Integer> graph, N source, N target, int edgeColor) {
         Map<N, NodeWrapper<N>> nodeWrappers = new HashMap<>();
         TreeSet<NodeWrapper<N>> queue = new TreeSet<>();
         Set<N> shortestPathFound = new HashSet<>();

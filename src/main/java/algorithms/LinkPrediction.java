@@ -1,6 +1,5 @@
 package algorithms;
 
-import algorithms.algorithmsUtility.RelationshipEdge;
 import org.jgrapht.Graph;
 import org.jgrapht.alg.linkprediction.CommonNeighborsLinkPrediction;
 import org.jgrapht.alg.linkprediction.JaccardCoefficientLinkPrediction;

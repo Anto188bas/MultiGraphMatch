@@ -1,6 +1,5 @@
 package algorithms;
 
-import algorithms.algorithmsUtility.ColorShortestPath;
 import com.google.gson.Gson;
 import java.io.File;
 import java.io.FileWriter;

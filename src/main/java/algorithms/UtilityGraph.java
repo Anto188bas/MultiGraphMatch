@@ -1,6 +1,5 @@
 package algorithms;
 
-import algorithms.algorithmsUtility.RelationshipEdge;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import configuration.Configuration;

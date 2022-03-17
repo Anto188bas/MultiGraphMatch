@@ -1,4 +1,5 @@
-package algorithms.algorithmsUtility;
+package algorithms;
+
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import org.jgrapht.graph.DefaultEdge;
 

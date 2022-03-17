@@ -1,4 +1,4 @@
-package algorithms.algorithmsUtility;
+package algorithms;
 
 /**
  *

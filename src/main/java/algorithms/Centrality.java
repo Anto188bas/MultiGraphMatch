@@ -1,6 +1,5 @@
 package algorithms;
 
-import algorithms.algorithmsUtility.RelationshipEdge;
 import org.jgrapht.*;
 import org.jgrapht.alg.scoring.*;
 import org.jgrapht.graph.DefaultEdge;
