@@ -2,9 +2,6 @@ import algorithms.Algorithms;
 import algorithms.UtilityGraph;
 import java.io.IOException;
 
-import static java.lang.Thread.MAX_PRIORITY;
-@SuppressWarnings("UnstableApiUsage")
-
 public class algorithms_test {
     public static void main(String[] args){
         /*
@@ -121,7 +118,6 @@ public class algorithms_test {
         Thread threadCentrality = new Thread(runnableCentrality);
         Thread threadClustering = new Thread(runnableClustering);
         Thread threadLinkPrediction = new Thread(runnableLinkPrediction);
-        threadShortestPath.setPriority(MAX_PRIORITY);
 
         threadColoredShortestPath.start();
         threadShortestPath.start();

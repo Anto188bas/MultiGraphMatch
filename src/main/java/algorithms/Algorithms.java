@@ -12,7 +12,6 @@ import java.util.List;
  * This class is and interface which unify all the operation of the package
  *
  */
-
 public class Algorithms {
 
     private FileWriter writer;

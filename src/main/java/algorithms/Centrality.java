@@ -5,12 +5,12 @@ import org.jgrapht.alg.scoring.*;
 import org.jgrapht.graph.DefaultEdge;
 import java.util.HashMap;
 import java.util.Set;
+
 /**
  *
  * This class include all the popular network centrality measure implementations
  *
  */
-
 public class Centrality {
     final private Graph<Integer, RelationshipEdge> graph;
     final private Set<Integer> GraphSet;
