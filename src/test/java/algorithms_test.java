@@ -41,9 +41,15 @@ public class algorithms_test {
 
         //Multithreading algorithm testing
 
+        long startTime = System.nanoTime();
 
         UtilityGraph utilityGraph = new UtilityGraph(args);
 
+        long endTime = System.nanoTime();
+        System.out.println(endTime - startTime);
+
+        //System.out.println(utilityGraph.getVGraph().edges());
+        //System.out.println(utilityGraph.getJGraph().edgeSet());
 
         System.out.println("...Testing begin...");
         Runnable runnableColoredShortestPath =

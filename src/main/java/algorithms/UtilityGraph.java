@@ -28,10 +28,9 @@ public class UtilityGraph {
     private Graph<Integer, RelationshipEdge> jGraph;
     private MutableValueGraph<Integer, Integer> vGraph;
 
-    private int nPairs;
-    private int nEdgeColors;
+    private final int nPairs;
+    private final int nEdgeColors;
 
-    final private GraphPaths graphPaths;
     final private Int2ObjectOpenHashMap<String> nodes_macro;
     final private Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntOpenHashSet[]>> src_dst_aggregation;
 
@@ -50,7 +49,8 @@ public class UtilityGraph {
                 nodes_tables,"type", idx_label, macro_nodes, level_nodeId, nodes_macro
         );
         src_dst_aggregation = new Int2ObjectOpenHashMap<>();
-        graphPaths = EdgeHandler.createGraphPaths(edges_tables_properties, idx_label, src_dst_aggregation);
+        GraphPaths graphPaths = EdgeHandler.createGraphPaths(edges_tables_properties, idx_label, src_dst_aggregation);
+        assert graphPaths != null;
         nPairs = graphPaths.getNum_pairs();
         nEdgeColors = graphPaths.getNum_edge_colors();
 
@@ -71,7 +71,8 @@ public class UtilityGraph {
             if(test != null) {
                 var arr = test.keySet().toArray();
                 for(var j: arr)
-                    jGraph.addEdge(i, (Integer) j, new RelationshipEdge(src_dst_aggregation.get(i).get(j)[0]));
+                    //jGraph.addEdge(i, (Integer) j, new RelationshipEdge(src_dst_aggregation.get(i).get(j)[0]));
+                    jGraph.addEdge(i, (int) j, new RelationshipEdge(test.get((int) j)[0]));
             }
         }
         System.out.println("...JGraph Generated...");
@@ -82,14 +83,14 @@ public class UtilityGraph {
         for (int i = 0; i < nodes_macro.size(); i++) {
             var test = src_dst_aggregation.get(i);
             if (test != null) {
-                var arr = test.keySet().toArray();
+                var arr =  test.keySet().toArray();
                 for (var j : arr)
-                    vGraph.putEdgeValue(i, (Integer) j, (int) src_dst_aggregation.get(i).get(j)[0].toArray()[0]);
+                   //vGraph.putEdgeValue(i, (Integer) j, (int) src_dst_aggregation.get(i).get(j)[0].toArray()[0]);
+                    vGraph.putEdgeValue(i, (int) j, (int) test.get((int) j)[0].toArray()[0]);
             }
         }
         System.out.println("...VGraph Generated...");
     }
-
 
     public Graph<Integer, RelationshipEdge> getJGraph() {
         return jGraph;
@@ -99,10 +100,7 @@ public class UtilityGraph {
         return vGraph;
     }
 
-    public int getNPairs() {
-        return nPairs;
-    }
-
+    public int getNPairs() { return nPairs; }
     public int getNEdgeColors() {
         return nEdgeColors;
     }
