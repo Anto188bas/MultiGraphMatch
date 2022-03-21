@@ -80,6 +80,10 @@ public class UtilityGraph {
 
     private void generateVGraph(){
         vGraph = ValueGraphBuilder.directed().build();
+
+        for(int i=0;i<nodes_macro.size();i++)
+            vGraph.addNode(i);
+
         for (int i = 0; i < nodes_macro.size(); i++) {
             var test = src_dst_aggregation.get(i);
             if (test != null) {
@@ -104,4 +108,15 @@ public class UtilityGraph {
     public int getNEdgeColors() {
         return nEdgeColors;
     }
+
+    public HashMap<Integer, String> getNodeLabels(){
+        HashMap<Integer, String> labels = new HashMap<>();
+        for(int i=0;i<nodes_macro.size();i++)
+            labels.put(i,nodes_macro.get(i));
+        return  labels;
+    }
+
+
+
+
 }
