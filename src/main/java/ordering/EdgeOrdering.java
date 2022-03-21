@@ -2,9 +2,7 @@ package ordering;
 
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.*;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import org.w3c.dom.Node;
 
 public class EdgeOrdering {
     private ObjectArraySet<NodesPair> selected_pairs;
@@ -86,6 +84,22 @@ public class EdgeOrdering {
         // MAP AN ID TO THE CORRESPONDING PAIR
         Int2ObjectOpenHashMap<NodesPair> map_id_to_pair = query_structure.getMap_id_to_pair();
 
+        // DEGREE OF EACH NODE
+        Int2IntOpenHashMap nodes_degree = OrderingUtils.computeNodesDegree(node_keys, in_edges, out_edges, in_out_edges);
+
+        // MAP EACH PAIR TO THE CORRESPONDING DEGREE  d(u, v) = d(u) + d(v)
+        Int2IntOpenHashMap map_pair_to_degree = OrderingUtils.computeEdgesDegree(unselected_pairs, nodes_degree);
+
+
+        // MAP EACH PAIR TO THE CORRESPONDING WEIGHTED DEGREE  (1 - \frac{dom(p)}{domains_sum}) * \frac{deg(p)}{degrees_sum}
+        Int2DoubleOpenHashMap map_pair_to_weighted_degree = new Int2DoubleOpenHashMap();
+
+        int domains_sum = unselected_pairs.stream().map(NodesPair::getDomain_size).reduce(0, Integer::sum);
+        int degrees_sum = nodes_degree.values().stream().reduce(0, Integer::sum);
+        for(NodesPair pair: unselected_pairs) {
+            double weighted_degree = (1 - (pair.getDomain_size()/domains_sum)) * (nodes_degree.get(pair.getId().intValue()) / degrees_sum);
+            map_pair_to_weighted_degree.put(pair.getId().intValue(), weighted_degree);
+        }
         //******************************************************************************************************************************************//
 
         //*************************************************************** FIRST PAIR ***************************************************************//
@@ -93,51 +107,69 @@ public class EdgeOrdering {
         map_state_to_unmapped_nodes = new int[edge_keys.size()];
         IntArraySet current_edge_set;
         state_index = 0;
-        // First pair of the ordering
-        Int2IntOpenHashMap degrees = OrderingUtils.computeDegrees(node_keys, in_edges, out_edges, in_out_edges);
+        NodesPair query_pair_to_add = null;
 
-        // We search the node with the higher degree
-        IntArrayList max_nodes = new IntArrayList();
-        int max_degree = 0;
+        int shortest_cycle_len = OrderingUtils.shortestCycleLen(query_structure);
 
-        for (int key : node_keys) {
-            int current_degree = degrees.get(key);
+        System.out.print("SP LEN: " + shortest_cycle_len);
 
-            if (current_degree > max_degree) {
-                max_degree = current_degree;
-                max_nodes = new IntArrayList();
-                max_nodes.push(key);
-            } else if (current_degree == max_degree) {
-                max_nodes.push(key);
+        if(shortest_cycle_len < 4) { //If there is a triangle we use the Jaccard Similarity
+            System.out.print("\tMETRIC: JACCARD\n");
+            // We search the node with the higher degree
+            IntArrayList max_nodes = new IntArrayList();
+            int max_degree = 0;
+
+            for (int key : node_keys) {
+                int current_degree = nodes_degree.get(key);
+
+                if (current_degree > max_degree) {
+                    max_degree = current_degree;
+                    max_nodes = new IntArrayList();
+                    max_nodes.push(key);
+                } else if (current_degree == max_degree) {
+                    max_nodes.push(key);
+                }
             }
-        }
 
-        // There can be multiple nodes with the same max degree.
-        // For each node having max-degree we consider his neighborhood.
-        // We compute the Jaccard similarity between the node and all his neighbours.
-        Int2DoubleOpenHashMap map_pair_to_jaccard_similarity = new Int2DoubleOpenHashMap();
-        for (int node : max_nodes) {
-            IntArraySet neighborhood = map_node_to_neighborhood.get(node);
+            // There can be multiple nodes with the same max degree.
+            // For each node having max-degree we consider his neighborhood.
+            // We compute the Jaccard similarity between the node and all his neighbours.
+            Int2DoubleOpenHashMap map_pair_to_jaccard_similarity = new Int2DoubleOpenHashMap();
+            for (int node : max_nodes) {
+                IntArraySet neighborhood = map_node_to_neighborhood.get(node);
 
-            for (int neighbour : neighborhood) {
-                NodesPair current_endpoints = new NodesPair(node, neighbour);
-                int domain_size = map_id_to_pair.get(current_endpoints.getId().intValue()).getDomain_size();
+                for (int neighbour : neighborhood) {
+                    NodesPair current_endpoints = new NodesPair(node, neighbour);
+                    int domain_size = map_id_to_pair.get(current_endpoints.getId().intValue()).getDomain_size();
 
-                Double jaccard_similarity = OrderingUtils.computeJaccardSimilarity(node, neighbour, map_node_to_neighborhood, domain_size);
-                map_pair_to_jaccard_similarity.put(current_endpoints.getId().intValue(), jaccard_similarity.doubleValue());
+                    Double jaccard_similarity = OrderingUtils.computeJaccardSimilarity(node, neighbour, map_node_to_neighborhood, domain_size);
+                    map_pair_to_jaccard_similarity.put(current_endpoints.getId().intValue(), jaccard_similarity.doubleValue());
+                }
             }
-        }
 
-        // We search the pair having the maximum Jaccard Similarity
-        NodesPair query_pair_to_add = new NodesPair();
-        double max_jaccard_similarity = -1d;
+            // We search the pair having the maximum Jaccard Similarity
+            double max_jaccard_similarity = -1d;
 
-        for (NodesPair pair : unselected_pairs) {
-            double current_jaccard_similarity = map_pair_to_jaccard_similarity.get(pair.getId().intValue());
+            for (NodesPair pair : unselected_pairs) {
+                double current_jaccard_similarity = map_pair_to_jaccard_similarity.get(pair.getId().intValue());
 
-            if (current_jaccard_similarity > max_jaccard_similarity) {
-                max_jaccard_similarity = current_jaccard_similarity;
-                query_pair_to_add = pair;
+                if (current_jaccard_similarity > max_jaccard_similarity) {
+                    max_jaccard_similarity = current_jaccard_similarity;
+                    query_pair_to_add = pair;
+                }
+            }
+
+        } else { // If there isn't a triangle we use the weighted edge-degree
+            System.out.print("\tMETRIC: DEGREE\n");
+            double max_weighted_degree = -1d;
+
+            for (NodesPair pair : unselected_pairs) {
+                double current_weighted_degree = map_pair_to_weighted_degree.get(pair.getId().intValue());
+
+                if (current_weighted_degree > max_weighted_degree) {
+                    max_weighted_degree = current_weighted_degree;
+                    query_pair_to_add = pair;
+                }
             }
         }
 

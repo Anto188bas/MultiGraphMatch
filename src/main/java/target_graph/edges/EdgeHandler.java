@@ -71,6 +71,7 @@ public class EdgeHandler {
                 dsts_colors.get(dst)[0] = new IntOpenHashSet();
             }
             dsts_colors.get(dst)[0].add(type);
+
         }
     }
 
