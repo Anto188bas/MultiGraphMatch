@@ -16,14 +16,14 @@ public class algorithms_test {
         //String query = "CALL labelPropagation";
 
         String query = "CALL PreferentialAttachmentPrediction.vertex(433, 5)";
-
-        CypherParser parser      = new CypherParser();
-        Query query_object         = (Query) parser.parse(query, null);
+        CypherParser parser = new CypherParser();
+        Query query_object = (Query) parser.parse(query, null);
         System.out.println(query_object.asCanonicalStringVal());
 
 
-        QueryParser q = new QueryParser(query, args);
+        QueryParser q = QueryParser.getInstance(query, args);
         q.parser();
+
 
     /*
         //Multithreading algorithm testing

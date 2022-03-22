@@ -1,5 +1,5 @@
 package algorithms;
-
+//Singleton
 import cypher.models.QueryStructure;
 import org.opencypher.v9_0.ast.Query;
 import org.opencypher.v9_0.parser.CypherParser;
@@ -26,9 +26,17 @@ public class QueryParser {
     private final Pattern patternJaccardCoefficientPrediction = Pattern.compile("jaccardCoefficientPrediction", Pattern.CASE_INSENSITIVE);
     private final Pattern patternPreferentialAttachmentPrediction = Pattern.compile("preferentialAttachmentPrediction", Pattern.CASE_INSENSITIVE);
 
-    public QueryParser(String query, String[] args) {
+    private static QueryParser single_instance = null;
+
+    private QueryParser(String query, String[] args) {
         this.query = query;
         this.args = args;
+    }
+
+    public static QueryParser getInstance(String query, String[] args){
+        if(single_instance == null)
+            single_instance = new QueryParser(query, args);
+        return single_instance;
     }
 
     private static void create_node_colors(NodesEdgesLabelsMaps labels) {
