@@ -1,9 +1,7 @@
 package algorithms;
 //Singleton
-import cypher.models.QueryStructure;
 import org.opencypher.v9_0.ast.Query;
 import org.opencypher.v9_0.parser.CypherParser;
-import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,31 +37,9 @@ public class QueryParser {
         return single_instance;
     }
 
-    private static void create_node_colors(NodesEdgesLabelsMaps labels) {
-        labels.stringVectorToIntOne("YELLOW");
-        labels.stringVectorToIntOne("GREEN" );
-        labels.stringVectorToIntOne("PURPLE");
-    }
-
-    private static void create_edge_colors(NodesEdgesLabelsMaps types) {
-        types.createEdgeLabelIdx("RED"   );
-        types.createEdgeLabelIdx("BLUE"  );
-        types.createEdgeLabelIdx("ORANGE");
-    }
-
     public void parser() throws Exception{
         UtilityGraph utilityGraph = new UtilityGraph(args);
         Algorithms algorithms = new Algorithms(utilityGraph);
-
-        NodesEdgesLabelsMaps nodes_edges_labels = new NodesEdgesLabelsMaps();
-        create_node_colors(nodes_edges_labels);
-        create_edge_colors(nodes_edges_labels);
-
-        QueryStructure query_obj = new QueryStructure();
-        query_obj.parser(query, nodes_edges_labels);
-
-        System.out.println(query_obj);
-
 
         if(patternShortestPath.matcher(query).find()){
             CypherParser parser = new CypherParser();
