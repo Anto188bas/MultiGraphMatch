@@ -3,27 +3,19 @@ package matching.controllers;
 import bitmatrix.controller.BitmatrixManager;
 import bitmatrix.models.QueryBitmatrix;
 import bitmatrix.models.TargetBitmatrix;
-import cypher.models.QueryEdge;
 import cypher.models.QueryNode;
 import cypher.models.QueryStructure;
-import domain.AggregationDomain;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import matching.models.MatchingData;
 import matching.models.OutData;
 import ordering.EdgeOrdering;
 import ordering.NodesPair;
-import reading.FileManager;
 import simmetry_condition.SymmetryCondition;
 import state_machine.StateStructures;
-import target_graph.edges.NewEdgeAggregation;
 import target_graph.graph.GraphPaths;
 import target_graph.nodes.GraphMacroNode;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
-import tech.tablesaw.api.Row;
-import tech.tablesaw.api.Table;
-
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class NewMatching {
@@ -41,7 +33,6 @@ public class NewMatching {
 
 
     private static long matching_procedure(
-            // Table              first_compatibility,
             Int2ObjectOpenHashMap<IntArrayList> first_compatibility,
             MatchingData       matchingData,
             StateStructures    states,
@@ -59,12 +50,6 @@ public class NewMatching {
 
           for (int f_node: first_compatibility.keySet()) {
                for (int s_node: first_compatibility.get(f_node)) {
-
-          // for (Row row: first_compatibility) {
-              //matchingData.setCandidates[0] = NewFindCandidates.find_first_candidates(
-              //   q_src, q_dst, row.getInt(0), row.getInt(1), states.map_state_to_edge[0],
-              //   query_obj, graphPaths, matchingData, nodes_symmetry, states
-              //);
 
                matchingData.setCandidates[0] = NewFindCandidates.find_first_candidates(
                     q_src, q_dst, f_node, s_node, states.map_state_to_edge[0],
@@ -231,13 +216,6 @@ public class NewMatching {
         int q_src = first_compatibility.getFirstEndpoint();
         int q_dst = first_compatibility.getSecondEndpoint();
 
-        /*
-        numTotalOccs = matching_procedure(
-            first_compatibility.getCompatibility_domain(), matchingData, states, graphPaths,
-            query_obj, nodes_symmetry, edges_symmetry, numQueryEdges, numTotalOccs, numMaxOccs,
-            q_src, q_dst, justCount, distinct
-        );
-        */
         outData.num_occurrences = matching_procedure(
             first_compatibility.getFirst_second(), matchingData, states, graphPaths,
             query_obj, nodes_symmetry, edges_symmetry, numQueryEdges, outData.num_occurrences, numMaxOccs,

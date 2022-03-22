@@ -7,13 +7,9 @@ import matching.models.MatchingData;
 import ordering.EdgeDirection;
 import ordering.NodesPair;
 import org.javatuples.Triplet;
-import org.opencypher.v9_0.expressions.In;
 import state_machine.StateStructures;
 import target_graph.graph.GraphPaths;
-import tech.tablesaw.api.Row;
-import tech.tablesaw.api.Table;
 import java.util.ArrayList;
-import java.util.stream.Stream;
 
 
 public class NewFindCandidates {
@@ -55,26 +51,20 @@ public class NewFindCandidates {
         if(t_src == -1) {
            IntArrayList compatible_list   = edge_data.getBySecondValueNew(t_dst);
            if(compatible_list != null) {
-               // Table compatible_subtable   = edge_data.getBySecondValue(t_dst);
-
                // 1. EDGE FROM q_src TO q_dst (OUTBOUND)
                if (direction == EdgeDirection.OUT) {          // src to match
-                   // edges_submap.addAll(graphPaths.getByDSTandSRCs(t_dst, compatible_subtable.intColumn("first")));
-                   edges_submap.addAll(graphPaths.getByDSTandSRCsNew(t_dst, compatible_list));
+                   edges_submap.addAll(graphPaths.getByDSTandSRCs(t_dst, compatible_list));
                    cols = src_vet;
                }
                // 2. EDGE FROM q_dst TO q_src (INBOUND)
                else if (direction == EdgeDirection.IN) {    // dst to match
-                   // edges_submap.addAll(graphPaths.getBySRCandDSTs(t_dst, compatible_subtable.intColumn("first")));
-                   edges_submap.addAll(graphPaths.getBySRCandDSTsNew(t_dst, compatible_list));
+                   edges_submap.addAll(graphPaths.getBySRCandDSTs(t_dst, compatible_list));
                    cols = dst_vet;
                }
                // 3. UNDIRECTED CASE          (BOTH)
                else {                        // 1. src to match and 2. dst to match
-                   // edges_submap.addAll(graphPaths.getByDSTandSRCs(t_dst, compatible_subtable.intColumn("first")));
-                   // edges_submap.addAll(graphPaths.getBySRCandDSTs(t_dst, compatible_subtable.intColumn("first")));
-                   edges_submap.addAll(graphPaths.getByDSTandSRCsNew(t_dst, compatible_list));
-                   edges_submap.addAll(graphPaths.getBySRCandDSTsNew(t_dst, compatible_list));
+                   edges_submap.addAll(graphPaths.getByDSTandSRCs(t_dst, compatible_list));
+                   edges_submap.addAll(graphPaths.getBySRCandDSTs(t_dst, compatible_list));
                    cols = src_dst;
                }
                // CANDIDATE CONFIGURATION
@@ -87,28 +77,23 @@ public class NewFindCandidates {
 
         // B. t_src IS MATCHED
         else if (t_dst == -1){
-            // Table compatible_subtable   = edge_data.getByFirstValue(t_src);
             IntArrayList compatible_subtable = edge_data.getByFirstValueNew(t_src);
             if(compatible_subtable != null) {
 
                 // 1. EDGE FROM q_src TO q_dst (OUTBOUND)
                 if (direction == EdgeDirection.OUT) {
-                    // edges_submap.addAll(graphPaths.getBySRCandDSTs(t_src, compatible_subtable.intColumn("second")));
-                    edges_submap.addAll(graphPaths.getBySRCandDSTsNew(t_src, compatible_subtable));
+                    edges_submap.addAll(graphPaths.getBySRCandDSTs(t_src, compatible_subtable));
                     cols = dst_vet;
                 }
                 // 2. EDGE FROM q_dst TO q_src (INBOUND)
                 else if (direction == EdgeDirection.IN) {
-                    // edges_submap.addAll(graphPaths.getByDSTandSRCs(t_src, compatible_subtable.intColumn("second")));
-                    edges_submap.addAll(graphPaths.getByDSTandSRCsNew(t_src, compatible_subtable));
+                    edges_submap.addAll(graphPaths.getByDSTandSRCs(t_src, compatible_subtable));
                     cols = src_vet;
                 }
                 // 3. UNDIRECTED CASE          (BOTH)
                 else {
-                    // edges_submap.addAll(graphPaths.getBySRCandDSTs(t_src, compatible_subtable.intColumn("second")));
-                    // edges_submap.addAll(graphPaths.getByDSTandSRCs(t_src, compatible_subtable.intColumn("second")));
-                    edges_submap.addAll(graphPaths.getBySRCandDSTsNew(t_src, compatible_subtable));
-                    edges_submap.addAll(graphPaths.getByDSTandSRCsNew(t_src, compatible_subtable));
+                    edges_submap.addAll(graphPaths.getBySRCandDSTs(t_src, compatible_subtable));
+                    edges_submap.addAll(graphPaths.getByDSTandSRCs(t_src, compatible_subtable));
                     cols = dst_src;
                 }
                 // CANDIDATE CONFIGURATION

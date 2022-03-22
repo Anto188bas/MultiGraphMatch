@@ -1,17 +1,9 @@
 package target_graph.graph;
 
 import it.unimi.dsi.fastutil.ints.*;
-import org.apache.tinkerpop.gremlin.structure.T;
-import tech.tablesaw.api.IntColumn;
-import tech.tablesaw.api.Row;
-import tech.tablesaw.api.Table;
-import tech.tablesaw.index.IntIndex;
-import tech.tablesaw.selection.BitmapBackedSelection;
-import tech.tablesaw.selection.Selection;
 import org.javatuples.Triplet;
 
 import java.util.ArrayList;
-import java.util.stream.Stream;
 
 
 public class GraphPaths {
@@ -44,51 +36,11 @@ public class GraphPaths {
         }
     }
 
-    // in SEARCHING DEFINITION
-    private Selection in(IntColumn column_values, IntIndex index) {
-        Selection selection  = new BitmapBackedSelection();
-        IntArrayList values  = new IntArrayList();
-        column_values.forEach(value -> {
-            Selection sel = index.get(value);
-            IntIterator sel_iter = sel.iterator();
-            while (sel_iter.hasNext())
-                values.add(sel_iter.nextInt());
-        });
-        IntListIterator var2 = values.iterator();
-        while(var2.hasNext())
-            selection.add(var2.nextInt());
-        return selection;
-    }
-
-//    private Selection inSRC(IntColumn column_values) {return in(column_values, this.src_index);}
-//    private Selection inDST(IntColumn column_values) {return in(column_values, this.dst_index);}
-//
-//
     // GETTER
     public Int2ObjectOpenHashMap<Int2IntOpenHashMap>    getMap_pair_to_key()      {return map_pair_to_key;}
     public IntArrayList[][]                             getMap_key_to_edge_list() {return map_key_to_edge_list;}
-//    // USING INDEX ON SINGLE COLUMN
-//    public Table            getBySRC(int value)       {return map_pair_to_key.where(src_index.get(value));}
-//    public Table            getByDST(int value)       {return map_pair_to_key.where(dst_index.get(value));}
-//
-    // USING INDEX ON BOTH COLUMN
-    public ArrayList<Triplet<Integer, Integer, Integer>> getBySRCandDSTs(int src, IntColumn dsts) {
-        ArrayList<Triplet<Integer, Integer, Integer>> result = new ArrayList<>();
 
-        if(this.map_pair_to_key.containsKey(src)) {
-            Int2IntOpenHashMap src_map = this.map_pair_to_key.get(src);
-
-            dsts.forEach((dst)-> {
-                if(src_map.containsKey(dst.intValue())) {
-                    result.add(new Triplet<>(src, dst, src_map.get(dst.intValue())));
-                }
-            });
-        }
-        return result;
-    }
-
-    // TODO it will replace getBySRCandDSTs
-    public ArrayList<Triplet<Integer, Integer, Integer>> getBySRCandDSTsNew(int src, IntArrayList dsts) {
+    public ArrayList<Triplet<Integer, Integer, Integer>> getBySRCandDSTs(int src, IntArrayList dsts) {
         ArrayList<Triplet<Integer, Integer, Integer>> result = new ArrayList<>();
         Int2IntOpenHashMap src_map = this.map_pair_to_key.get(src);
         for (int dst: dsts)
@@ -96,21 +48,7 @@ public class GraphPaths {
         return result;
     }
 
-    public ArrayList<Triplet<Integer, Integer, Integer>> getByDSTandSRCs(int dst, IntColumn srcs) {
-        ArrayList<Triplet<Integer, Integer, Integer>> result = new ArrayList<>();
-        srcs.forEach((src) -> {
-            if(this.map_pair_to_key.containsKey(src.intValue())) {
-                Int2IntOpenHashMap src_map = this.map_pair_to_key.get(src.intValue());
-                if(src_map.containsKey(dst)) {
-                    result.add(new Triplet<>(src, dst, src_map.get(dst)));
-                }
-            }
-        });
-        return result;
-    }
-
-    // TODO it will replace getByDSTandSRCs
-    public ArrayList<Triplet<Integer, Integer, Integer>> getByDSTandSRCsNew(int dst, IntArrayList srcs) {
+    public ArrayList<Triplet<Integer, Integer, Integer>> getByDSTandSRCs(int dst, IntArrayList srcs) {
         ArrayList<Triplet<Integer, Integer, Integer>> result = new ArrayList<>();
         for (int src: srcs) {
             Int2IntOpenHashMap src_map = this.map_pair_to_key.get(src);

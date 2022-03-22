@@ -97,7 +97,7 @@ public class EdgeOrdering {
         int domains_sum = unselected_pairs.stream().map(NodesPair::getDomain_size).reduce(0, Integer::sum);
         int degrees_sum = nodes_degree.values().stream().reduce(0, Integer::sum);
         for(NodesPair pair: unselected_pairs) {
-            double weighted_degree = (1 - (pair.getDomain_size()/domains_sum)) * (nodes_degree.get(pair.getId().intValue()) / degrees_sum);
+            double weighted_degree = (1 - (pair.getDomain_size()/domains_sum)) * (map_pair_to_degree.get(pair.getId().intValue()) / degrees_sum);
             map_pair_to_weighted_degree.put(pair.getId().intValue(), weighted_degree);
         }
         //******************************************************************************************************************************************//
@@ -212,8 +212,8 @@ public class EdgeOrdering {
                 }
 
                 addPairToTheOrdering(selected_pair);
-            } else { // If there aren't pairs with both endpoint matched, we select the next pair of the ordering using OS, RS and NS
-                // For each of these pairs, we compute four weights
+            } else { // If there aren't pairs with both endpoint matched, we select the next pair of the ordering using OS
+                // For each of these pairs, we compute OS's weight
                 Int2DoubleOpenHashMap neighborhood_weights = new Int2DoubleOpenHashMap();
 
                 for (NodesPair current_pair : ordered_pairs_neighborhood) {

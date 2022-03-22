@@ -11,10 +11,6 @@ public class NodesPair {
     private final Integer                       id;
     private Int2ObjectOpenHashMap<IntArrayList> first_second;
     private Int2ObjectOpenHashMap<IntArrayList> second_first;
-    // TODO it will be replaced by new maps created
-    private       Table                         compatibility_domain;
-    private       IntIndex                      column1_index;
-    private       IntIndex                      column2_index;
     private       int                           domain_size;
 
 
@@ -70,7 +66,6 @@ public class NodesPair {
     public Integer getFirstEndpoint()                            {return this.firstEndpoint;}
     public Integer getSecondEndpoint()                           {return this.secondEndpoint;}
     public Integer getId()                                       {return id;}
-    public Table   getCompatibility_domain()                     {return compatibility_domain;}
     public Int2ObjectOpenHashMap<IntArrayList> getFirst_second() {return first_second;}
     public Int2ObjectOpenHashMap<IntArrayList> getSecond_first() {return second_first;}
 
@@ -78,16 +73,6 @@ public class NodesPair {
         return domain_size;
     }
 
-    public void setCompatibility_domain(Table compatibility_domain) {
-        // column 1: first, column 2: second
-        this.compatibility_domain = compatibility_domain;
-        this.column1_index        = new IntIndex(this.compatibility_domain.intColumn("first" ));
-        this.column2_index        = new IntIndex(this.compatibility_domain.intColumn("second"));
-    }
-
-    // SELECTION BY INDEXING
-    public Table getByFirstValue(int first)   {return this.compatibility_domain.where(this.column1_index.get(first));}
-    public Table getBySecondValue(int second) {return this.compatibility_domain.where(this.column2_index.get(second));}
 
     public void setNewCompatibilityDomain(
           Int2ObjectOpenHashMap<IntArrayList> first_second,
