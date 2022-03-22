@@ -1,25 +1,24 @@
 import algorithms.QueryParser;
-import org.opencypher.v9_0.ast.Query;
-import org.opencypher.v9_0.parser.CypherParser;
-
 
 public class algorithms_test {
     public static void main(String[] args) throws Exception {
 
-        //String query = "CALL pageRank";
-        //String query = "CALL closeness";
-        //String query = "CALL katz";
-        //String query = "CALL eigenVector";
-        //String query = "CALL betweenness";
-        //String query = "CALL ClusteringCoefficient";
-        //String query = "CALL kSpanningTree.clusterNumber(3)";
-        //String query = "CALL labelPropagation";
+        //String query = "CALL algorithms.pageRank"; //oppure "CALL PageRank"
+        //String query = "CALL algorithms.closeness";
+        //String query = "CALL algorithms.katz";
+        //String query = "CALL algorithms.eigenVector";
+        //String query = "CALL algorithms.betweenness";
+        //String query = "CALL algorithms.ClusteringCoefficient";
+        //String query = "CALL algorithms.kSpanningTree(3)";
+        //String query = "CALL algorithms.labelPropagation";
+        //String query = "CALL algorithms.PreferentialAttachmentPrediction(433, 5)";
+        //String query = "CALL algorithms.coloredShortestPath(0,3,1)";
+        //String query = "CALL algorithms.pageRank";
+        String query = "CALL algorithms.kSpanningTree(3)";
 
-        String query = "CALL PreferentialAttachmentPrediction.vertex(433, 5)";
-        CypherParser parser = new CypherParser();
-        Query query_object = (Query) parser.parse(query, null);
-        System.out.println(query_object.asCanonicalStringVal());
-
+        //CypherParser parser = new CypherParser();
+        //Query query_object = (Query) parser.parse(query, null);
+        //System.out.println(query_object.asCanonicalStringVal());
 
         QueryParser q = QueryParser.getInstance(query, args);
         q.parser();

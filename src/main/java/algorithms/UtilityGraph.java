@@ -34,6 +34,13 @@ public class UtilityGraph {
     final private Int2ObjectOpenHashMap<String> nodes_macro;
     final private Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntOpenHashSet[]>> src_dst_aggregation;
 
+    /**
+     *
+     * Class constructor
+     *
+     * @param args input parameters
+     *
+     */
     public UtilityGraph(String[] args) {
         Configuration configuration     = new Configuration(args);
         NodesEdgesLabelsMaps idx_label  = new NodesEdgesLabelsMaps();
@@ -58,7 +65,11 @@ public class UtilityGraph {
         generateVGraph();
     }
 
-
+    /**
+     *
+     * Generate a JgraphT library graph object
+     *
+     */
     private void generateJGraph(){
         jGraph = new SimpleDirectedGraph<>(RelationshipEdge.class);
 
@@ -67,17 +78,21 @@ public class UtilityGraph {
 
         //edge generation
         for(int i = 0; i < nodes_macro.size(); i++) {
-            var test = src_dst_aggregation.get(i);
+            Int2ObjectOpenHashMap<IntOpenHashSet[]> test = src_dst_aggregation.get(i);
             if(test != null) {
-                var arr = test.keySet().toArray();
+                Object[] arr = test.keySet().toArray();
                 for(var j: arr)
-                    //jGraph.addEdge(i, (Integer) j, new RelationshipEdge(src_dst_aggregation.get(i).get(j)[0]));
                     jGraph.addEdge(i, (int) j, new RelationshipEdge(test.get((int) j)[0]));
             }
         }
         System.out.println("...JGraph Generated...");
     }
 
+    /**
+     *
+     * Generate a Guava library graph object
+     *
+     */
     private void generateVGraph(){
         vGraph = ValueGraphBuilder.directed().build();
 
@@ -85,30 +100,58 @@ public class UtilityGraph {
             vGraph.addNode(i);
 
         for (int i = 0; i < nodes_macro.size(); i++) {
-            var test = src_dst_aggregation.get(i);
+            Int2ObjectOpenHashMap<IntOpenHashSet[]>  test = src_dst_aggregation.get(i);
             if (test != null) {
-                var arr =  test.keySet().toArray();
+                Object[] arr =  test.keySet().toArray();
                 for (var j : arr)
-                   //vGraph.putEdgeValue(i, (Integer) j, (int) src_dst_aggregation.get(i).get(j)[0].toArray()[0]);
                     vGraph.putEdgeValue(i, (int) j, (int) test.get((int) j)[0].toArray()[0]);
             }
         }
         System.out.println("...VGraph Generated...");
     }
 
-    public Graph<Integer, RelationshipEdge> getJGraph() {
-        return jGraph;
-    }
+    /**
+     *
+     * JgraphT graph getter
+     *
+     * @return JgraphT instance
+     *
+     */
+    public Graph<Integer, RelationshipEdge> getJGraph() { return jGraph; }
 
-    public MutableValueGraph<Integer, Integer> getVGraph() {
-        return vGraph;
-    }
+    /**
+     *
+     * Guava graph getter
+     *
+     * @return Guava instance
+     *
+     */
+    public MutableValueGraph<Integer, Integer> getVGraph() { return vGraph; }
 
+    /**
+     *
+     * Number of pairs getter
+     *
+     * @return number of graph pair
+     *
+     */
     public int getNPairs() { return nPairs; }
-    public int getNEdgeColors() {
-        return nEdgeColors;
-    }
 
+    /**
+     *
+     * Number od edge color getter
+     *
+     * @return number of possibles edge color
+     */
+    public int getNEdgeColors() { return nEdgeColors;}
+
+    /**
+     *
+     * id:label node association getter
+     *
+     * @return an hashmap wich contain all the graph's node labels
+     *
+     */
     public HashMap<Integer, String> getNodeLabels(){
         HashMap<Integer, String> labels = new HashMap<>();
         for(int i=0;i<nodes_macro.size();i++)

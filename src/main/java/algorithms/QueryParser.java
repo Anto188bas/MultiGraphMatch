@@ -11,20 +11,20 @@ public class QueryParser {
     private final String query;
     private final String[] args;
 
-    private final Pattern patternShortestPath = Pattern.compile("shortestPath", Pattern.CASE_INSENSITIVE);
-    private final Pattern patternColoredShortestPath = Pattern.compile("coloredshortestPath", Pattern.CASE_INSENSITIVE);
-    private final Pattern patternBetweenness = Pattern.compile("betweenness", Pattern.CASE_INSENSITIVE);
-    private final Pattern patternCloseness = Pattern.compile("closeness", Pattern.CASE_INSENSITIVE);
-    private final Pattern patternEigenVector= Pattern.compile("eigenVector", Pattern.CASE_INSENSITIVE);
-    private final Pattern patternKatz = Pattern.compile("katz", Pattern.CASE_INSENSITIVE);
-    private final Pattern patternPageRank = Pattern.compile("pageRank", Pattern.CASE_INSENSITIVE);
-    private final Pattern patternClusteringCoefficient = Pattern.compile("clusteringCoefficient", Pattern.CASE_INSENSITIVE);
-    private final Pattern patternAverageClusteringCoefficient = Pattern.compile("averageClusteringCoefficient", Pattern.CASE_INSENSITIVE);
-    private final Pattern patternKSpanningTree = Pattern.compile("kSpanningTree", Pattern.CASE_INSENSITIVE);
-    private final Pattern patternLabelPropagation = Pattern.compile("labelPropagation", Pattern.CASE_INSENSITIVE);
-    private final Pattern patternCommonNeighborsPrediction = Pattern.compile("commonNeighborsPrediction", Pattern.CASE_INSENSITIVE);
-    private final Pattern patternJaccardCoefficientPrediction = Pattern.compile("jaccardCoefficientPrediction", Pattern.CASE_INSENSITIVE);
-    private final Pattern patternPreferentialAttachmentPrediction = Pattern.compile("preferentialAttachmentPrediction", Pattern.CASE_INSENSITIVE);
+    private final Pattern patternShortestPath = Pattern.compile("algorithms.shortestPath", Pattern.CASE_INSENSITIVE);
+    private final Pattern patternColoredShortestPath = Pattern.compile("algorithms.coloredshortestPath", Pattern.CASE_INSENSITIVE);
+    private final Pattern patternBetweenness = Pattern.compile("algorithms.betweenness", Pattern.CASE_INSENSITIVE);
+    private final Pattern patternCloseness = Pattern.compile("algorithms.closeness", Pattern.CASE_INSENSITIVE);
+    private final Pattern patternEigenVector= Pattern.compile("algorithms.eigenVector", Pattern.CASE_INSENSITIVE);
+    private final Pattern patternKatz = Pattern.compile("algorithms.katz", Pattern.CASE_INSENSITIVE);
+    private final Pattern patternPageRank = Pattern.compile("algorithms.pageRank", Pattern.CASE_INSENSITIVE);
+    private final Pattern patternClusteringCoefficient = Pattern.compile("algorithms.clusteringCoefficient", Pattern.CASE_INSENSITIVE);
+    private final Pattern patternAverageClusteringCoefficient = Pattern.compile("algorithms.averageClusteringCoefficient", Pattern.CASE_INSENSITIVE);
+    private final Pattern patternKSpanningTree = Pattern.compile("algorithms.kSpanningTree", Pattern.CASE_INSENSITIVE);
+    private final Pattern patternLabelPropagation = Pattern.compile("algorithms.labelPropagation", Pattern.CASE_INSENSITIVE);
+    private final Pattern patternCommonNeighborsPrediction = Pattern.compile("algorithms.commonNeighborsPrediction", Pattern.CASE_INSENSITIVE);
+    private final Pattern patternJaccardCoefficientPrediction = Pattern.compile("algorithms.jaccardCoefficientPrediction", Pattern.CASE_INSENSITIVE);
+    private final Pattern patternPreferentialAttachmentPrediction = Pattern.compile("algorithms.preferentialAttachmentPrediction", Pattern.CASE_INSENSITIVE);
 
     private static QueryParser single_instance = null;
 
@@ -66,11 +66,20 @@ public class QueryParser {
 
 
         if(patternShortestPath.matcher(query).find()){
-            //TODO implement single and All calls
-            System.out.println("shortestPath");
+            CypherParser parser = new CypherParser();
+            Query query_object = (Query) parser.parse(query, null);
+            String vertex= query_object.asCanonicalStringVal();
+            Pattern pattern = Pattern.compile("[0-9]+");
+            Matcher matcher = pattern.matcher(vertex);
+            String vertexA;
+            if (matcher.find()) {
+                 vertexA = matcher.group();
+                if(matcher.find()) algorithms.DijsktraShortestPath(Integer.parseInt(vertexA), Integer.parseInt(matcher.group()));
+                else algorithms.DijsktraAllShortestPath(Integer.parseInt(vertexA));
+            }
         }else if(patternColoredShortestPath.matcher(query).find()){
-            //TODO implement single and All calls
-            System.out.println("ColoredShortestPath");
+            //TODO
+            System.out.println("coloredShortestPath");
         }else if(patternBetweenness.matcher(query).find()){
             algorithms.BetweennessCentrality();
         }else if(patternCloseness.matcher(query).find()){
