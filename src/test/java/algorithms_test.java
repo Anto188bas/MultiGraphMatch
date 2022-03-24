@@ -11,17 +11,15 @@ public class algorithms_test {
         //String query = "CALL algorithms.ClusteringCoefficient";
         //String query = "CALL algorithms.kSpanningTree(3)";
         //String query = "CALL algorithms.labelPropagation";
-        //String query = "CALL algorithms.PreferentialAttachmentPrediction(433, 5)";
+        String query = "CALL algorithms.PreferentialAttachmentPrediction(433, 5)";
         //String query = "CALL algorithms.coloredShortestPath(0,3,1)";
         //String query = "CALL algorithms.pageRank";
-        String query = "CALL algorithms.kSpanningTree(3)";
 
-        //CypherParser parser = new CypherParser();
-        //Query query_object = (Query) parser.parse(query, null);
-        //System.out.println(query_object.asCanonicalStringVal());
 
-        QueryParser q = QueryParser.getInstance(query, args);
-        q.parser();
+
+        QueryParser q = QueryParser.getInstance(args);
+
+        q.parser(query);
 
 
     /*

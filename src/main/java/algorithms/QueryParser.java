@@ -6,7 +6,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class QueryParser {
-    private final String query;
     private final String[] args;
 
     private final Pattern patternShortestPath = Pattern.compile("algorithms.shortestPath", Pattern.CASE_INSENSITIVE);
@@ -26,18 +25,17 @@ public class QueryParser {
 
     private static QueryParser single_instance = null;
 
-    private QueryParser(String query, String[] args) {
-        this.query = query;
+    private QueryParser(String[] args) {
         this.args = args;
     }
 
-    public static QueryParser getInstance(String query, String[] args){
+    public static QueryParser getInstance(String[] args){
         if(single_instance == null)
-            single_instance = new QueryParser(query, args);
+            single_instance = new QueryParser(args);
         return single_instance;
     }
 
-    public void parser() throws Exception{
+    public void parser(String query) throws Exception{
         UtilityGraph utilityGraph = new UtilityGraph(args);
         Algorithms algorithms = new Algorithms(utilityGraph);
 
