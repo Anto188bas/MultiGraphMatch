@@ -1,4 +1,6 @@
 import algorithms.QueryParser;
+import algorithms.RandomModels;
+import algorithms.UtilityGraph;
 
 public class algorithms_test {
     public static void main(String[] args) throws Exception {
@@ -7,7 +9,7 @@ public class algorithms_test {
         String query3 = "CALL algorithms.kSpanningTree(3)";
         String query4 = "CALL algorithms.shortestPath(254,543)";
         String query6 = "CALL algorithms.coloredShortestPath(0,3,1)";
-        String query7 = "CALL algorithms.coloredShortestPath(0,3)";
+        String query7 = "CALL algorithms.coloredShortestPath(254,543)";
         QueryParser q = new QueryParser(args);
 
         q.parser(query);
@@ -16,5 +18,9 @@ public class algorithms_test {
         q.parser(query4);
         q.parser(query6);
         q.parser(query7);
+
+        RandomModels r = new RandomModels(134,100,500);
+
+
     }
 }
