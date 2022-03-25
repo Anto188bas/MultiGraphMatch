@@ -23,11 +23,12 @@ public class Algorithms {
     private LinkPrediction linkPrediction;
     /**
      *
-     * Class constructor, constuct a Algorithms object
+     * Class constructor, construct an Algorithms object
      *
      * @param graph the input network
      *
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public Algorithms(UtilityGraph graph) {
         //create output directory
         File ShortestPathDir = new File("./OutputTest/ShortestPath");
@@ -75,41 +76,6 @@ public class Algorithms {
         File DijkstraAllSP = new File("./OutputTest/ShortestPath/DijkstraAllSP.json");
         writer = new FileWriter(DijkstraAllSP);
         writer.write(gson.toJson(shortestPath.DijkstraAllSP(source)));
-        writer.flush();
-        writer.close();
-    }
-
-    /**
-     *
-     * Invoke the BellmanFordSP method from the class ShortestPath, convert to json format the output and save it on the BellmanFordSP.json file
-     *
-     * @param source the source vertex id
-     * @param destination the destination vertex id
-     * @throws IOException if the directory "ShortestPath" doesn't exist
-     *
-     */
-    public void BellmanFordShortestPath(int source, int destination) throws IOException {
-        shortestPath = new ShortestPath(graph.getJGraph());
-        File BellmanFordSP = new File("./OutputTest/ShortestPath/BellmanFordSP.json");
-        writer = new FileWriter(BellmanFordSP);
-        writer.write(gson.toJson(shortestPath.BellmanFordSP(source, destination)));
-        writer.flush();
-        writer.close();
-    }
-
-    /**
-     *
-     * Invoke the BellmanFordAllSP method from the class ShortestPath, convert to json format the output and save it on the BellmanFordAllSP.json file
-     *
-     * @param source the source vertex id
-     * @throws IOException if the directory "ShortestPath" doesn't exist
-     *
-     */
-    public void BellmanFordAllShortestPath(int source) throws  IOException {
-        shortestPath = new ShortestPath(graph.getJGraph());
-        File BellmanFordAllSP = new File("./OutputTest/ShortestPath/BellmanFordAllSP.json");
-        writer = new FileWriter(BellmanFordAllSP);
-        writer.write(gson.toJson(shortestPath.BellmanFordAllSP(source)));
         writer.flush();
         writer.close();
     }

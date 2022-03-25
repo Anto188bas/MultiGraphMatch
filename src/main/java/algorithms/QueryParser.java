@@ -1,12 +1,14 @@
 package algorithms;
-//Singleton
+
 import org.opencypher.v9_0.ast.Query;
 import org.opencypher.v9_0.parser.CypherParser;
+
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class QueryParser {
-    private final String[] args;
+    private final Algorithms algorithms;
 
     private final Pattern patternShortestPath = Pattern.compile("algorithms.shortestPath", Pattern.CASE_INSENSITIVE);
     private final Pattern patternColoredShortestPath = Pattern.compile("algorithms.coloredshortestPath", Pattern.CASE_INSENSITIVE);
@@ -23,23 +25,13 @@ public class QueryParser {
     private final Pattern patternJaccardCoefficientPrediction = Pattern.compile("algorithms.jaccardCoefficientPrediction", Pattern.CASE_INSENSITIVE);
     private final Pattern patternPreferentialAttachmentPrediction = Pattern.compile("algorithms.preferentialAttachmentPrediction", Pattern.CASE_INSENSITIVE);
 
-    private static QueryParser single_instance = null;
-
-    private QueryParser(String[] args) {
-        this.args = args;
-    }
-
-    public static QueryParser getInstance(String[] args){
-        if(single_instance == null)
-            single_instance = new QueryParser(args);
-        return single_instance;
-    }
-
-    public void parser(String query) throws Exception{
+    public QueryParser(String[] args) {
         UtilityGraph utilityGraph = new UtilityGraph(args);
-        Algorithms algorithms = new Algorithms(utilityGraph);
+        algorithms = new Algorithms(utilityGraph);
+    }
 
-        if(patternShortestPath.matcher(query).find()){
+    public void parser(String query) throws Exception {
+        if(patternShortestPath.matcher(query).find()) {
             CypherParser parser = new CypherParser();
             Query query_object = (Query) parser.parse(query, null);
             String vertex= query_object.asCanonicalStringVal();
@@ -52,8 +44,20 @@ public class QueryParser {
                 else algorithms.DijsktraAllShortestPath(Integer.parseInt(vertexA));
             }
         }else if(patternColoredShortestPath.matcher(query).find()){
-            //TODO
-            System.out.println("coloredShortestPath");
+            CypherParser parser = new CypherParser();
+            Query query_object = (Query) parser.parse(query, null);
+            String vertex= query_object.asCanonicalStringVal();
+            Pattern pattern = Pattern.compile("[0-9]+");
+            Matcher matcher = pattern.matcher(vertex);
+            String vertexA, vertexOrColor = null;
+            if(matcher.find()){
+                vertexA = matcher.group();
+                if(matcher.find()) vertexOrColor = matcher.group();
+                if(matcher.find())
+                    algorithms.ColoredShortestPath(Integer.parseInt(vertexA), Integer.parseInt(Objects.requireNonNull(vertexOrColor)), Integer.parseInt(matcher.group()));
+                else
+                    algorithms.AllColoredShortestPath(Integer.parseInt(vertexA), Integer.parseInt(Objects.requireNonNull(vertexOrColor)));
+            }
         }else if(patternBetweenness.matcher(query).find()){
             algorithms.BetweennessCentrality();
         }else if(patternCloseness.matcher(query).find()){
@@ -99,9 +103,7 @@ public class QueryParser {
             Matcher matcher = pattern.matcher(vertex);
             if (matcher.find()) { algorithms.PreferentialAttachmentPrediction(Integer.parseInt(matcher.group()), Integer.parseInt(matcher.group())); }
         }else{
-            System.out.println("Invalid Syntax\n");
+            System.out.println("\u001B[31m"+"Error handling: "+'"'+query+'"'+" Invalid syntax!\n"+"\u001B[0m");
         }
     }
-
-
 }

@@ -3,7 +3,6 @@ package algorithms;
 import org.jgrapht.*;
 import org.jgrapht.alg.interfaces.ShortestPathAlgorithm.*;
 import org.jgrapht.alg.shortestpath.*;
-import org.jgrapht.graph.DefaultEdge;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -59,41 +58,6 @@ public class ShortestPath {
             if(!destination.equals(source)){   //exclude cases where source = destination
                 SingleSourcePaths<Integer, RelationshipEdge> iPathsDijkstra = dijkstraAlg.getPaths(source);
                 AllSP.add(iPathsDijkstra.getPath(destination));
-            }
-        }
-        return AllSP;
-    }
-
-    /**
-     *
-     * Bellman - Ford shortest path algorithm
-     *
-     * @param source the source vertex id
-     * @param destination the destination vertex id
-     * @return return the shortest path calculated using Bellman - Ford algorithm
-     *
-     */
-    public GraphPath<Integer, Object> BellmanFordSP(Integer source, Integer destination) {
-        BellmanFordShortestPath<Integer, Object> BellmanFordAlg = new BellmanFordShortestPath(graph);
-        SingleSourcePaths<Integer, Object> iPathsBellmanFord = BellmanFordAlg.getPaths(source);
-        return iPathsBellmanFord.getPath(destination);
-    }
-
-    /**
-     *
-     *  Bellman - Ford  all shortest path algorithm
-     *
-     * @param source the source vertex id
-     * @return a list which contain all the shortest path from the source to all the other network vertex
-     *
-     */
-    public List<GraphPath<Integer, DefaultEdge>> BellmanFordAllSP(Integer source) {
-        List<GraphPath<Integer, DefaultEdge>> AllSP = new ArrayList<>();
-        BellmanFordShortestPath<Integer, DefaultEdge> BellmanFordAlg = new BellmanFordShortestPath(graph);
-        for (Integer destination : GraphSet){
-            if(!destination.equals(source)){   //exclude cases where source = destination
-                SingleSourcePaths<Integer, DefaultEdge> iPathsBellmanFord = BellmanFordAlg.getPaths(source);
-                AllSP.add(iPathsBellmanFord.getPath(destination));
             }
         }
         return AllSP;
