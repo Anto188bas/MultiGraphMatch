@@ -2,7 +2,6 @@ package algorithms;
 
 import org.opencypher.v9_0.ast.Query;
 import org.opencypher.v9_0.parser.CypherParser;
-
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,6 +23,11 @@ public class QueryParser {
     private final Pattern patternCommonNeighborsPrediction = Pattern.compile("algorithms.commonNeighborsPrediction", Pattern.CASE_INSENSITIVE);
     private final Pattern patternJaccardCoefficientPrediction = Pattern.compile("algorithms.jaccardCoefficientPrediction", Pattern.CASE_INSENSITIVE);
     private final Pattern patternPreferentialAttachmentPrediction = Pattern.compile("algorithms.preferentialAttachmentPrediction", Pattern.CASE_INSENSITIVE);
+    private final Pattern patternErdosReniyNM = Pattern.compile("algorithms.erdosReniyNMGenerator", Pattern.CASE_INSENSITIVE);
+    private final Pattern patternErdosReniyNP = Pattern.compile("algorithms.erdosReniyNPGenerator", Pattern.CASE_INSENSITIVE);
+    private final Pattern patternWattStrogatz = Pattern.compile("algorithms.wattStrogatzGenerator", Pattern.CASE_INSENSITIVE);
+    private final Pattern patternBarabasiAlbert = Pattern.compile("algorithms.BarabasiAlbertGenerator", Pattern.CASE_INSENSITIVE);
+
 
     public QueryParser(String[] args) {
         UtilityGraph utilityGraph = new UtilityGraph(args);
@@ -87,21 +91,82 @@ public class QueryParser {
             String vertex= query_object.asCanonicalStringVal();
             Pattern pattern = Pattern.compile("[0-9]+");
             Matcher matcher = pattern.matcher(vertex);
-            if (matcher.find()) { algorithms.CommonNeighborsPrediction(Integer.parseInt(matcher.group()), Integer.parseInt(matcher.group())); }
+            String v0 = null;
+            if (matcher.find() ) { v0 = matcher.group(); }
+            if(matcher.find()) {
+                assert v0 != null;
+                algorithms.CommonNeighborsPrediction(Integer.parseInt(v0), Integer.parseInt(matcher.group()));
+            }
         }else if(patternJaccardCoefficientPrediction.matcher(query).find()){
             CypherParser parser = new CypherParser();
             Query query_object = (Query) parser.parse(query, null);
             String vertex= query_object.asCanonicalStringVal();
             Pattern pattern = Pattern.compile("[0-9]+");
             Matcher matcher = pattern.matcher(vertex);
-            if (matcher.find()) { algorithms.JaccardCoefficientPrediction(Integer.parseInt(matcher.group()), Integer.parseInt(matcher.group())); }
+            String v0 = null;
+            if(matcher.find()) { v0 = matcher.group(); }
+            if (matcher.find()) {
+                assert v0 != null;
+                algorithms.JaccardCoefficientPrediction(Integer.parseInt(v0), Integer.parseInt(matcher.group()));
+            }
         }else if(patternPreferentialAttachmentPrediction.matcher(query).find()){
             CypherParser parser = new CypherParser();
             Query query_object = (Query) parser.parse(query, null);
             String vertex= query_object.asCanonicalStringVal();
             Pattern pattern = Pattern.compile("[0-9]+");
             Matcher matcher = pattern.matcher(vertex);
-            if (matcher.find()) { algorithms.PreferentialAttachmentPrediction(Integer.parseInt(matcher.group()), Integer.parseInt(matcher.group())); }
+            String v0 = null;
+            if(matcher.find()) { v0 = matcher.group(); }
+            if (matcher.find()) {
+                assert v0 != null;
+                algorithms.PreferentialAttachmentPrediction(Integer.parseInt(v0), Integer.parseInt(matcher.group()));
+            }
+        }else if(patternErdosReniyNM.matcher(query).find()){
+            CypherParser parser = new CypherParser();
+            Query query_object = (Query) parser.parse(query, null);
+            String vertex= query_object.asCanonicalStringVal();
+            Pattern pattern = Pattern.compile("[0-9]+");
+            Matcher matcher = pattern.matcher(vertex);
+            if (matcher.find()) { algorithms.GeneratorErdosReniyNM(Integer.parseInt(matcher.group()), Integer.parseInt(matcher.group())); }
+        }else if(patternErdosReniyNP.matcher(query).find()){
+            CypherParser parser = new CypherParser();
+            Query query_object = (Query) parser.parse(query, null);
+            String vertex= query_object.asCanonicalStringVal();
+            Pattern pattern = Pattern.compile("[0-9]+");
+            Matcher matcher = pattern.matcher(vertex);
+            Pattern pattern2 = Pattern.compile("0.[0-9]");
+            Matcher matcher2 = pattern2.matcher(vertex);
+            if (matcher.find() && matcher2.find()) { algorithms.GeneratorErdosReniyNP(Integer.parseInt(matcher.group()), Double.parseDouble(matcher2.group())); }
+        }else if(patternWattStrogatz.matcher(query).find()){
+            CypherParser parser = new CypherParser();
+            Query query_object = (Query) parser.parse(query, null);
+            String vertex= query_object.asCanonicalStringVal();
+            Pattern pattern = Pattern.compile("[0-9]+");
+            Matcher matcher = pattern.matcher(vertex);
+            Pattern pattern2 = Pattern.compile("0.[0-9]");
+            Matcher matcher2 = pattern2.matcher(vertex);
+            String n, k =null;
+            if(matcher.find()){
+                n = matcher.group();
+                if(matcher.find())  k = matcher.group();
+                if (matcher2.find()) {
+                    assert k != null;
+                    algorithms.GeneratorWattStrogatz(Integer.parseInt(n),Integer.parseInt(k), Double.parseDouble(matcher2.group()));
+                }
+            }
+        }else if(patternBarabasiAlbert.matcher(query).find()){
+            CypherParser parser = new CypherParser();
+            Query query_object = (Query) parser.parse(query, null);
+            String vertex= query_object.asCanonicalStringVal();
+            Pattern pattern = Pattern.compile("[0-9]+");
+            Matcher matcher = pattern.matcher(vertex);
+            String m0 = null, m = null;
+            if(matcher.find()) m0 = matcher.group();
+            if(matcher.find()) m = matcher.group();
+            if(matcher.find()){
+                assert m0 != null && m != null;
+                algorithms.GeneratorBarabasiAlbert(Integer.parseInt(m0), Integer.parseInt(m), Integer.parseInt(matcher.group()));
+            }
         }else{
             System.out.println("\u001B[31m"+"Error handling: "+'"'+query+'"'+" Invalid syntax!\n"+"\u001B[0m");
         }

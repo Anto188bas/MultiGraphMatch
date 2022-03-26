@@ -41,6 +41,8 @@ public class Algorithms {
         if (!LinkPredictionDir.exists()){ LinkPredictionDir.mkdirs(); }
         File ColoredShortestPathDir = new File("./OutputTest/ColoredShortestPath");
         if (!ColoredShortestPathDir.exists()){ ColoredShortestPathDir.mkdirs(); }
+        File RandomModels = new File("./OutputTest/RandomModels");
+        if (!RandomModels.exists()){ RandomModels.mkdirs(); }
 
         this.graph = graph;
     }
@@ -281,7 +283,7 @@ public class Algorithms {
 
     /**
      *
-     * Invoke the findShortestPath method from the class DijkstraShortestPath, convert to json format the output and save it on the ColoredPath.json file
+     * Invoke the findShortestPath method from the class ColorShortestPath, convert to json format the output and save it on the ColoredPath.json file
      *
      * @param source the source vertex id
      * @param destination the destination vertex id
@@ -304,7 +306,7 @@ public class Algorithms {
 
     /**
      *
-     * Invoke the findShortestPath method from the class DijkstraShortestPath on all the colors, convert to json format the output and save it on the AllColoredPath.json file
+     * Invoke the findShortestPath method from the class ColorShortestPath on all the colors, convert to json format the output and save it on the AllColoredPath.json file
      *
      * @param source the source vertex id
      * @param destination the destination vertex id
@@ -322,6 +324,79 @@ public class Algorithms {
             output.add(ColorShortestPath.findShortestPath(graph.getVGraph(), source, destination, i));
         }
         writer.write(gson.toJson(output));
+        writer.flush();
+        writer.close();
+    }
+
+    /**
+     *
+     * Invoke the generateErdosReniyNM method from the class RandomModels, convert to json format the output and save it on the ErdosReniyNM.json file
+     *
+     * @param n  the number of nodes
+     * @param m the number of edges
+     * @throws IOException if the directory "RandomModels" doesn't exist
+     *
+     */
+    public void GeneratorErdosReniyNM(int n, int m) throws IOException {
+        RandomModels randomModels = new RandomModels();
+        File ErdosReniyNM = new File("./OutputTest/RandomModels/ErdosReniyNM");
+        writer = new FileWriter(ErdosReniyNM);
+        writer.write(gson.toJson(randomModels.generateErdosReniyNM(n,m).edgeSet())); //oppure edgeset
+        writer.flush();
+        writer.close();
+    }
+
+    /**
+     *
+     * Invoke the generateErdosReniyNP method from the class RandomModels, convert to json format the output and save it on the ErdosReniyNP.json file
+     *
+     * @param n the number of nodes
+     * @param p the edge probability
+     * @throws IOException if the directory "RandomModels" doesn't exist
+     *
+     */
+    public void GeneratorErdosReniyNP(int n, double p) throws IOException {
+        RandomModels randomModels = new RandomModels();
+        File ErdosReniyNP = new File("./OutputTest/RandomModels/ErdosReniyNP");
+        writer = new FileWriter(ErdosReniyNP);
+        writer.write(gson.toJson(randomModels.generateErdosReniyNP(n,p).edgeSet())); //oppure edgeset
+        writer.flush();
+        writer.close();
+    }
+
+    /**
+     *
+     * Invoke the generateWattStrogatz method from the class RandomModels, convert to json format the output and save it on the WattStrogatz.json file
+     *
+     * @param n the number of nodes
+     * @param k connect each node to its k nearest neighbors in a ring
+     * @param p the probability of re-wiring each edge
+     * @throws IOException if the directory "RandomModels" doesn't exist
+     *
+     */
+    public void GeneratorWattStrogatz(int n, int k, double p) throws IOException {
+        RandomModels randomModels = new RandomModels();
+        File WattStrogatz = new File("./OutputTest/RandomModels/WattStrogatz");
+        writer = new FileWriter(WattStrogatz);
+        writer.write(gson.toJson(randomModels.generateWattStrogatz(n, k, p).edgeSet())); //oppure edgeset
+        writer.flush();
+        writer.close();
+    }
+
+    /**
+     *
+     * Invoke the generateBarabasiAlbert method from the class RandomModels, convert to json format the output and save it on the BarabasiAlbert.json file
+     *
+     * @param m0 number of initial nodes
+     * @param m number of edges of each new node added during the network growth
+     * @param n final number of nodes
+     * @throws IOException  if the directory "RandomModels" doesn't exist
+     */
+    public void GeneratorBarabasiAlbert(int m0, int m, int n) throws IOException {
+        RandomModels randomModels = new RandomModels();
+        File BarabasiAlbert = new File("./OutputTest/RandomModels/BarabasiAlbert");
+        writer = new FileWriter(BarabasiAlbert);
+        writer.write(gson.toJson(randomModels.generateBarabasiAlbert(m0, m, n).edgeSet())); //oppure edgeset
         writer.flush();
         writer.close();
     }
