@@ -27,12 +27,15 @@ public class QueryParser {
     private final Pattern patternErdosReniyNP = Pattern.compile("algorithms.erdosReniyNPGenerator", Pattern.CASE_INSENSITIVE);
     private final Pattern patternWattStrogatz = Pattern.compile("algorithms.wattStrogatzGenerator", Pattern.CASE_INSENSITIVE);
     private final Pattern patternBarabasiAlbert = Pattern.compile("algorithms.BarabasiAlbertGenerator", Pattern.CASE_INSENSITIVE);
+    private final Pattern patternRewiring = Pattern.compile("algorithms.rewireGraph", Pattern.CASE_INSENSITIVE);
 
 
     public QueryParser(String[] args) {
         UtilityGraph utilityGraph = new UtilityGraph(args);
         algorithms = new Algorithms(utilityGraph);
     }
+
+
 
     public void parser(String query) throws Exception {
         if(patternShortestPath.matcher(query).find()) {
@@ -63,18 +66,39 @@ public class QueryParser {
                     algorithms.AllColoredShortestPath(Integer.parseInt(vertexA), Integer.parseInt(Objects.requireNonNull(vertexOrColor)));
             }
         }else if(patternBetweenness.matcher(query).find()){
+            CypherParser parser = new CypherParser();
+            Query query_object = (Query) parser.parse(query, null);
+            query_object.asCanonicalStringVal();
             algorithms.BetweennessCentrality();
         }else if(patternCloseness.matcher(query).find()){
+            CypherParser parser = new CypherParser();
+            Query query_object = (Query) parser.parse(query, null);
+            query_object.asCanonicalStringVal();
             algorithms.ClosenessCentrality();
         }else if(patternEigenVector.matcher(query).find()){
+            CypherParser parser = new CypherParser();
+            Query query_object = (Query) parser.parse(query, null);
+            query_object.asCanonicalStringVal();
             algorithms.EigenVectorCentrality();
         }else if(patternKatz.matcher(query).find()){
+            CypherParser parser = new CypherParser();
+            Query query_object = (Query) parser.parse(query, null);
+            query_object.asCanonicalStringVal();
             algorithms.KatzCentrality();
         }else if(patternPageRank.matcher(query).find()){
+            CypherParser parser = new CypherParser();
+            Query query_object = (Query) parser.parse(query, null);
+            query_object.asCanonicalStringVal();
             algorithms.PageRankCentrality();
         }else if(patternClusteringCoefficient.matcher(query).find()){
+            CypherParser parser = new CypherParser();
+            Query query_object = (Query) parser.parse(query, null);
+            query_object.asCanonicalStringVal();
             algorithms.ClusteringCoefficient();
         }else if(patternAverageClusteringCoefficient.matcher(query).find()){
+            CypherParser parser = new CypherParser();
+            Query query_object = (Query) parser.parse(query, null);
+            query_object.asCanonicalStringVal();
             algorithms.AverageClusteringCoefficient();
         }else if(patternKSpanningTree.matcher(query).find()){
             CypherParser parser = new CypherParser();
@@ -84,6 +108,9 @@ public class QueryParser {
             Matcher matcher = pattern.matcher(clusterNumber);
             if (matcher.find()) { algorithms.KSpanningTreeClustering(Integer.parseInt(matcher.group(0))); }
         }else if(patternLabelPropagation.matcher(query).find()){
+            CypherParser parser = new CypherParser();
+            Query query_object = (Query) parser.parse(query, null);
+            query_object.asCanonicalStringVal();
             algorithms.LabelPropagationClustering();
         }else if(patternCommonNeighborsPrediction.matcher(query).find()){
             CypherParser parser = new CypherParser();
@@ -167,6 +194,11 @@ public class QueryParser {
                 assert m0 != null && m != null;
                 algorithms.GeneratorBarabasiAlbert(Integer.parseInt(m0), Integer.parseInt(m), Integer.parseInt(matcher.group()));
             }
+        }else if(patternRewiring.matcher(query).find()){
+            CypherParser parser = new CypherParser();
+            Query query_object = (Query) parser.parse(query, null);
+            query_object.asCanonicalStringVal();
+            algorithms.GeneratorRewiring();
         }else{
             System.out.println("\u001B[31m"+"Error handling: "+'"'+query+'"'+" Invalid syntax!\n"+"\u001B[0m");
         }

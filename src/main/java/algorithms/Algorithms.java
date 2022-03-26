@@ -295,9 +295,10 @@ public class Algorithms {
         List<Object> output = new ArrayList<>();
         File ColoredSP = new File("./OutputTest/ColoredShortestPath/ColoredPath.json");
         writer = new FileWriter(ColoredSP);
-        output.add(source);
-        output.add(destination);
-        output.add(pathColor);
+        output.add("source:"+ source);
+        output.add("destination:"+destination);
+        output.add("pathColor:"+pathColor);
+        output.add("EdgeList:");
         output.add(ColorShortestPath.findShortestPath(graph.getVGraph(), source, destination, pathColor));
         writer.write(gson.toJson(output));
         writer.flush();
@@ -317,10 +318,12 @@ public class Algorithms {
         List<Object> output = new ArrayList<>();
         File ColoredSP = new File("./OutputTest/ColoredShortestPath/AllColoredPath.json");
         writer = new FileWriter(ColoredSP);
-        output.add(source);
-        output.add(destination);
+        output.add("source:"+ source);
+        output.add("destination:"+destination);
         for(int i=0;i<graph.getNEdgeColors();i++){
+            output.add("PathColor:");
             output.add(i);
+            output.add("EdgeList:");
             output.add(ColorShortestPath.findShortestPath(graph.getVGraph(), source, destination, i));
         }
         writer.write(gson.toJson(output));
@@ -400,4 +403,22 @@ public class Algorithms {
         writer.flush();
         writer.close();
     }
+
+    /**
+     *
+     * Invoke the generateRewiring method from the class RandomModels, convert to json format the output and save it on the RewiredGraph.json file
+     *
+     * @throws IOException if the directory "RandomModels" doesn't exist
+     */
+    public void GeneratorRewiring() throws IOException {
+        RandomModels randomModels = new RandomModels();
+        File Rewiring = new File("./OutputTest/RandomModels/RewiredGraph");
+        writer = new FileWriter(Rewiring);
+        //TODO try to create a better json
+        writer.write(gson.toJson(randomModels.generateRewiring(graph.getVGraph(), graph.getNEdgeColors()).toString())); //oppure edgeset
+        writer.flush();
+        writer.close();
+    }
+
+
 }

@@ -1,12 +1,13 @@
 package algorithms;
 
+import com.google.common.graph.*;
 import org.jgrapht.generate.BarabasiAlbertGraphGenerator;
 import org.jgrapht.generate.GnmRandomGraphGenerator;
 import org.jgrapht.generate.GnpRandomGraphGenerator;
 import org.jgrapht.generate.WattsStrogatzGraphGenerator;
 import org.jgrapht.graph.DirectedMultigraph;
 import org.jgrapht.util.SupplierUtil;
-import java.util.Random;
+import java.util.*;
 import java.util.function.Supplier;
 
 /**
@@ -14,7 +15,7 @@ import java.util.function.Supplier;
  * This class contains all the methods for the random networks generation
  *
  */
-@SuppressWarnings("rawtypes")
+@SuppressWarnings({"rawtypes", "UnstableApiUsage"})
 public class RandomModels {
     private final  Supplier<Integer> vSupplier = new Supplier<>() {
         private int id = 0;
@@ -90,4 +91,37 @@ public class RandomModels {
         return  randomGraph;
     }
 
+    /**
+     *
+     * Rewire the edges of the native network
+     *
+     * @param initialGraph the source network
+     * @param ColorNumbers the number of colors used by the network edges
+     * @return the rewired network
+     */
+    public MutableValueGraph generateRewiring(MutableValueGraph<Integer, Integer> initialGraph, int ColorNumbers) {
+        MutableValueGraph<Integer, Integer> newGraph = ValueGraphBuilder.directed().build();
+        List<EndpointPair<Integer>> l = new ArrayList<>(initialGraph.edges());
+        Collections.shuffle(l);
+
+        Random random = new Random();
+        random.setSeed(System.nanoTime());
+
+        int vertexU;
+        int vertexV;
+        //TODO debug the if else
+        for(int i=0; i<initialGraph.edges().size(); i++) {
+            if(random.nextInt(100) %2 == 0) {
+                vertexU = l.get(i).nodeU();
+                vertexV = random.nextInt(initialGraph.nodes().size())+1;
+                if(vertexU != vertexV){ newGraph.putEdgeValue(vertexU, vertexV, random.nextInt(ColorNumbers)+1); }
+                else { newGraph.putEdgeValue(l.get(i).nodeU(), l.get(i).nodeV(), random.nextInt(ColorNumbers) + 1); }
+            }else{
+                newGraph.putEdgeValue(l.get(i).nodeU(), l.get(i).nodeV(), random.nextInt(ColorNumbers)+1);
+            }
+        }
+        return newGraph;
+    }
+
 }
+
