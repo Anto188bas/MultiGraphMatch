@@ -6,15 +6,15 @@ public class algorithms_test {
         String query2 = "CALL algorithms.pageRank";
         String query3 = "CALL algorithms.kSpanningTree(3)";
         String query4 = "CALL algorithms.shortestPath(254,543)";
-        String query6 = "CALL algorithms.coloredShortestPath(0,3,1)";
-        String query7 = "CALL algorithms.coloredShortestPath(254,543)";
+        String query6 = "CALL algorithms.coloredShortestPath(254,543)";
+        String query7 = "CALL algorithms.coloredShortestPath(254,543,1)";
         String query8 = "CALL algorithms.wattStrogatzGenerator(10,8, 0.2)";
         String query9 = "CALL algorithms.BarabasiAlbertGenerator(10,10, 200)";
         String query10 = "CALL algorithms.rewireGraph";
-        String query11 = "CALL algorithms.shortestPath(254)";
+        //String query11 = "CALL algorithms.shortestPath(254)";
+        String query12 = "CALL algorithms.showErrors";
 
         QueryParser q = new QueryParser(args);
-
 
         q.parser(query);
         q.parser(query2);
@@ -25,6 +25,7 @@ public class algorithms_test {
         q.parser(query8);
         q.parser(query9);
         q.parser(query10);
+        q.parser(query12);
        // q.parser(query11);
     }
 }

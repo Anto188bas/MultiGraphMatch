@@ -292,14 +292,9 @@ public class Algorithms {
      *
      */
     public void ColoredShortestPath(int source, int destination, int pathColor) throws IOException {
-        List<Object> output = new ArrayList<>();
         File ColoredSP = new File("./OutputTest/ColoredShortestPath/ColoredPath.json");
         writer = new FileWriter(ColoredSP);
-        output.add("source:"+ source);
-        output.add("destination:"+destination);
-        output.add("pathColor:"+pathColor);
-        output.add("EdgeList:");
-        output.add(ColorShortestPath.findShortestPath(graph.getVGraph(), source, destination, pathColor));
+        ColoredShortestPathObject output = new ColoredShortestPathObject(source, destination, pathColor,ColorShortestPath.findShortestPath(graph.getVGraph(), source, destination, pathColor));
         writer.write(gson.toJson(output));
         writer.flush();
         writer.close();
@@ -315,18 +310,20 @@ public class Algorithms {
      *
      */
     public void AllColoredShortestPath(int source, int destination) throws IOException {
-        List<Object> output = new ArrayList<>();
         File ColoredSP = new File("./OutputTest/ColoredShortestPath/AllColoredPath.json");
         writer = new FileWriter(ColoredSP);
-        output.add("source:"+ source);
-        output.add("destination:"+destination);
-        for(int i=0;i<graph.getNEdgeColors();i++){
-            output.add("PathColor:");
-            output.add(i);
-            output.add("EdgeList:");
-            output.add(ColorShortestPath.findShortestPath(graph.getVGraph(), source, destination, i));
+        ColoredShortestPathObject tempPath;
+        List<ColoredShortestPathObject> PathList = new ArrayList<>();
+        for(int i=0; i<graph.getNEdgeColors(); i++) {
+            if(i==0){
+                tempPath  = new ColoredShortestPathObject(source, destination, i, ColorShortestPath.findShortestPath(graph.getVGraph(), source, destination, i));
+                PathList.add(tempPath);
+            }else{
+                tempPath  = new ColoredShortestPathObject(i, ColorShortestPath.findShortestPath(graph.getVGraph(), source, destination, i));
+                PathList.add(tempPath);
+            }
         }
-        writer.write(gson.toJson(output));
+        writer.write(gson.toJson(PathList));
         writer.flush();
         writer.close();
     }
@@ -381,7 +378,7 @@ public class Algorithms {
         RandomModels randomModels = new RandomModels();
         File WattStrogatz = new File("./OutputTest/RandomModels/WattStrogatz");
         writer = new FileWriter(WattStrogatz);
-        writer.write(gson.toJson(randomModels.generateWattStrogatz(n, k, p).edgeSet())); //oppure edgeset
+        writer.write(gson.toJson(randomModels.generateWattStrogatz(n, k, p).edgeSet()));
         writer.flush();
         writer.close();
     }
@@ -394,12 +391,13 @@ public class Algorithms {
      * @param m number of edges of each new node added during the network growth
      * @param n final number of nodes
      * @throws IOException  if the directory "RandomModels" doesn't exist
+     *
      */
     public void GeneratorBarabasiAlbert(int m0, int m, int n) throws IOException {
         RandomModels randomModels = new RandomModels();
         File BarabasiAlbert = new File("./OutputTest/RandomModels/BarabasiAlbert");
         writer = new FileWriter(BarabasiAlbert);
-        writer.write(gson.toJson(randomModels.generateBarabasiAlbert(m0, m, n).edgeSet())); //oppure edgeset
+        writer.write(gson.toJson(randomModels.generateBarabasiAlbert(m0, m, n).edgeSet()));
         writer.flush();
         writer.close();
     }
@@ -409,16 +407,15 @@ public class Algorithms {
      * Invoke the generateRewiring method from the class RandomModels, convert to json format the output and save it on the RewiredGraph.json file
      *
      * @throws IOException if the directory "RandomModels" doesn't exist
+     *
      */
     public void GeneratorRewiring() throws IOException {
         RandomModels randomModels = new RandomModels();
         File Rewiring = new File("./OutputTest/RandomModels/RewiredGraph");
         writer = new FileWriter(Rewiring);
-        //TODO try to create a better json
-        writer.write(gson.toJson(randomModels.generateRewiring(graph.getVGraph(), graph.getNEdgeColors()).toString())); //oppure edgeset
+        writer.write(gson.toJson(randomModels.generateRewiring(graph.getVGraph(), graph.getNEdgeColors()))); //oppure edgeset
         writer.flush();
         writer.close();
     }
-
 
 }

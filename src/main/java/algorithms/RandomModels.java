@@ -99,7 +99,7 @@ public class RandomModels {
      * @param ColorNumbers the number of colors used by the network edges
      * @return the rewired network
      */
-    public MutableValueGraph generateRewiring(MutableValueGraph<Integer, Integer> initialGraph, int ColorNumbers) {
+    public List<EndpointPair> generateRewiring(MutableValueGraph<Integer, Integer> initialGraph, int ColorNumbers) {
         MutableValueGraph<Integer, Integer> newGraph = ValueGraphBuilder.directed().build();
         List<EndpointPair<Integer>> l = new ArrayList<>(initialGraph.edges());
         Collections.shuffle(l);
@@ -107,20 +107,20 @@ public class RandomModels {
         Random random = new Random();
         random.setSeed(System.nanoTime());
 
-        int vertexU;
-        int vertexV;
         //TODO debug the if else
         for(int i=0; i<initialGraph.edges().size(); i++) {
             if(random.nextInt(100) %2 == 0) {
-                vertexU = l.get(i).nodeU();
-                vertexV = random.nextInt(initialGraph.nodes().size())+1;
+                int vertexU = l.get(i).nodeU();
+                int vertexV = random.nextInt(initialGraph.nodes().size()) + 1;
                 if(vertexU != vertexV){ newGraph.putEdgeValue(vertexU, vertexV, random.nextInt(ColorNumbers)+1); }
                 else { newGraph.putEdgeValue(l.get(i).nodeU(), l.get(i).nodeV(), random.nextInt(ColorNumbers) + 1); }
             }else{
                 newGraph.putEdgeValue(l.get(i).nodeU(), l.get(i).nodeV(), random.nextInt(ColorNumbers)+1);
             }
         }
-        return newGraph;
+        System.out.println(initialGraph.edges().size());
+        System.out.println(newGraph.edges().size());
+        return new ArrayList<>(newGraph.edges());
     }
 
 }
