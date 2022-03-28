@@ -10,7 +10,7 @@ public class QueryParser {
     private final Algorithms algorithms;
 
     private final Pattern patternShortestPath = Pattern.compile("algorithms.shortestPath", Pattern.CASE_INSENSITIVE);
-    private final Pattern patternColoredShortestPath = Pattern.compile("algorithms.coloredshortestPath", Pattern.CASE_INSENSITIVE);
+    private final Pattern patternColoredShortestPath = Pattern.compile("algorithms.coloredShortestPath", Pattern.CASE_INSENSITIVE);
     private final Pattern patternBetweenness = Pattern.compile("algorithms.betweenness", Pattern.CASE_INSENSITIVE);
     private final Pattern patternCloseness = Pattern.compile("algorithms.closeness", Pattern.CASE_INSENSITIVE);
     private final Pattern patternEigenVector= Pattern.compile("algorithms.eigenVector", Pattern.CASE_INSENSITIVE);

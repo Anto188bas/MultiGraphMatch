@@ -294,6 +294,15 @@ public class Algorithms {
     public void ColoredShortestPath(int source, int destination, int pathColor) throws IOException {
         File ColoredSP = new File("./OutputTest/ColoredShortestPath/ColoredPath.json");
         writer = new FileWriter(ColoredSP);
+
+        if(destination > graph.getVertexNumber()){
+            System.out.println("\u001B[31m"+"Error: vertex: "+ destination +" not exist!"+"\u001B[0m");
+            writer.write(gson.toJson(null));
+            writer.flush();
+            writer.close();
+            return;
+        }
+
         ColoredShortestPathObject output = new ColoredShortestPathObject(source, destination, pathColor,ColorShortestPath.findShortestPath(graph.getVGraph(), source, destination, pathColor));
         writer.write(gson.toJson(output));
         writer.flush();
@@ -312,6 +321,15 @@ public class Algorithms {
     public void AllColoredShortestPath(int source, int destination) throws IOException {
         File ColoredSP = new File("./OutputTest/ColoredShortestPath/AllColoredPath.json");
         writer = new FileWriter(ColoredSP);
+
+        if(destination > graph.getVertexNumber()){
+            System.out.println("\u001B[31m"+"Error: vertex: "+ destination +" not exist!"+"\u001B[0m");
+            writer.write(gson.toJson(null));
+            writer.flush();
+            writer.close();
+            return;
+        }
+
         ColoredShortestPathObject tempPath;
         List<ColoredShortestPathObject> PathList = new ArrayList<>();
         for(int i=0; i<graph.getNEdgeColors(); i++) {

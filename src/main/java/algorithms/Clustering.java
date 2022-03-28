@@ -58,6 +58,10 @@ public class Clustering {
      *
      */
     public Iterable<Set<Integer>> KSpanningTree() {
+        if(clusterNumber >= graph.vertexSet().size()){
+            System.out.println("\u001B[31m"+"Error: illegal number of cluster, returned 'null' value!"+"\u001B[0m");
+            return null;
+        }
         KSpanningTreeClustering<Integer, RelationshipEdge> cluster = new KSpanningTreeClustering<>(graph,clusterNumber);
         return cluster.getClustering();
     }

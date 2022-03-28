@@ -159,4 +159,13 @@ public class UtilityGraph {
         return  labels;
     }
 
+    /**
+     *
+     * return the number of vertex in the graph
+     *
+     * @return the number of vertex in the graph
+     *
+     */
+    public int getVertexNumber(){return vGraph.nodes().size();}
+
 }
