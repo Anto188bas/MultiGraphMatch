@@ -41,8 +41,8 @@ public class Algorithms {
         if (!LinkPredictionDir.exists()){ LinkPredictionDir.mkdirs(); }
         File ColoredShortestPathDir = new File("./OutputTest/ColoredShortestPath");
         if (!ColoredShortestPathDir.exists()){ ColoredShortestPathDir.mkdirs(); }
-        File RandomModels = new File("./OutputTest/RandomModels");
-        if (!RandomModels.exists()){ RandomModels.mkdirs(); }
+        File RandomModelsDir = new File("./OutputTest/RandomModels");
+        if (!RandomModelsDir.exists()){ RandomModelsDir.mkdirs(); }
 
         this.graph = graph;
     }
@@ -316,12 +316,11 @@ public class Algorithms {
         List<ColoredShortestPathObject> PathList = new ArrayList<>();
         for(int i=0; i<graph.getNEdgeColors(); i++) {
             if(i==0){
-                tempPath  = new ColoredShortestPathObject(source, destination, i, ColorShortestPath.findShortestPath(graph.getVGraph(), source, destination, i));
-                PathList.add(tempPath);
-            }else{
-                tempPath  = new ColoredShortestPathObject(i, ColorShortestPath.findShortestPath(graph.getVGraph(), source, destination, i));
+                tempPath  = new ColoredShortestPathObject(source, destination);
                 PathList.add(tempPath);
             }
+            tempPath = new ColoredShortestPathObject(i, ColorShortestPath.findShortestPath(graph.getVGraph(), source, destination, i));
+            PathList.add(tempPath);
         }
         writer.write(gson.toJson(PathList));
         writer.flush();

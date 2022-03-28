@@ -11,8 +11,7 @@ public class algorithms_test {
         String query8 = "CALL algorithms.wattStrogatzGenerator(10,8, 0.2)";
         String query9 = "CALL algorithms.BarabasiAlbertGenerator(10,10, 200)";
         String query10 = "CALL algorithms.rewireGraph";
-        //String query11 = "CALL algorithms.shortestPath(254)";
-        String query12 = "CALL algorithms.showErrors";
+        String query11 = "CALL algorithms.showErrors";
 
         QueryParser q = new QueryParser(args);
 
@@ -25,7 +24,6 @@ public class algorithms_test {
         q.parser(query8);
         q.parser(query9);
         q.parser(query10);
-        q.parser(query12);
-       // q.parser(query11);
+        q.parser(query11);
     }
 }

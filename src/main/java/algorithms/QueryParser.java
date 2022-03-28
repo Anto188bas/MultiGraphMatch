@@ -38,6 +38,7 @@ public class QueryParser {
 
 
     public void parser(String query) throws Exception {
+
         if(patternShortestPath.matcher(query).find()) {
             CypherParser parser = new CypherParser();
             Query query_object = (Query) parser.parse(query, null);

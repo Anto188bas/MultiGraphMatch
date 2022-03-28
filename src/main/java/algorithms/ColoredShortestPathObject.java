@@ -19,6 +19,11 @@ public class ColoredShortestPathObject {
         this.path = path;
     }
 
+    public ColoredShortestPathObject(Integer source, Integer destination){
+        this.source = source;
+        this.destination = destination;
+    }
+
     public ColoredShortestPathObject(Integer color, List<Integer> path){
         this.color = color;
         this.path = path;

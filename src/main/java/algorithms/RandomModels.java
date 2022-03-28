@@ -98,29 +98,28 @@ public class RandomModels {
      * @param initialGraph the source network
      * @param ColorNumbers the number of colors used by the network edges
      * @return the rewired network
+     *
      */
-    public List<EndpointPair> generateRewiring(MutableValueGraph<Integer, Integer> initialGraph, int ColorNumbers) {
+    public List<RewiringGraphEdges> generateRewiring(MutableValueGraph<Integer, Integer> initialGraph, int ColorNumbers) {
         MutableValueGraph<Integer, Integer> newGraph = ValueGraphBuilder.directed().build();
-        List<EndpointPair<Integer>> l = new ArrayList<>(initialGraph.edges());
-        Collections.shuffle(l);
-
+        List<EndpointPair<Integer>> initialEdgeList = new ArrayList<>(initialGraph.edges());
+        Collections.shuffle(initialEdgeList);
         Random random = new Random();
         random.setSeed(System.nanoTime());
-
-        //TODO debug the if else
         for(int i=0; i<initialGraph.edges().size(); i++) {
-            if(random.nextInt(100) %2 == 0) {
-                int vertexU = l.get(i).nodeU();
-                int vertexV = random.nextInt(initialGraph.nodes().size()) + 1;
-                if(vertexU != vertexV){ newGraph.putEdgeValue(vertexU, vertexV, random.nextInt(ColorNumbers)+1); }
-                else { newGraph.putEdgeValue(l.get(i).nodeU(), l.get(i).nodeV(), random.nextInt(ColorNumbers) + 1); }
-            }else{
-                newGraph.putEdgeValue(l.get(i).nodeU(), l.get(i).nodeV(), random.nextInt(ColorNumbers)+1);
+            if(random.nextInt(100) %2 == 1) {
+                int vertexU = initialEdgeList.get(i).nodeU();
+                int vertexV = random.nextInt(initialGraph.nodes().size());
+                if(vertexU != vertexV) { newGraph.putEdgeValue(vertexU, vertexV, random.nextInt(ColorNumbers)); }
+                else { newGraph.putEdgeValue(initialEdgeList.get(i).nodeU(), initialEdgeList.get(i).nodeV(), random.nextInt(ColorNumbers) ); }
+            } else {
+                newGraph.putEdgeValue(initialEdgeList.get(i).nodeU(), initialEdgeList.get(i).nodeV(), random.nextInt(ColorNumbers));
             }
         }
-        System.out.println(initialGraph.edges().size());
-        System.out.println(newGraph.edges().size());
-        return new ArrayList<>(newGraph.edges());
+
+        List<RewiringGraphEdges> newEdgeList = new ArrayList<>();
+        newGraph.edges().forEach(i -> newEdgeList.add(new RewiringGraphEdges(i.nodeU(), i.nodeV(), newGraph.edgeValue(i))));
+        return newEdgeList;
     }
 
 }
