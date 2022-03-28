@@ -49,30 +49,30 @@ public class NewFindCandidates {
         int[]         cols;
         // A. t_dst IS MATCHED
         if(t_src == -1) {
-           IntArrayList compatible_list   = edge_data.getBySecondValue(t_dst);
-           if(compatible_list != null) {
-               // 1. EDGE FROM q_src TO q_dst (OUTBOUND)
-               if (direction == EdgeDirection.OUT) {          // src to match
-                   edges_submap.addAll(graphPaths.getByDSTandSRCs(t_dst, compatible_list));
-                   cols = src_vet;
-               }
-               // 2. EDGE FROM q_dst TO q_src (INBOUND)
-               else if (direction == EdgeDirection.IN) {    // dst to match
-                   edges_submap.addAll(graphPaths.getBySRCandDSTs(t_dst, compatible_list));
-                   cols = dst_vet;
-               }
-               // 3. UNDIRECTED CASE          (BOTH)
-               else {                        // 1. src to match and 2. dst to match
-                   edges_submap.addAll(graphPaths.getByDSTandSRCs(t_dst, compatible_list));
-                   edges_submap.addAll(graphPaths.getBySRCandDSTs(t_dst, compatible_list));
-                   cols = src_dst;
-               }
-               // CANDIDATE CONFIGURATION
-               if (edge_type.size() == 0)
-                   NewEdgeSelector.no_types_case(edges_submap, matchingData, nodes_symmetry, listCandidates, q_src, cols, graphPaths);
-               else
-                   NewEdgeSelector.types_case(edges_submap, matchingData, nodes_symmetry, listCandidates, q_src, cols, graphPaths, queryEdge);
-           }
+            IntArrayList compatible_list   = edge_data.getBySecondValue(t_dst);
+            if(compatible_list != null) {
+                // 1. EDGE FROM q_src TO q_dst (OUTBOUND)
+                if (direction == EdgeDirection.OUT) {          // src to match
+                    edges_submap.addAll(graphPaths.getByDSTandSRCs(t_dst, compatible_list));
+                    cols = src_vet;
+                }
+                // 2. EDGE FROM q_dst TO q_src (INBOUND)
+                else if (direction == EdgeDirection.IN) {    // dst to match
+                    edges_submap.addAll(graphPaths.getBySRCandDSTs(t_dst, compatible_list));
+                    cols = dst_vet;
+                }
+                // 3. UNDIRECTED CASE          (BOTH)
+                else {                        // 1. src to match and 2. dst to match
+                    edges_submap.addAll(graphPaths.getByDSTandSRCs(t_dst, compatible_list));
+                    edges_submap.addAll(graphPaths.getBySRCandDSTs(t_dst, compatible_list));
+                    cols = src_dst;
+                }
+                // CANDIDATE CONFIGURATION
+                if (edge_type.size() == 0)
+                    NewEdgeSelector.no_types_case(edges_submap, matchingData, nodes_symmetry, listCandidates, q_src, cols, graphPaths);
+                else
+                    NewEdgeSelector.types_case(edges_submap, matchingData, nodes_symmetry, listCandidates, q_src, cols, graphPaths, queryEdge);
+            }
         }
 
         // B. t_src IS MATCHED
@@ -141,56 +141,36 @@ public class NewFindCandidates {
 
     //
     public static IntArrayList find_first_candidates(
-        int edge_id,
-        QueryStructure query,
-        GraphPaths     graphPaths,
-        StateStructures states,
-        int first_target_node, int second_target_node
+            int q_src, int q_dst, int t_src, int t_dst, int edge_id,
+            QueryStructure query,
+            GraphPaths     graphPaths,
+            MatchingData   matchingData,
+            IntArrayList[] nodes_symmetry,
+            StateStructures states
     ){
         IntArrayList listCandidates    = new IntArrayList();
         QueryEdge        queryEdge     = query.getQuery_edge(edge_id);
         EdgeDirection    direction     = states.map_edge_to_direction[edge_id];
         IntArrayList     edge_type     = queryEdge.getEdge_label();
+        ArrayList<Triplet<Integer, Integer, Integer>> edges_submap  = new ArrayList<>();
+        int q_node = q_src;
 
-
-        if (direction == EdgeDirection.OUT) { // src ---> dst
-            ArrayList<Triplet<Integer, Integer, Integer>> edges_submap  = new ArrayList<>();
-
-            edges_submap.add(graphPaths.getBySRCandDST(first_target_node, second_target_node));
-
-            if (edge_type.size() == 0)
-                NewEdgeSelector.no_type_case(edges_submap,graphPaths, listCandidates);
-            else
-                NewEdgeSelector.types_case(edges_submap, graphPaths, listCandidates, queryEdge, first_target_node, second_target_node);
-
-        }  else if (direction == EdgeDirection.IN) { // dst ---> src
-            ArrayList<Triplet<Integer, Integer, Integer>> edges_submap  = new ArrayList<>();
-
-            edges_submap.add(graphPaths.getBySRCandDST(second_target_node, first_target_node));
-
-            if (edge_type.size() == 0) {
-                NewEdgeSelector.no_type_case(edges_submap, graphPaths, listCandidates);
-            } else {
-                NewEdgeSelector.types_case(edges_submap, graphPaths, listCandidates, queryEdge, second_target_node, first_target_node);
-            }
-
-        } else { // src <---> dst
-            ArrayList<Triplet<Integer, Integer, Integer>> edges_submap_1 = new ArrayList<>();
-            ArrayList<Triplet<Integer, Integer, Integer>> edges_submap_2 = new ArrayList<>();
-
-            edges_submap_1.add(graphPaths.getBySRCandDST(first_target_node, second_target_node));
-            edges_submap_2.add(graphPaths.getBySRCandDST(second_target_node, first_target_node));
-
-            if (edge_type.size() == 0) {
-                NewEdgeSelector.no_type_case(edges_submap_1, graphPaths, listCandidates);
-                NewEdgeSelector.no_type_case(edges_submap_2, graphPaths, listCandidates);
-            } else {
-                NewEdgeSelector.types_case(edges_submap_1, graphPaths, listCandidates, queryEdge, first_target_node, second_target_node);
-                NewEdgeSelector.types_case(edges_submap_2, graphPaths, listCandidates, queryEdge, second_target_node, first_target_node);
-            }
+        // q_src = t_src AND q_dst = t_dst
+        if (direction == EdgeDirection.OUT) {
+            edges_submap.add(graphPaths.getBySRCandDST(t_src, t_dst));
+        }
+        else if (direction == EdgeDirection.IN) {
+            edges_submap.add(graphPaths.getBySRCandDST(t_dst, t_src));
+        }
+        else {
+            edges_submap.add(graphPaths.getBySRCandDST(t_src, t_dst));
+            edges_submap.add(graphPaths.getBySRCandDST(t_dst, t_src));
         }
 
-
+        if (edge_type.size() == 0)
+            NewEdgeSelector.no_type_case(edges_submap, q_node, graphPaths, matchingData, nodes_symmetry, listCandidates);
+        else
+            NewEdgeSelector.types_case(edges_submap, q_node, graphPaths, matchingData, nodes_symmetry, listCandidates, queryEdge, t_src, t_dst);
         return listCandidates;
     }
 
