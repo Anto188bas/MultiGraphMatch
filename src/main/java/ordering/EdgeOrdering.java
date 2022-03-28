@@ -111,10 +111,7 @@ public class EdgeOrdering {
 
         int shortest_cycle_len = OrderingUtils.shortestCycleLen(query_structure);
 
-        System.out.print("SP LEN: " + shortest_cycle_len);
-
         if(shortest_cycle_len < 4) { //If there is a triangle we use the Jaccard Similarity
-            System.out.print("\tMETRIC: JACCARD\n");
             // We search the node with the higher degree
             IntArrayList max_nodes = new IntArrayList();
             int max_degree = 0;
@@ -160,7 +157,6 @@ public class EdgeOrdering {
             }
 
         } else { // If there isn't a triangle we use the weighted edge-degree
-            System.out.print("\tMETRIC: DEGREE\n");
             double max_weighted_degree = -1d;
 
             for (NodesPair pair : unselected_pairs) {
@@ -255,8 +251,6 @@ public class EdgeOrdering {
 
                 }
                 addPairToTheOrdering(max_pair);
-
-
             }
 
         }

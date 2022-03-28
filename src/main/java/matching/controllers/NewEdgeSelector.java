@@ -6,10 +6,7 @@ import matching.models.MatchingData;
 import org.javatuples.Triplet;
 import state_machine.StateStructures;
 import target_graph.graph.GraphPaths;
-import tech.tablesaw.api.Row;
-import tech.tablesaw.api.Table;
 import java.util.ArrayList;
-import java.util.stream.Stream;
 
 
 public class NewEdgeSelector {
@@ -77,23 +74,18 @@ public class NewEdgeSelector {
     // 1B. TYPE VECTOR IS EMPTY (FIRST NODE)
     public static void no_type_case(
          ArrayList<Triplet<Integer, Integer, Integer>> candidates,
-         int q_node,
          GraphPaths       graphPaths,
-         MatchingData     matchingData,
-         IntArrayList[]   nodes_symmetry,
          IntArrayList     listCandidates
     ){
         candidates.forEach(triple -> {
             int t_node = triple.getValue0();
-            if (nodeCondCheck(q_node, t_node, matchingData, nodes_symmetry)){
-                IntArrayList[] colors_edges = graphPaths.getMap_key_to_edge_list()[triple.getValue2()];
-                for (IntArrayList edges: colors_edges) {
-                    if (edges == null) continue;
-                    for(int idEdge: edges) {
-                        listCandidates.add(idEdge);
-                        listCandidates.add(t_node);
-                        listCandidates.add(triple.getValue1().intValue());
-                    }
+            IntArrayList[] colors_edges = graphPaths.getMap_key_to_edge_list()[triple.getValue2()];
+            for (IntArrayList edges: colors_edges) {
+                if (edges == null) continue;
+                for(int idEdge: edges) {
+                    listCandidates.add(idEdge);
+                    listCandidates.add(t_node);
+                    listCandidates.add(triple.getValue1().intValue());
                 }
             }
         });
@@ -134,30 +126,25 @@ public class NewEdgeSelector {
     // 2B. TYPE VECTOR IS SET (FIRST NODE)
     public static void types_case(
             ArrayList<Triplet<Integer, Integer, Integer>> candidates,
-            int query_node,
             GraphPaths       graphPaths,
-            MatchingData     matchingData,
-            IntArrayList[]   nodes_symmetry,
             IntArrayList     listCandidates,
             QueryEdge        query_edge,
             int              t_src,
             int              t_dst
     ){
-        if (nodeCondCheck(query_node, t_src, matchingData, nodes_symmetry)){
-            candidates.forEach(triplet -> {
-                int key = triplet.getValue2();
-                IntArrayList[] colors_edges = graphPaths.getMap_key_to_edge_list()[key];
-                for(int color: query_edge.getEdge_label()) {
-                    IntArrayList edges = colors_edges[color];
-                    if (edges == null) continue;
-                    for(int idEdge: edges) {
-                        listCandidates.add(idEdge);
-                        listCandidates.add(t_src);
-                        listCandidates.add(t_dst);
-                    }
+        candidates.forEach(triplet -> {
+            int key = triplet.getValue2();
+            IntArrayList[] colors_edges = graphPaths.getMap_key_to_edge_list()[key];
+            for(int color: query_edge.getEdge_label()) {
+                IntArrayList edges = colors_edges[color];
+                if (edges == null) continue;
+                for(int idEdge: edges) {
+                    listCandidates.add(idEdge);
+                    listCandidates.add(t_src);
+                    listCandidates.add(t_dst);
                 }
-            });
-        }
+            }
+        });
     }
 
 

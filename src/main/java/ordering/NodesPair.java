@@ -2,8 +2,6 @@ package ordering;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import tech.tablesaw.api.Table;
-import tech.tablesaw.index.IntIndex;
 
 public class NodesPair {
     private final Integer                       firstEndpoint;
@@ -74,7 +72,7 @@ public class NodesPair {
     }
 
 
-    public void setNewCompatibilityDomain(
+    public void setCompatibilityDomain(
           Int2ObjectOpenHashMap<IntArrayList> first_second,
           Int2ObjectOpenHashMap<IntArrayList> second_first
     ) {
@@ -85,6 +83,6 @@ public class NodesPair {
         });
     }
 
-    public IntArrayList getByFirstValueNew(int first)   {return this.first_second.get(first);}
-    public IntArrayList getBySecondValueNew(int second) {return this.second_first.get(second);}
+    public IntArrayList getByFirstValue(int first)   {return this.first_second.get(first);}
+    public IntArrayList getBySecondValue(int second) {return this.second_first.get(second);}
 }

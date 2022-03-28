@@ -26,7 +26,8 @@ public class SymmetryCondition {
                         continue;
                     sequence[i][j] += 1;
                 }
-            } Arrays.sort(sequence[i]);
+            }
+            Arrays.sort(sequence[i]);
         } return sequence;
     }
 
@@ -37,7 +38,6 @@ public class SymmetryCondition {
             for (int j = i; j < nodes_number; j++){
                 if (Arrays.equals(sequence[i], sequence[j])){
                    support.set(i * nodes_number + j);
-                   support.set(j * nodes_number + i);
                 }
             } return support;
     }

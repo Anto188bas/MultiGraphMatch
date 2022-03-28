@@ -14,7 +14,6 @@ import org.opencypher.v9_0.parser.CypherParser;
 import scala.Option;
 import scala.collection.Iterator;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
-import tech.tablesaw.api.IntColumn;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.index.IntIndex;
@@ -337,47 +336,8 @@ public class QueryStructure {
                 second_first, dst, src, "dst", "src"
             );
 
-            pair.setNewCompatibilityDomain(first_second, second_first);
+            pair.setCompatibilityDomain(first_second, second_first);
 
-
-            // TODO it will be replaced with maps
-            /*
-            Table domain_table = Table.create()
-                .addColumns(IntColumn.create("first"))
-                .addColumns(IntColumn.create("second"));
-
-            for(Row query_row: query_bitmatrix_table.where(query_src_index.get(src).and(query_dst_index.get(dst)))) {
-                int directed_id = query_row.getInt("btx_id");
-
-                for (int target_id : compatibility.get(directed_id)) {
-                    for (Row target_row : target_bitmatrix_table.where(target_id_index.get(target_id))) {
-                        int t_src = target_row.getInt("src");
-                        int t_dst = target_row.getInt("dst");
-
-                        IntColumn src_column = IntColumn.create("first", new int[]{t_src});
-                        IntColumn dst_column = IntColumn.create("second", new int[]{t_dst});
-                        domain_table.append(Table.create().addColumns(src_column, dst_column));
-                    }
-                }
-            }
-
-            for(Row query_row: query_bitmatrix_table.where(query_src_index.get(dst).and(query_dst_index.get(src)))) {
-                int reversed_id = query_row.getInt("btx_id");
-
-                for (int target_id : compatibility.get(reversed_id)) {
-                    for (Row target_row : target_bitmatrix_table.where(target_id_index.get(target_id))) {
-                        int t_src = target_row.getInt("src");
-                        int t_dst = target_row.getInt("dst");
-
-                        IntColumn src_column = IntColumn.create("first", new int[]{t_dst});
-                        IntColumn dst_column = IntColumn.create("second", new int[]{t_src});
-                        domain_table.append(Table.create().addColumns(src_column, dst_column));
-                    }
-                }
-            }
-
-            pair.setCompatibility_domain(domain_table);
-            */
         }
     }
 
