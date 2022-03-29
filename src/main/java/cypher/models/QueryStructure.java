@@ -279,7 +279,21 @@ public class QueryStructure {
             int f_node_1, int f_node_2,
             Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> relationships
     ){
-        if(relationships.isEmpty() || relationships.get(node_1) == null || relationships.get(f_node_1) == null) return false;
+        if(
+                (relationships.isEmpty()) ||
+                (relationships.get(node_1) == null && relationships.get(f_node_1) == null)
+        ) {
+            return false;
+        }
+
+        if(
+                (relationships.get(node_1) == null) ||
+                (relationships.get(f_node_1) == null )
+        ) {
+            return true;
+        }
+
+
         IntArrayList edges_set_1 = relationships.get(node_1).get(node_2);
         IntArrayList edges_set_2 = relationships.get(f_node_1).get(f_node_2);
 
