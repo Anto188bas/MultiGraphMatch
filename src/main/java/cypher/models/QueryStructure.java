@@ -274,7 +274,7 @@ public class QueryStructure {
     }
 
     // NODES PAIRS COMPATIBILITIES
-    public boolean nodes_pairs_compatibilities (
+    public boolean node_pairs_are_not_compatible(
             int node_1,   int node_2,
             int f_node_1, int f_node_2,
             Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> relationships
@@ -285,7 +285,7 @@ public class QueryStructure {
 
         return (edges_set_1 == null && edges_set_2 != null) ||
                (edges_set_1 != null && edges_set_2 == null) ||
-               (edges_set_1 != null && !edges_equivalent_to(edges_set_1, edges_set_1));
+               (edges_set_1 != null && !edges_equivalent_to(edges_set_1, edges_set_2));
     }
 
 
@@ -365,7 +365,7 @@ public class QueryStructure {
     public boolean                                          isIn(int node1, int node2)      {return query_pattern.isIn(node1,  node2);}
     public boolean                                          isOut(int node1, int node2)     {return query_pattern.isOut(node1, node2);}
     public boolean                                          isRev(int node1, int node2)     {return query_pattern.isRev(node1, node2);}
-    public IntArrayList                                     get_node_neighbours(int node)   {return query_pattern.get_node_neighbours(node, query_nodes.size());}
+    public IntArrayList                                     get_node_neighbours(int node)   {return new IntArrayList(this.map_node_to_neighborhood.get(node));}
     public ObjectArraySet<NodesPair>                        getPairs()                      {return pairs;}
     public Int2ObjectOpenHashMap<IntArraySet>               getMap_endpoints_to_edges()     {return map_endpoints_to_edges;}
     public Int2ObjectOpenHashMap<NodesPair>                 getMap_edge_to_endpoints()      {return map_edge_to_endpoints;}

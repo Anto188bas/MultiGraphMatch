@@ -33,13 +33,14 @@ public class SymmetryCondition {
 
     // 2. SUPPORT CREATION
     private static BitSet support_creation(int[][] sequence, int nodes_number){
-        BitSet support = new BitSet(2 * nodes_number);
+        BitSet support = new BitSet(nodes_number * nodes_number);
         for (int i = 0; i < nodes_number; i++)
-            for (int j = i; j < nodes_number; j++){
+            for (int j = 0; j < nodes_number; j++){
                 if (Arrays.equals(sequence[i], sequence[j])){
                    support.set(i * nodes_number + j);
                 }
-            } return support;
+            }
+        return support;
     }
 
     // 3. ISOMORPHIC EXTENSION
@@ -48,7 +49,6 @@ public class SymmetryCondition {
         int[] cand      = new int[node_number];
         Arrays.fill(cand, -1);
         int i, j;
-        int [] vTemp;
         if (pos == node_number)
             vv.add(Arrays.copyOfRange(fDir, 0, node_number));
         else {
@@ -86,21 +86,23 @@ public class SymmetryCondition {
                     }
                 }
             }
-            boolean flag; int fneigh;
+            boolean flag;
+            int fneigh;
             QueryEdgeAggregation edges_data = query.getQuery_pattern();
             for (i = 0; i < ncand; i++){
-                fneigh = cand[i]; flag   = false;
+                fneigh = cand[i];
+                flag = false;
                 if (fneigh == neigh_max_count || query.nodes_equivalent_to(neigh_max_count, fneigh)) {
                     for (j = 0; j < node_number; j++) {
                         if (fDir[j] == -1) continue;
                         // OUT CHECKING
-                        flag = query.nodes_pairs_compatibilities(neigh_max_count, j, fneigh, fDir[j], edges_data.getOut_edges());
+                        flag = query.node_pairs_are_not_compatible(neigh_max_count, j, fneigh, fDir[j], edges_data.getOut_edges());
                         if (flag) break;
                         // IN CHECKING
-                        flag = query.nodes_pairs_compatibilities(neigh_max_count, j, fneigh, fDir[j], edges_data.getIn_edges());
+                        flag = query.node_pairs_are_not_compatible(neigh_max_count, j, fneigh, fDir[j], edges_data.getIn_edges());
                         if (flag) break;
                         // IN_OUT CHECKING
-                        flag = query.nodes_pairs_compatibilities(neigh_max_count, j, fneigh, fDir[j], edges_data.getIn_out_edges());
+                        flag = query.node_pairs_are_not_compatible(neigh_max_count, j, fneigh, fDir[j], edges_data.getIn_out_edges());
                         if (flag) break;
                     }
                     if (flag) continue;
