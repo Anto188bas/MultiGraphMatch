@@ -6,7 +6,7 @@ import configuration.Configuration;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import org.jgrapht.Graph;
-import org.jgrapht.graph.DirectedMultigraph;
+import org.jgrapht.graph.DirectedWeightedMultigraph;
 import reading.FileManager;
 import target_graph.edges.EdgeHandler;
 import target_graph.graph.GraphPaths;
@@ -25,7 +25,7 @@ import java.util.HashMap;
 @SuppressWarnings("UnstableApiUsage")
 
 public class UtilityGraph {
-    private DirectedMultigraph<Integer, RelationshipEdge> jGraph;
+    private DirectedWeightedMultigraph<Integer, RelationshipEdge> jGraph;
     private MutableValueGraph<Integer, Integer> vGraph;
 
     private final int nPairs;
@@ -46,7 +46,6 @@ public class UtilityGraph {
         NodesEdgesLabelsMaps idx_label  = new NodesEdgesLabelsMaps();
         Table[] nodes_tables            = FileManager.files_reading(configuration.nodes_main_directory, ',');
         Table[] edges_tables_properties = FileManager.files_reading(configuration.edges_main_directory, ',');
-
 
         HashMap<String, GraphMacroNode> macro_nodes  = new HashMap<>();
 
@@ -71,7 +70,7 @@ public class UtilityGraph {
      *
      */
     private void generateJGraph(){
-        jGraph = new DirectedMultigraph<>(RelationshipEdge.class);
+        jGraph = new DirectedWeightedMultigraph<>(RelationshipEdge.class);
 
         for(int i = 0; i<nodes_macro.size(); i++)  //vertex generation
             jGraph.addVertex(i);
@@ -81,11 +80,13 @@ public class UtilityGraph {
             Int2ObjectOpenHashMap<IntOpenHashSet[]> test = src_dst_aggregation.get(i);
             if(test != null) {
                 Object[] arr = test.keySet().toArray();
+
                 for(var j: arr)
                     jGraph.addEdge(i, (int) j, new RelationshipEdge(test.get((int) j)[0]));
             }
         }
         System.out.println("...JGraph Generated...");
+        System.out.println("Jgraph nodes: "+jGraph.vertexSet().size()+"\nJgraph edges: "+jGraph.edgeSet().size()+"\n");
     }
 
     /**
@@ -96,9 +97,10 @@ public class UtilityGraph {
     private void generateVGraph(){
         vGraph = ValueGraphBuilder.directed().build();
 
-        for(int i=0;i<nodes_macro.size();i++)
+        for(int i=0;i<nodes_macro.size();i++) //vertex generation
             vGraph.addNode(i);
 
+        //edge generation
         for (int i = 0; i < nodes_macro.size(); i++) {
             Int2ObjectOpenHashMap<IntOpenHashSet[]>  test = src_dst_aggregation.get(i);
             if (test != null) {
@@ -108,6 +110,7 @@ public class UtilityGraph {
             }
         }
         System.out.println("...VGraph Generated...");
+        System.out.println("Vgraph nodes: "+ vGraph.nodes().size()+"\nVgraph edges: "+vGraph.edges().size()+"\n");
     }
 
     /**
@@ -167,5 +170,4 @@ public class UtilityGraph {
      *
      */
     public int getVertexNumber(){return vGraph.nodes().size();}
-
 }

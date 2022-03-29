@@ -84,7 +84,7 @@ public class RandomModels {
      * @return the generated random network
      *
      */
-    public DirectedMultigraph generateWattStrogatz(int n, int k, double p){
+    public DirectedMultigraph generateWattStrogatz(int n, int k, double p) {
         WattsStrogatzGraphGenerator<Integer, RelationshipEdge> WattStrogatzGenerator = new WattsStrogatzGraphGenerator<>(n,k,p);
         DirectedMultigraph randomGraph = new DirectedMultigraph(vSupplier, SupplierUtil.createDefaultWeightedEdgeSupplier(), true);
         WattStrogatzGenerator.generateGraph(randomGraph);
@@ -101,26 +101,29 @@ public class RandomModels {
      *
      */
     public List<RewiringGraphEdges> generateRewiring(MutableValueGraph<Integer, Integer> initialGraph, int ColorNumbers) {
-        MutableValueGraph<Integer, Integer> newGraph = ValueGraphBuilder.directed().build();
-        List<EndpointPair<Integer>> initialEdgeList = new ArrayList<>(initialGraph.edges());
-        Collections.shuffle(initialEdgeList);
+        MutableNetwork<Integer, Integer> newGraph = NetworkBuilder.directed().allowsParallelEdges(true).build();
+        List<RewiringGraphEdges> newEdgeList = new ArrayList<>();
         Random random = new Random();
-        random.setSeed(System.nanoTime());
-        for(int i=0; i<initialGraph.edges().size(); i++) {
-            if(random.nextInt(100) %2 == 1) {
-                int vertexU = initialEdgeList.get(i).nodeU();
-                int vertexV = random.nextInt(initialGraph.nodes().size());
-                if(vertexU != vertexV) { newGraph.putEdgeValue(vertexU, vertexV, random.nextInt(ColorNumbers)); }
-                else { newGraph.putEdgeValue(initialEdgeList.get(i).nodeU(), initialEdgeList.get(i).nodeV(), random.nextInt(ColorNumbers) ); }
-            } else {
-                newGraph.putEdgeValue(initialEdgeList.get(i).nodeU(), initialEdgeList.get(i).nodeV(), random.nextInt(ColorNumbers));
-            }
+
+        int id=0;
+        for (var edge : initialGraph.edges()) {
+            int U = edge.nodeU();
+            int R = random.nextInt(initialGraph.nodes().size());
+            if (U == R || R % 2 == 0) R = edge.nodeV();
+            newGraph.addEdge(U, R, ++id);
         }
 
-        List<RewiringGraphEdges> newEdgeList = new ArrayList<>();
-        newGraph.edges().forEach(i -> newEdgeList.add(new RewiringGraphEdges(i.nodeU(), i.nodeV(), newGraph.edgeValue(i))));
+        System.out.println(newGraph.edges().size());
+        //O(n^2) (l'alternativa è ritornare direttamente il grafo
+        for (int U : newGraph.nodes()) {
+            for (int V : newGraph.nodes())
+                for (int i = 0; i < newGraph.edgesConnecting(U, V).size(); i++)
+                    newEdgeList.add(new RewiringGraphEdges(U, V, random.nextInt(ColorNumbers)));
+        }
+
+        //O(n) bug non tratta multigrafi
+        //newGraph.asGraph().edges().forEach(i -> newEdgeList.add(new RewiringGraphEdges(i.nodeU(), i.nodeV(),random.nextInt(ColorNumbers))));
         return newEdgeList;
     }
-
 }
 

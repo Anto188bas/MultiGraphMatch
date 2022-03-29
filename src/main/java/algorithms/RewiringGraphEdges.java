@@ -1,17 +1,14 @@
 package algorithms;
 
-
-import java.util.Optional;
-
 public class RewiringGraphEdges {
     Integer U;
     Integer V;
     Integer color;
 
-    public RewiringGraphEdges(Integer U, Integer V, Optional<Integer> color){
+    public RewiringGraphEdges(Integer U, Integer V, Integer color) {
         this.U = U;
         this.V = V;
-        color.ifPresent(integer -> this.color = integer);
+        this.color = color;
     }
 
     @Override
