@@ -101,7 +101,7 @@ public class RandomModels {
      *
      */
     public List<RewiringGraphEdges> generateRewiring(MutableValueGraph<Integer, Integer> initialGraph, int ColorNumbers) {
-        //MutableNetwork<Integer, Integer> newGraph = NetworkBuilder.directed().allowsParallelEdges(true).build();
+        MutableNetwork<Integer, Integer> newGraph = NetworkBuilder.directed().allowsParallelEdges(true).build();
         List<RewiringGraphEdges> newEdgeList = new ArrayList<>();
         Random random = new Random();
 
@@ -110,10 +110,9 @@ public class RandomModels {
             int U = edge.nodeU();
             int R = random.nextInt(initialGraph.nodes().size());
             if (U == R || R % 2 == 0) R = edge.nodeV();
-            //newGraph.addEdge(U, R, ++id);
+            newGraph.addEdge(U, R, id++);
             newEdgeList.add(new RewiringGraphEdges(U,R, random.nextInt(ColorNumbers)));
         }
-
         return newEdgeList;
     }
 }

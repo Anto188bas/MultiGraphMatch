@@ -1,4 +1,7 @@
 import algorithms.QueryParser;
+import com.google.common.base.Stopwatch;
+
+import java.util.concurrent.TimeUnit;
 
 public class algorithms_test {
     public static void main(String[] args) throws Exception {
@@ -13,6 +16,8 @@ public class algorithms_test {
         String query9 = "CALL algorithms.BarabasiAlbertGenerator(10,10, 200)";
         String query10 = "CALL algorithms.rewireGraph";
 
+        Stopwatch stopwatch = Stopwatch.createStarted();
+
         QueryParser q = new QueryParser(args);
 
         q.parser(query);
@@ -25,5 +30,7 @@ public class algorithms_test {
         q.parser(query8);
         q.parser(query9);
         q.parser(query10);
+        stopwatch.stop();
+        System.out.println("\u001B[32mParsed "+q.getQueryParsed()+" algorithms package's queries in "+ stopwatch.elapsed(TimeUnit.MILLISECONDS)+" milliseconds\u001B[32m ");
     }
 }

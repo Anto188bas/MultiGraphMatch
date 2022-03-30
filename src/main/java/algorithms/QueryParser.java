@@ -29,16 +29,18 @@ public class QueryParser {
     private final Pattern patternBarabasiAlbert = Pattern.compile("algorithms.BarabasiAlbertGenerator", Pattern.CASE_INSENSITIVE);
     private final Pattern patternRewiring = Pattern.compile("algorithms.rewireGraph", Pattern.CASE_INSENSITIVE);
 
+    int QueryParsed;
 
     public QueryParser(String[] args) {
         UtilityGraph utilityGraph = new UtilityGraph(args);
         algorithms = new Algorithms(utilityGraph);
+        QueryParsed=0;
     }
 
 
 
     public void parser(String query) throws Exception {
-
+        QueryParsed++;
         if(patternShortestPath.matcher(query).find()) {
             CypherParser parser = new CypherParser();
             Query query_object = (Query) parser.parse(query, null);
@@ -204,4 +206,6 @@ public class QueryParser {
             System.out.println("\u001B[31m"+"Error handling: "+'"'+query+'"'+" Invalid syntax!\n"+"\u001B[0m");
         }
     }
+
+    public int getQueryParsed(){return QueryParsed;}
 }
