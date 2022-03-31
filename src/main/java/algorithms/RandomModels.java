@@ -134,7 +134,7 @@ public class RandomModels {
         for(var edge:initialGraph.edges())
             edgesMap.put(id++,new RandomGraphEdge(edge.nodeU(), edge.nodeV(),initialGraph.edgeValue(edge.nodeU(), edge.nodeV()).orElse(null)));
 
-        for (int i = 0; i < edgesMap.size(); i++) {
+        for (int i = 0; i < edgesMap.size()*100; i++) {
             int index1 = random.nextInt(edgesMap.size());
             int index2 = random.nextInt(edgesMap.size());
             RandomGraphEdge x = edgesMap.get(index1);
