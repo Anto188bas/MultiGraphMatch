@@ -28,6 +28,7 @@ public class QueryParser {
     private final Pattern patternWattStrogatz = Pattern.compile("algorithms.wattStrogatzGenerator", Pattern.CASE_INSENSITIVE);
     private final Pattern patternBarabasiAlbert = Pattern.compile("algorithms.BarabasiAlbertGenerator", Pattern.CASE_INSENSITIVE);
     private final Pattern patternRewiring = Pattern.compile("algorithms.rewireGraph", Pattern.CASE_INSENSITIVE);
+    private final Pattern patternEdgeSwapping = Pattern.compile("algorithms.edgeSwapping", Pattern.CASE_INSENSITIVE);
 
     int QueryParsed;
 
@@ -202,10 +203,28 @@ public class QueryParser {
             Query query_object = (Query) parser.parse(query, null);
             query_object.asCanonicalStringVal();
             algorithms.GeneratorRewiring();
+        }else if(patternEdgeSwapping.matcher(query).find()){
+            CypherParser parser = new CypherParser();
+            Query query_object = (Query) parser.parse(query, null);
+            String nGraph = query_object.asCanonicalStringVal();
+            Pattern pattern = Pattern.compile("[0-9]+");
+            Matcher matcher = pattern.matcher(nGraph);
+            if(matcher.find()) {
+                for (int i = 0; i < Integer.parseInt(matcher.group()); i++)
+                    algorithms.GeneratorEdgeSwapping(i);
+            }else{
+                algorithms.GeneratorEdgeSwapping(1);
+            }
         }else{
             System.out.println("\u001B[31m"+"Error handling: "+'"'+query+'"'+" Invalid syntax!\n"+"\u001B[0m");
         }
     }
 
+    /**
+     *
+     * query parsed getter
+     *
+     * @return the number of queries parsed
+     */
     public int getQueryParsed(){return QueryParsed;}
 }

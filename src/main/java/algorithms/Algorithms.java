@@ -43,6 +43,8 @@ public class Algorithms {
         if (!ColoredShortestPathDir.exists()){ ColoredShortestPathDir.mkdirs(); }
         File RandomModelsDir = new File("./OutputTest/RandomModels");
         if (!RandomModelsDir.exists()){ RandomModelsDir.mkdirs(); }
+        File RandomModelsEdgeSwapDir = new File("./OutputTest/RandomModels/EdgeSwapping");
+        if (!RandomModelsEdgeSwapDir.exists()){ RandomModelsEdgeSwapDir.mkdirs(); }
 
         this.graph = graph;
     }
@@ -430,7 +432,24 @@ public class Algorithms {
         RandomModels randomModels = new RandomModels();
         File Rewiring = new File("./OutputTest/RandomModels/RewiredGraph");
         writer = new FileWriter(Rewiring);
-        writer.write(gson.toJson(randomModels.generateRewiring(graph.getVGraph(), graph.getNEdgeColors()))); //oppure edgeset
+        writer.write(gson.toJson(randomModels.generateRewiring(graph.getVGraph()).values()));
+        writer.flush();
+        writer.close();
+    }
+
+    /**
+     *
+     * Invoke the generateEdgeSwapping method from the class RandomModels, generate "count" random graphs, convert them to json format and save them in the EdgeSwappping subdirectory
+     *
+     * @param count the desired number of graphs
+     * @throws IOException if the directory "RandomModels/EdgeSwapping" doesn't exist
+     *
+     */
+    public void GeneratorEdgeSwapping(int count) throws IOException {
+        RandomModels randomModels = new RandomModels();
+        File EdgeSwapping =  new File( "./OutputTest/RandomModels/EdgeSwapping/SwappedGraph_"+count );
+        writer = new FileWriter(EdgeSwapping);
+        writer.write(gson.toJson(randomModels.generateEdgeSwapping(graph.getVGraph()).values()));
         writer.flush();
         writer.close();
     }

@@ -1,13 +1,13 @@
 package algorithms;
 
 import com.google.common.graph.*;
-import com.google.gson.Gson;
 import org.jgrapht.generate.BarabasiAlbertGraphGenerator;
 import org.jgrapht.generate.GnmRandomGraphGenerator;
 import org.jgrapht.generate.GnpRandomGraphGenerator;
 import org.jgrapht.generate.WattsStrogatzGraphGenerator;
 import org.jgrapht.graph.DirectedMultigraph;
 import org.jgrapht.util.SupplierUtil;
+
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -97,13 +97,12 @@ public class RandomModels {
      * Rewire the edges of the native network
      *
      * @param initialGraph the source network
-     * @param ColorNumbers the number of colors used by the network edges
-     * @return the rewired network
+     * @return the rewired network as a hashmap of edges
      *
      */
-    public List<RewiringGraphEdges> generateRewiring(MutableValueGraph<Integer, Integer> initialGraph, int ColorNumbers) {
-        MutableNetwork<Integer, Integer> newGraph = NetworkBuilder.directed().allowsParallelEdges(true).build();
-        List<RewiringGraphEdges> newEdgeList = new ArrayList<>();
+    public HashMap<Integer, RandomGraphEdge> generateRewiring(MutableValueGraph<Integer, Integer> initialGraph) {
+        //MutableNetwork<Integer, Integer> newGraph = NetworkBuilder.directed().allowsParallelEdges(true).build();
+        HashMap<Integer, RandomGraphEdge> edgesMap = new HashMap<>();
         Random random = new Random();
         random.setSeed(System.currentTimeMillis());
 
@@ -112,37 +111,53 @@ public class RandomModels {
             int U = edge.nodeU();
             int R = random.nextInt(initialGraph.nodes().size());
             if (U == R || R % 2 == 0) R = edge.nodeV();
-            newGraph.addEdge(U, R, id++);
-            //TODO newEdgeList.add(new RewiringGraphEdges(U,R, initialGraph.edgeValue(edge).orElse(null))); same edge color? implement edgeswapping
-            newEdgeList.add(new RewiringGraphEdges(U,R, random.nextInt(ColorNumbers)));
+            //newGraph.addEdge(U, R, id++);
+            edgesMap.put(id++,new RandomGraphEdge(U,R, initialGraph.edgeValue(edge).orElse(null)));
         }
-        generateEdgeSwapping(initialGraph);
-        return newEdgeList;
+        return edgesMap;
     }
 
-    //TODO check theory for swapping, add parser and algorithms class method
-    public List<RewiringGraphEdges> generateEdgeSwapping(MutableValueGraph<Integer, Integer> initialGraph){
-        List<RewiringGraphEdges> newEdgeList = new ArrayList<>();
-        List<EndpointPair<Integer>> edges = new ArrayList<>(initialGraph.edges());
-
+    /**
+     *
+     * Applicate the EdgeSwapping algorithm to the given network
+     *
+     * @param initialGraph the initial reference network
+     * @return the rewired network as a hashmap of edges
+     *
+     */
+    public HashMap<Integer, RandomGraphEdge> generateEdgeSwapping(MutableValueGraph<Integer, Integer> initialGraph){
+        HashMap<Integer, RandomGraphEdge> edgesMap = new HashMap<>();
         Random random = new Random();
         random.setSeed(System.currentTimeMillis());
+        int id=0;
 
-        for(int i=0; i<initialGraph.edges().size()/2;i++) {
-            EndpointPair<Integer> x = edges.get(random.nextInt(initialGraph.nodes().size()));
-            EndpointPair<Integer> y =  edges.get(random.nextInt(initialGraph.nodes().size()));
-            if (x != y && random.nextInt(100) %2==0) {
-                newEdgeList.add(new RewiringGraphEdges(x.nodeU(), y.nodeV(), initialGraph.edgeValue(x).orElse(null)));
-                newEdgeList.add(new RewiringGraphEdges(y.nodeU(), x.nodeV(), initialGraph.edgeValue(y).orElse(null)));
-            }else{
-                newEdgeList.add(new RewiringGraphEdges(x.nodeU(), x.nodeV(), initialGraph.edgeValue(x).orElse(null)));
-                newEdgeList.add(new RewiringGraphEdges(y.nodeU(), y.nodeV(), initialGraph.edgeValue(y).orElse(null)));
+        for(var edge:initialGraph.edges())
+            edgesMap.put(id++,new RandomGraphEdge(edge.nodeU(), edge.nodeV(),initialGraph.edgeValue(edge.nodeU(), edge.nodeV()).orElse(null)));
+
+        for (int i = 0; i < edgesMap.size(); i++) {
+            int index1 = random.nextInt(edgesMap.size());
+            int index2 = random.nextInt(edgesMap.size());
+            RandomGraphEdge x = edgesMap.get(index1);
+            RandomGraphEdge y = edgesMap.get(index2);
+
+            if (!Objects.equals(x.getU(), y.getU()) &&
+                !Objects.equals(x.getU(), y.getV()) &&
+                !Objects.equals(x.getV(), y.getU()) &&
+                !Objects.equals(x.getV(), y.getV()) ){
+
+                //(a,b), (c,d) -> (a,d), (b,c)
+                int b = x.getV();
+                int c = y.getU();
+                int d = y.getV();
+                x.setV(d);
+                y.setU(b);
+                y.setV(c);
+
+                //edgesMap.replace(index1, x, new RandomGraphEdge(x.getU(), y.getV(), x.getColor()));
+                //edgesMap.replace(index2, y, new RandomGraphEdge(x.getV(), y.getU(), y.getColor()));
             }
         }
-        Gson gson = new Gson();
-        System.out.println(gson.toJson(newEdgeList));
-        System.out.println(newEdgeList.size());
-        return newEdgeList;
+        return edgesMap;
     }
 }
 
