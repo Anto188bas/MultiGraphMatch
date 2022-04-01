@@ -13,7 +13,6 @@ import java.util.List;
  *
  */
 public class Algorithms {
-
     private FileWriter writer;
     final private Gson gson = new Gson();
     final private UtilityGraph graph;
@@ -21,6 +20,7 @@ public class Algorithms {
     private Centrality centrality;
     private Clustering clustering;
     private LinkPrediction linkPrediction;
+
     /**
      *
      * Class constructor, construct an Algorithms object
@@ -393,11 +393,11 @@ public class Algorithms {
      * @throws IOException if the directory "RandomModels" doesn't exist
      *
      */
-    public void GeneratorWattStrogatz(int n, int k, double p) throws IOException {
+    public void GeneratorWattsStrogatz(int n, int k, double p) throws IOException {
         RandomModels randomModels = new RandomModels();
-        File WattStrogatz = new File("./OutputTest/RandomModels/WattStrogatz");
+        File WattStrogatz = new File("./OutputTest/RandomModels/WattsStrogatz");
         writer = new FileWriter(WattStrogatz);
-        writer.write(gson.toJson(randomModels.generateWattStrogatz(n, k, p).edgeSet()));
+        writer.write(gson.toJson(randomModels.generateWattsStrogatz(n, k, p).edgeSet()));
         writer.flush();
         writer.close();
     }

@@ -25,7 +25,7 @@ public class QueryParser {
     private final Pattern patternPreferentialAttachmentPrediction = Pattern.compile("algorithms.preferentialAttachmentPrediction", Pattern.CASE_INSENSITIVE);
     private final Pattern patternErdosReniyNM = Pattern.compile("algorithms.erdosReniyNMGenerator", Pattern.CASE_INSENSITIVE);
     private final Pattern patternErdosReniyNP = Pattern.compile("algorithms.erdosReniyNPGenerator", Pattern.CASE_INSENSITIVE);
-    private final Pattern patternWattStrogatz = Pattern.compile("algorithms.wattStrogatzGenerator", Pattern.CASE_INSENSITIVE);
+    private final Pattern patternWattStrogatz = Pattern.compile("algorithms.wattsStrogatzGenerator", Pattern.CASE_INSENSITIVE);
     private final Pattern patternBarabasiAlbert = Pattern.compile("algorithms.BarabasiAlbertGenerator", Pattern.CASE_INSENSITIVE);
     private final Pattern patternRewiring = Pattern.compile("algorithms.rewireGraph", Pattern.CASE_INSENSITIVE);
     private final Pattern patternEdgeSwapping = Pattern.compile("algorithms.edgeSwapping", Pattern.CASE_INSENSITIVE);
@@ -38,14 +38,10 @@ public class QueryParser {
         QueryParsed=0;
     }
 
-
-
     public void parser(String query) throws Exception {
         QueryParsed++;
         if(patternShortestPath.matcher(query).find()) {
-            CypherParser parser = new CypherParser();
-            Query query_object = (Query) parser.parse(query, null);
-            String vertex= query_object.asCanonicalStringVal();
+            String vertex = ChyperSyntaxChecker(query);
             Pattern pattern = Pattern.compile("[0-9]+");
             Matcher matcher = pattern.matcher(vertex);
             String vertexA;
@@ -54,10 +50,8 @@ public class QueryParser {
                 if(matcher.find()) algorithms.DijsktraShortestPath(Integer.parseInt(vertexA), Integer.parseInt(matcher.group()));
                 else algorithms.DijsktraAllShortestPath(Integer.parseInt(vertexA));
             }
-        }else if(patternColoredShortestPath.matcher(query).find()){
-            CypherParser parser = new CypherParser();
-            Query query_object = (Query) parser.parse(query, null);
-            String vertex= query_object.asCanonicalStringVal();
+        }else if(patternColoredShortestPath.matcher(query).find()) {
+            String vertex = ChyperSyntaxChecker(query);
             Pattern pattern = Pattern.compile("[0-9]+");
             Matcher matcher = pattern.matcher(vertex);
             String vertexA, vertexOrColor = null;
@@ -69,57 +63,37 @@ public class QueryParser {
                 else
                     algorithms.AllColoredShortestPath(Integer.parseInt(vertexA), Integer.parseInt(Objects.requireNonNull(vertexOrColor)));
             }
-        }else if(patternBetweenness.matcher(query).find()){
-            CypherParser parser = new CypherParser();
-            Query query_object = (Query) parser.parse(query, null);
-            query_object.asCanonicalStringVal();
+        }else if(patternBetweenness.matcher(query).find()) {
+            ChyperSyntaxChecker(query);
             algorithms.BetweennessCentrality();
-        }else if(patternCloseness.matcher(query).find()){
-            CypherParser parser = new CypherParser();
-            Query query_object = (Query) parser.parse(query, null);
-            query_object.asCanonicalStringVal();
+        }else if(patternCloseness.matcher(query).find()) {
+            ChyperSyntaxChecker(query);
             algorithms.ClosenessCentrality();
-        }else if(patternEigenVector.matcher(query).find()){
-            CypherParser parser = new CypherParser();
-            Query query_object = (Query) parser.parse(query, null);
-            query_object.asCanonicalStringVal();
+        }else if(patternEigenVector.matcher(query).find()) {
+            ChyperSyntaxChecker(query);
             algorithms.EigenVectorCentrality();
-        }else if(patternKatz.matcher(query).find()){
-            CypherParser parser = new CypherParser();
-            Query query_object = (Query) parser.parse(query, null);
-            query_object.asCanonicalStringVal();
+        }else if(patternKatz.matcher(query).find()) {
+            ChyperSyntaxChecker(query);
             algorithms.KatzCentrality();
-        }else if(patternPageRank.matcher(query).find()){
-            CypherParser parser = new CypherParser();
-            Query query_object = (Query) parser.parse(query, null);
-            query_object.asCanonicalStringVal();
+        }else if(patternPageRank.matcher(query).find()) {
+            ChyperSyntaxChecker(query);
             algorithms.PageRankCentrality();
-        }else if(patternClusteringCoefficient.matcher(query).find()){
-            CypherParser parser = new CypherParser();
-            Query query_object = (Query) parser.parse(query, null);
-            query_object.asCanonicalStringVal();
+        }else if(patternClusteringCoefficient.matcher(query).find()) {
+            ChyperSyntaxChecker(query);
             algorithms.ClusteringCoefficient();
-        }else if(patternAverageClusteringCoefficient.matcher(query).find()){
-            CypherParser parser = new CypherParser();
-            Query query_object = (Query) parser.parse(query, null);
-            query_object.asCanonicalStringVal();
+        }else if(patternAverageClusteringCoefficient.matcher(query).find()) {
+            ChyperSyntaxChecker(query);
             algorithms.AverageClusteringCoefficient();
-        }else if(patternKSpanningTree.matcher(query).find()){
-            CypherParser parser = new CypherParser();
-            Query query_object = (Query) parser.parse(query, null);
-            String clusterNumber= query_object.asCanonicalStringVal();
+        }else if(patternKSpanningTree.matcher(query).find()) {
+            String clusterNumber = ChyperSyntaxChecker(query);
             Pattern pattern = Pattern.compile("[0-9]+");
             Matcher matcher = pattern.matcher(clusterNumber);
             if (matcher.find()) { algorithms.KSpanningTreeClustering(Integer.parseInt(matcher.group(0))); }
-        }else if(patternLabelPropagation.matcher(query).find()){
-            CypherParser parser = new CypherParser();
-            Query query_object = (Query) parser.parse(query, null);
-            query_object.asCanonicalStringVal();
+        }else if(patternLabelPropagation.matcher(query).find()) {
+            ChyperSyntaxChecker(query);
             algorithms.LabelPropagationClustering();
-        }else if(patternCommonNeighborsPrediction.matcher(query).find()){
-            CypherParser parser = new CypherParser();
-            Query query_object = (Query) parser.parse(query, null);
-            String vertex= query_object.asCanonicalStringVal();
+        }else if(patternCommonNeighborsPrediction.matcher(query).find()) {
+            String vertex = ChyperSyntaxChecker(query);
             Pattern pattern = Pattern.compile("[0-9]+");
             Matcher matcher = pattern.matcher(vertex);
             String v0 = null;
@@ -128,10 +102,8 @@ public class QueryParser {
                 assert v0 != null;
                 algorithms.CommonNeighborsPrediction(Integer.parseInt(v0), Integer.parseInt(matcher.group()));
             }
-        }else if(patternJaccardCoefficientPrediction.matcher(query).find()){
-            CypherParser parser = new CypherParser();
-            Query query_object = (Query) parser.parse(query, null);
-            String vertex= query_object.asCanonicalStringVal();
+        }else if(patternJaccardCoefficientPrediction.matcher(query).find()) {
+            String vertex = ChyperSyntaxChecker(query);
             Pattern pattern = Pattern.compile("[0-9]+");
             Matcher matcher = pattern.matcher(vertex);
             String v0 = null;
@@ -140,10 +112,8 @@ public class QueryParser {
                 assert v0 != null;
                 algorithms.JaccardCoefficientPrediction(Integer.parseInt(v0), Integer.parseInt(matcher.group()));
             }
-        }else if(patternPreferentialAttachmentPrediction.matcher(query).find()){
-            CypherParser parser = new CypherParser();
-            Query query_object = (Query) parser.parse(query, null);
-            String vertex= query_object.asCanonicalStringVal();
+        }else if(patternPreferentialAttachmentPrediction.matcher(query).find()) {
+            String vertex = ChyperSyntaxChecker(query);
             Pattern pattern = Pattern.compile("[0-9]+");
             Matcher matcher = pattern.matcher(vertex);
             String v0 = null;
@@ -152,26 +122,20 @@ public class QueryParser {
                 assert v0 != null;
                 algorithms.PreferentialAttachmentPrediction(Integer.parseInt(v0), Integer.parseInt(matcher.group()));
             }
-        }else if(patternErdosReniyNM.matcher(query).find()){
-            CypherParser parser = new CypherParser();
-            Query query_object = (Query) parser.parse(query, null);
-            String vertex= query_object.asCanonicalStringVal();
+        }else if(patternErdosReniyNM.matcher(query).find()) {
+            String vertex = ChyperSyntaxChecker(query);
             Pattern pattern = Pattern.compile("[0-9]+");
             Matcher matcher = pattern.matcher(vertex);
             if (matcher.find()) { algorithms.GeneratorErdosReniyNM(Integer.parseInt(matcher.group()), Integer.parseInt(matcher.group())); }
         }else if(patternErdosReniyNP.matcher(query).find()){
-            CypherParser parser = new CypherParser();
-            Query query_object = (Query) parser.parse(query, null);
-            String vertex= query_object.asCanonicalStringVal();
+            String vertex = ChyperSyntaxChecker(query);
             Pattern pattern = Pattern.compile("[0-9]+");
             Matcher matcher = pattern.matcher(vertex);
             Pattern pattern2 = Pattern.compile("0.[0-9]");
             Matcher matcher2 = pattern2.matcher(vertex);
             if (matcher.find() && matcher2.find()) { algorithms.GeneratorErdosReniyNP(Integer.parseInt(matcher.group()), Double.parseDouble(matcher2.group())); }
-        }else if(patternWattStrogatz.matcher(query).find()){
-            CypherParser parser = new CypherParser();
-            Query query_object = (Query) parser.parse(query, null);
-            String vertex= query_object.asCanonicalStringVal();
+        }else if(patternWattStrogatz.matcher(query).find()) {
+            String vertex = ChyperSyntaxChecker(query);
             Pattern pattern = Pattern.compile("[0-9]+");
             Matcher matcher = pattern.matcher(vertex);
             Pattern pattern2 = Pattern.compile("0.[0-9]");
@@ -182,13 +146,11 @@ public class QueryParser {
                 if(matcher.find())  k = matcher.group();
                 if (matcher2.find()) {
                     assert k != null;
-                    algorithms.GeneratorWattStrogatz(Integer.parseInt(n),Integer.parseInt(k), Double.parseDouble(matcher2.group()));
+                    algorithms.GeneratorWattsStrogatz(Integer.parseInt(n),Integer.parseInt(k), Double.parseDouble(matcher2.group()));
                 }
             }
-        }else if(patternBarabasiAlbert.matcher(query).find()){
-            CypherParser parser = new CypherParser();
-            Query query_object = (Query) parser.parse(query, null);
-            String vertex= query_object.asCanonicalStringVal();
+        }else if(patternBarabasiAlbert.matcher(query).find()) {
+            String vertex = ChyperSyntaxChecker(query);
             Pattern pattern = Pattern.compile("[0-9]+");
             Matcher matcher = pattern.matcher(vertex);
             String m0 = null, m = null;
@@ -198,23 +160,17 @@ public class QueryParser {
                 assert m0 != null && m != null;
                 algorithms.GeneratorBarabasiAlbert(Integer.parseInt(m0), Integer.parseInt(m), Integer.parseInt(matcher.group()));
             }
-        }else if(patternRewiring.matcher(query).find()){
-            CypherParser parser = new CypherParser();
-            Query query_object = (Query) parser.parse(query, null);
-            query_object.asCanonicalStringVal();
+        }else if(patternRewiring.matcher(query).find()) {
+            ChyperSyntaxChecker(query);
             algorithms.GeneratorRewiring();
-        }else if(patternEdgeSwapping.matcher(query).find()){
-            CypherParser parser = new CypherParser();
-            Query query_object = (Query) parser.parse(query, null);
-            String nGraph = query_object.asCanonicalStringVal();
+        }else if(patternEdgeSwapping.matcher(query).find()) {
+            String nGraph = ChyperSyntaxChecker(query);
             Pattern pattern = Pattern.compile("[0-9]+");
             Matcher matcher = pattern.matcher(nGraph);
             if(matcher.find()) {
                 for (int i = 0; i < Integer.parseInt(matcher.group()); i++)
                     algorithms.GeneratorEdgeSwapping(i);
-            }else{
-                algorithms.GeneratorEdgeSwapping(1);
-            }
+            }else { algorithms.GeneratorEdgeSwapping(1); }
         }else{
             System.out.println("\u001B[31m"+"Error handling: "+'"'+query+'"'+" Invalid syntax!\n"+"\u001B[0m");
         }
@@ -222,9 +178,24 @@ public class QueryParser {
 
     /**
      *
+     * Check if the input query respect the Chyper syntax
+     *
+     * @param query the input query
+     * @return an openChyper query string format
+     *
+     */
+    public String ChyperSyntaxChecker(String query){
+        CypherParser parser = new CypherParser();
+        Query query_object = (Query) parser.parse(query, null);
+        return query_object.asCanonicalStringVal();
+    }
+
+    /**
+     *
      * query parsed getter
      *
      * @return the number of queries parsed
+     *
      */
-    public int getQueryParsed(){return QueryParsed;}
+    public int getQueryParsed(){ return QueryParsed; }
 }

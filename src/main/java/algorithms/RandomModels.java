@@ -7,7 +7,6 @@ import org.jgrapht.generate.GnpRandomGraphGenerator;
 import org.jgrapht.generate.WattsStrogatzGraphGenerator;
 import org.jgrapht.graph.DirectedMultigraph;
 import org.jgrapht.util.SupplierUtil;
-
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -85,10 +84,10 @@ public class RandomModels {
      * @return the generated random network
      *
      */
-    public DirectedMultigraph generateWattStrogatz(int n, int k, double p) {
-        WattsStrogatzGraphGenerator<Integer, RelationshipEdge> WattStrogatzGenerator = new WattsStrogatzGraphGenerator<>(n,k,p);
+    public DirectedMultigraph generateWattsStrogatz(int n, int k, double p) {
+        WattsStrogatzGraphGenerator<Integer, RelationshipEdge> WattsStrogatzGenerator = new WattsStrogatzGraphGenerator<>(n,k,p);
         DirectedMultigraph randomGraph = new DirectedMultigraph(vSupplier, SupplierUtil.createDefaultWeightedEdgeSupplier(), true);
-        WattStrogatzGenerator.generateGraph(randomGraph);
+        WattsStrogatzGenerator.generateGraph(randomGraph);
         return  randomGraph;
     }
 
@@ -101,7 +100,6 @@ public class RandomModels {
      *
      */
     public HashMap<Integer, RandomGraphEdge> generateRewiring(MutableValueGraph<Integer, Integer> initialGraph) {
-        //MutableNetwork<Integer, Integer> newGraph = NetworkBuilder.directed().allowsParallelEdges(true).build();
         HashMap<Integer, RandomGraphEdge> edgesMap = new HashMap<>();
         Random random = new Random();
         random.setSeed(System.currentTimeMillis());
@@ -111,7 +109,6 @@ public class RandomModels {
             int U = edge.nodeU();
             int R = random.nextInt(initialGraph.nodes().size());
             if (U == R || R % 2 == 0) R = edge.nodeV();
-            //newGraph.addEdge(U, R, id++);
             edgesMap.put(id++,new RandomGraphEdge(U,R, initialGraph.edgeValue(edge).orElse(null)));
         }
         return edgesMap;
@@ -152,9 +149,6 @@ public class RandomModels {
                 x.setV(d);
                 y.setU(b);
                 y.setV(c);
-
-                //edgesMap.replace(index1, x, new RandomGraphEdge(x.getU(), y.getV(), x.getColor()));
-                //edgesMap.replace(index2, y, new RandomGraphEdge(x.getV(), y.getU(), y.getColor()));
             }
         }
         return edgesMap;

@@ -19,21 +19,13 @@ public class RandomGraphEdge {
         return V;
     }
 
-    public Integer getColor() {
-        return color;
-    }
+    public Integer getColor() { return color; }
 
-    public void setU(Integer u) {
-        U = u;
-    }
+    public void setU(Integer u) { U = u; }
 
-    public void setV(Integer v) {
-        V = v;
-    }
+    public void setV(Integer v) { V = v; }
 
-    public void setColor(Integer color) {
-        this.color = color;
-    }
+    public void setColor(Integer color) { this.color = color; }
 
     @Override
     public String toString() {

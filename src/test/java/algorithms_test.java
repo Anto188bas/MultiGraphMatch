@@ -1,6 +1,5 @@
 import algorithms.QueryParser;
 import com.google.common.base.Stopwatch;
-
 import java.util.concurrent.TimeUnit;
 
 public class algorithms_test {
@@ -12,10 +11,10 @@ public class algorithms_test {
         String query5 = "CALL algorithms.Katz";
         String query6 = "CALL algorithms.coloredShortestPath(223,5454,1)";
         String query7 = "CALL algorithms.coloredShortestPath(254,543)";
-        String query8 = "CALL algorithms.wattStrogatzGenerator(10,8, 0.2)";
+        String query8 = "CALL algorithms.wattsStrogatzGenerator(10,8, 0.2)";
         String query9 = "CALL algorithms.BarabasiAlbertGenerator(10,10, 200)";
         String query10 = "CALL algorithms.rewireGraph";
-        String query11 = "CALL algorithms.edgeSwapping(5)";
+        String query11 = "CALL algorithms.edgeSwapping(2)";
         String query12 = "CALL algorithms.edgeSwpping";
 
         Stopwatch stopwatch = Stopwatch.createStarted();

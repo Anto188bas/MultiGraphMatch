@@ -6,7 +6,7 @@ import configuration.Configuration;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import org.jgrapht.Graph;
-import org.jgrapht.graph.DirectedWeightedMultigraph;
+import org.jgrapht.graph.SimpleDirectedGraph;
 import reading.FileManager;
 import target_graph.edges.EdgeHandler;
 import target_graph.graph.GraphPaths;
@@ -25,7 +25,7 @@ import java.util.HashMap;
 @SuppressWarnings("UnstableApiUsage")
 
 public class UtilityGraph {
-    private DirectedWeightedMultigraph<Integer, RelationshipEdge> jGraph;
+    private Graph<Integer, RelationshipEdge> jGraph;
     private MutableValueGraph<Integer, Integer> vGraph;
 
     private final int nPairs;
@@ -70,7 +70,7 @@ public class UtilityGraph {
      *
      */
     private void generateJGraph(){
-        jGraph = new DirectedWeightedMultigraph<>(RelationshipEdge.class);
+        jGraph = new SimpleDirectedGraph<>(RelationshipEdge.class);
 
         for(int i = 0; i<nodes_macro.size(); i++)  //vertex generation
             jGraph.addVertex(i);
@@ -169,5 +169,5 @@ public class UtilityGraph {
      * @return the number of vertex in the graph
      *
      */
-    public int getVertexNumber(){return vGraph.nodes().size();}
+    public int getVertexNumber() { return vGraph.nodes().size(); }
 }
