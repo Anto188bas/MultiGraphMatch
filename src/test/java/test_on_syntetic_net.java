@@ -81,9 +81,14 @@ public class test_on_syntetic_net {
                 e.printStackTrace();
                 System.err.println("timeout");
             }
-            exec.shutdownNow();
 
+            try {
+                exec.shutdownNow();
+                boolean res = exec.awaitTermination(1, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {e.printStackTrace();}
         });
+
+        System.exit(0);
 
     }
 }

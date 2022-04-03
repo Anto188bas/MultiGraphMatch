@@ -12,7 +12,7 @@ public class Configuration {
 
     public Configuration(String[] args){
         set_error();
-        timeout = 1;
+        timeout = 0;
         out_file = null;
         for(int i = 0; i < args.length; i++)
             option_setting(args[i], args[++i]);
