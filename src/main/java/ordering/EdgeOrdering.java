@@ -2,6 +2,7 @@ package ordering;
 
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.*;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 
 public class EdgeOrdering {
@@ -105,67 +106,52 @@ public class EdgeOrdering {
         //*************************************************************** FIRST PAIR ***************************************************************//
         ordered_nodes = new IntArraySet();
         map_state_to_unmapped_nodes = new int[edge_keys.size()];
-        IntArraySet current_edge_set;
+
         state_index = 0;
         NodesPair query_pair_to_add = null;
 
-        int shortest_cycle_len = OrderingUtils.shortestCycleLen(query_structure);
+        // We search the node with the higher degree
+        IntArrayList max_nodes = new IntArrayList();
+        int max_degree = 0;
 
-        if(shortest_cycle_len < 4) { //If there is a triangle we use the Jaccard Similarity
-            // We search the node with the higher degree
-            IntArrayList max_nodes = new IntArrayList();
-            int max_degree = 0;
+        for (int key : node_keys) {
+            int current_degree = nodes_degree.get(key);
 
-            for (int key : node_keys) {
-                int current_degree = nodes_degree.get(key);
-
-                if (current_degree > max_degree) {
-                    max_degree = current_degree;
-                    max_nodes = new IntArrayList();
-                    max_nodes.push(key);
-                } else if (current_degree == max_degree) {
-                    max_nodes.push(key);
-                }
+            if (current_degree > max_degree) {
+                max_degree = current_degree;
+                max_nodes = new IntArrayList();
+                max_nodes.push(key);
+            } else if (current_degree == max_degree) {
+                max_nodes.push(key);
             }
+        }
 
-            // There can be multiple nodes with the same max degree.
-            // For each node having max-degree we consider his neighborhood.
-            // We compute the Jaccard similarity between the node and all his neighbours.
-            Int2DoubleOpenHashMap map_pair_to_jaccard_similarity = new Int2DoubleOpenHashMap();
-            for (int node : max_nodes) {
-                IntArraySet neighborhood = map_node_to_neighborhood.get(node);
+        // There can be multiple nodes with the same max degree.
+        // For each node having max-degree we consider his neighborhood.
+        // We compute the score between the node and all its neighbours.
+        Int2DoubleOpenHashMap map_pair_to_score = new Int2DoubleOpenHashMap();
+        for (int node : max_nodes) {
+            IntArraySet neighborhood = map_node_to_neighborhood.get(node);
 
-                for (int neighbour : neighborhood) {
-                    NodesPair current_endpoints = new NodesPair(node, neighbour);
-                    int domain_size = map_id_to_pair.get(current_endpoints.getId().intValue()).getDomain_size();
+            for (int neighbour : neighborhood) {
+                NodesPair current_endpoints = new NodesPair(node, neighbour);
+                int domain_size = map_id_to_pair.get(current_endpoints.getId().intValue()).getDomain_size();
+                int neighbour_degree = nodes_degree.get(neighbour);
 
-                    Double jaccard_similarity = OrderingUtils.computeJaccardSimilarity(node, neighbour, map_node_to_neighborhood, domain_size);
-                    map_pair_to_jaccard_similarity.put(current_endpoints.getId().intValue(), jaccard_similarity.doubleValue());
-                }
+                Double score = OrderingUtils.computePairScore(node, neighbour, map_node_to_neighborhood, domain_size, neighbour_degree);
+                map_pair_to_score.put(current_endpoints.getId().intValue(), score.doubleValue());
             }
+        }
 
-            // We search the pair having the maximum Jaccard Similarity
-            double max_jaccard_similarity = -1d;
+        // We search the pair having the maximum score
+        double max_score = -1d;
 
-            for (NodesPair pair : unselected_pairs) {
-                double current_jaccard_similarity = map_pair_to_jaccard_similarity.get(pair.getId().intValue());
+        for (NodesPair pair : unselected_pairs) {
+            double current_score = map_pair_to_score.get(pair.getId().intValue());
 
-                if (current_jaccard_similarity > max_jaccard_similarity) {
-                    max_jaccard_similarity = current_jaccard_similarity;
-                    query_pair_to_add = pair;
-                }
-            }
-
-        } else { // If there isn't a triangle we use the weighted edge-degree
-            double max_weighted_degree = -1d;
-
-            for (NodesPair pair : unselected_pairs) {
-                double current_weighted_degree = map_pair_to_weighted_degree.get(pair.getId().intValue());
-
-                if (current_weighted_degree > max_weighted_degree) {
-                    max_weighted_degree = current_weighted_degree;
-                    query_pair_to_add = pair;
-                }
+            if (current_score > max_score) {
+                max_score = current_score;
+                query_pair_to_add = pair;
             }
         }
 
@@ -208,16 +194,14 @@ public class EdgeOrdering {
                 }
 
                 addPairToTheOrdering(selected_pair);
-            } else { // If there aren't pairs with both endpoint matched, we select the next pair of the ordering using OS
-                // For each of these pairs, we compute OS's weight
-                Int2DoubleOpenHashMap neighborhood_weights = new Int2DoubleOpenHashMap();
+            } else { // If there aren't pairs with both endpoint matched, we select the next pair of the ordering
+                Int2DoubleOpenHashMap map_pair_to_simplified_score = new Int2DoubleOpenHashMap();
+                Int2IntOpenHashMap map_pair_to_os_cardinality = new Int2IntOpenHashMap();
 
                 for (NodesPair current_pair : ordered_pairs_neighborhood) {
-                    ObjectArraySet<NodesPair> current_pair_neighborhood = map_pair_to_neighborhood.get(current_pair.getId().intValue()).clone(); // We clone the neighborhood because we modify it while we calculate weights
+                    ObjectArraySet<NodesPair> current_pair_neighborhood = map_pair_to_neighborhood.get(current_pair.getId().intValue()).clone();
 
                     ObjectArraySet<NodesPair> os = new ObjectArraySet<>();
-
-                    double w_os;
 
                     // OS (neighbour pairs already selected for the ordering)
                     for (NodesPair neighbour : current_pair_neighborhood) {
@@ -226,31 +210,59 @@ public class EdgeOrdering {
                         }
                     }
 
-                    // Let's remove the OS pairs from the neighborhood. OS, NS and RS must be pairwise disjoint.
-                    current_pair_neighborhood.removeAll(os); //// We use this IntArraySet because we can't remove elements during a for-each loop (tests have already been done)
+                    map_pair_to_os_cardinality.put(current_pair.getId().intValue(), os.size());
 
-                    w_os = OrderingUtils.computeSetWeight(os, map_id_to_pair);
+                    int domain_size = map_id_to_pair.get(current_pair.getId().intValue()).getDomain_size();
+                    int neighbour_degree = nodes_degree.get(ordered_nodes.contains(current_pair.getFirstEndpoint().intValue()) ? current_pair.getSecondEndpoint().intValue() : current_pair.getFirstEndpoint().intValue());
 
-                    neighborhood_weights.put(current_pair.getId().intValue(), w_os);
+                    // SimplifiedScore(u, v) = Deg(v) * 1/|Dom(u, v)|, where u is the node already added to the ordering and v is the other one.
+                    double score = OrderingUtils.computeSimplifiedPairScore(domain_size, neighbour_degree);
+
+                    map_pair_to_simplified_score.put(current_pair.getId().intValue(), score);
                 }
 
                 /*
                  Here we select the next pair of the ordering.
-                 Criteria: pair with maximum w_os.
+                 Criteria_1: pair with maximum |OS|.
+                 Criteria_2: pair with maximum simplified score.
                  */
 
-                double max_weight = -1;
-                NodesPair max_pair = null;
+                int max_os_cardinality = -1;
+                ObjectArrayList<NodesPair> max_pairs = new ObjectArrayList<>();
+
                 for (NodesPair current_pair : ordered_pairs_neighborhood) {
-                    double weight = neighborhood_weights.get(current_pair.getId().intValue());
+                    int current_os_cardinality = map_pair_to_os_cardinality.get(current_pair.getId().intValue());
 
-                    if (weight > max_weight) {
-                        max_weight = weight;
-                        max_pair = current_pair;
+                    if (current_os_cardinality > max_os_cardinality) {
+                        max_os_cardinality = current_os_cardinality;
+                        max_pairs = new ObjectArrayList<>();
+                        max_pairs.push(current_pair);
+                    } else if (current_os_cardinality == max_os_cardinality) {
+                        max_pairs.push(current_pair);
                     }
-
                 }
-                addPairToTheOrdering(max_pair);
+
+                // If there are multiple pairs having maximum |OS|, then we consider the pair having maximum simplified score.
+                // Otherwise, we consider the pair having maximum |OS.
+                if(max_pairs.size() > 1) {
+                    double max_simplified_score = -1;
+                    max_pairs = new ObjectArrayList<>();
+
+                    for (NodesPair current_pair : ordered_pairs_neighborhood) {
+                        double current_simplified_score = map_pair_to_simplified_score.get(current_pair.getId().intValue());
+
+                        if (current_simplified_score > max_simplified_score) {
+                            max_simplified_score = current_simplified_score;
+                            max_pairs = new ObjectArrayList<>();
+                            max_pairs.push(current_pair);
+                        } else if (current_simplified_score == max_simplified_score) {
+                            max_pairs.push(current_pair);
+                        }
+
+                    }
+                }
+
+                addPairToTheOrdering(max_pairs.get(0));
             }
 
         }

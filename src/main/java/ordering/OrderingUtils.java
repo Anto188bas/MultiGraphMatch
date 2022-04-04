@@ -4,12 +4,6 @@ import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Vector;
-import java.util.concurrent.atomic.AtomicReference;
-
 public class OrderingUtils {
 
     public static Double computeSetWeight(ObjectArraySet<NodesPair> pair_set, Int2ObjectOpenHashMap<NodesPair> map_id_to_pair) {
@@ -71,7 +65,9 @@ public class OrderingUtils {
         return map_pair_to_degree;
     }
 
-    public static Double computeJaccardSimilarity(int node, int neighbour, Int2ObjectOpenHashMap<IntArraySet> mapNodeToNeighborhood, int domainSize) {
+    public static Double computePairScore(int node, int neighbour, Int2ObjectOpenHashMap<IntArraySet> mapNodeToNeighborhood, int domainSize, int neighbour_degree) {
+        // Score(u, v) = Jacc(u, v) * Deg(v) + 1/|Dom(u, v)|
+
         // Node's neighborhood
         IntArraySet nodeNeighborhood = mapNodeToNeighborhood.get(node);
 
@@ -84,78 +80,15 @@ public class OrderingUtils {
         // Cardinality of the union between neighborhoods
         int neighborhoodsUnionCardinality = OrderingUtils.intArraySetUnion(nodeNeighborhood, neighbourNeighborhood).size();
 
-        return ((neighborhoodsIntersectionCardinality + 0.5d) / (neighborhoodsUnionCardinality + 0.5d)) * (1d / domainSize);
+        // Jaccard
+        double jaccard = ((neighborhoodsIntersectionCardinality + 0.5d) / (neighborhoodsUnionCardinality + 0.5d));
+
+        // Score
+        return jaccard * neighbour_degree * (1d / domainSize);
     }
 
-    static int shortestCycleLen(QueryStructure queryStructure)
-    {
-        int n = queryStructure.getQuery_nodes().keySet().size();
-
-        Vector<Integer>[] gr = new Vector[n];
-
-        for(int k : queryStructure.getQuery_nodes().keySet()) {
-            gr[k] = new Vector<>();
-            for(int i : queryStructure.getMap_node_to_neighborhood().get(k)) {
-                gr[k].add(i);
-            }
-        }
-
-        // To store length of the shortest cycle
-        int ans = Integer.MAX_VALUE;
-
-        // For all vertices
-        for (int i = 0; i < n; i++)
-        {
-
-            // Make distance maximum
-            int[] dist = new int[n];
-            Arrays.fill(dist, (int) 1e9);
-
-            // Take a imaginary parent
-            int[] par = new int[n];
-            Arrays.fill(par, -1);
-
-            // Distance of source to source is 0
-            dist[i] = 0;
-            Queue<Integer> q = new LinkedList<>();
-
-            // Push the source element
-            q.add(i);
-
-            // Continue until queue is not empty
-            while (!q.isEmpty())
-            {
-
-                // Take the first element
-                int x = q.poll();
-
-                // Traverse for all it's childs
-                for (int child : gr[x])
-                {
-                    // If it is not visited yet
-                    if (dist[child] == (int) (1e9))
-                    {
-
-                        // Increase distance by 1
-                        dist[child] = 1 + dist[x];
-
-                        // Change parent
-                        par[child] = x;
-
-                        // Push into the queue
-                        q.add(child);
-                    } else if (par[x] != child && par[child] != x)
-                        ans = Math.min(ans, dist[x] + dist[child] + 1);
-                }
-            }
-        }
-
-            return ans;
-//        // If graph contains no cycle
-//        if (ans == Integer.MAX_VALUE)
-//            return -1;
-//
-//            // If graph contains cycle
-//        else
+    public static Double computeSimplifiedPairScore(int domainSize, int neighbour_degree) {
+        // Score(u, v) = Deg(v) + 1/|Dom(u, v)|
+        return neighbour_degree * (1d / domainSize);
     }
 }
