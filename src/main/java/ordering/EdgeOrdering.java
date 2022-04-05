@@ -87,20 +87,6 @@ public class EdgeOrdering {
 
         // DEGREE OF EACH NODE
         Int2IntOpenHashMap nodes_degree = OrderingUtils.computeNodesDegree(node_keys, in_edges, out_edges, in_out_edges);
-
-        // MAP EACH PAIR TO THE CORRESPONDING DEGREE  d(u, v) = d(u) + d(v)
-        Int2IntOpenHashMap map_pair_to_degree = OrderingUtils.computeEdgesDegree(unselected_pairs, nodes_degree);
-
-
-        // MAP EACH PAIR TO THE CORRESPONDING WEIGHTED DEGREE  (1 - \frac{dom(p)}{domains_sum}) * \frac{deg(p)}{degrees_sum}
-        Int2DoubleOpenHashMap map_pair_to_weighted_degree = new Int2DoubleOpenHashMap();
-
-        int domains_sum = unselected_pairs.stream().map(NodesPair::getDomain_size).reduce(0, Integer::sum);
-        int degrees_sum = nodes_degree.values().stream().reduce(0, Integer::sum);
-        for(NodesPair pair: unselected_pairs) {
-            double weighted_degree = (1 - (pair.getDomain_size()/domains_sum)) * (map_pair_to_degree.get(pair.getId().intValue()) / degrees_sum);
-            map_pair_to_weighted_degree.put(pair.getId().intValue(), weighted_degree);
-        }
         //******************************************************************************************************************************************//
 
         //*************************************************************** FIRST PAIR ***************************************************************//
@@ -154,7 +140,6 @@ public class EdgeOrdering {
                 query_pair_to_add = pair;
             }
         }
-
         addPairToTheOrdering(query_pair_to_add);
         //******************************************************************************************************************************************//
 
@@ -194,77 +179,52 @@ public class EdgeOrdering {
                 }
 
                 addPairToTheOrdering(selected_pair);
-            } else { // If there aren't pairs with both endpoint matched, we select the next pair of the ordering
+            } else { // If there aren't pairs with both endpoint matched, we select the next pair of the ordering using the score
                 Int2DoubleOpenHashMap map_pair_to_simplified_score = new Int2DoubleOpenHashMap();
-                Int2IntOpenHashMap map_pair_to_os_cardinality = new Int2IntOpenHashMap();
 
                 for (NodesPair current_pair : ordered_pairs_neighborhood) {
-                    ObjectArraySet<NodesPair> current_pair_neighborhood = map_pair_to_neighborhood.get(current_pair.getId().intValue()).clone();
-
-                    ObjectArraySet<NodesPair> os = new ObjectArraySet<>();
-
-                    // OS (neighbour pairs already selected for the ordering)
-                    for (NodesPair neighbour : current_pair_neighborhood) {
-                        if (selected_pairs.contains(neighbour)) {
-                            os.add(neighbour);
-                        }
-                    }
-
-                    map_pair_to_os_cardinality.put(current_pair.getId().intValue(), os.size());
-
                     int domain_size = map_id_to_pair.get(current_pair.getId().intValue()).getDomain_size();
-                    int neighbour_degree = nodes_degree.get(ordered_nodes.contains(current_pair.getFirstEndpoint().intValue()) ? current_pair.getSecondEndpoint().intValue() : current_pair.getFirstEndpoint().intValue());
 
-                    // SimplifiedScore(u, v) = Deg(v) * 1/|Dom(u, v)|, where u is the node already added to the ordering and v is the other one.
-                    double score = OrderingUtils.computeSimplifiedPairScore(domain_size, neighbour_degree);
+                    int neighbour;
+                    int node;
+                    if(ordered_nodes.contains(current_pair.getFirstEndpoint().intValue())) {
+                        neighbour = current_pair.getSecondEndpoint().intValue();
+                        node = current_pair.getFirstEndpoint().intValue();
+                    } else {
+                        neighbour = current_pair.getFirstEndpoint().intValue();
+                        node = current_pair.getSecondEndpoint().intValue();
+                    }
+                    int neighbour_degree = nodes_degree.get(neighbour);
+
+                    // Score(u, v) = Jacc(u, v) * Deg(v) * 1/|Dom(u, v)|, where u is the node already added to the ordering and v is the other one.
+                    double score = OrderingUtils.computePairScore(node, neighbour, map_node_to_neighborhood, domain_size, neighbour_degree);
 
                     map_pair_to_simplified_score.put(current_pair.getId().intValue(), score);
                 }
 
                 /*
                  Here we select the next pair of the ordering.
-                 Criteria_1: pair with maximum |OS|.
-                 Criteria_2: pair with maximum simplified score.
+                 Criteria: pair with maximum score.
                  */
 
-                int max_os_cardinality = -1;
                 ObjectArrayList<NodesPair> max_pairs = new ObjectArrayList<>();
+                max_score = -1;
 
                 for (NodesPair current_pair : ordered_pairs_neighborhood) {
-                    int current_os_cardinality = map_pair_to_os_cardinality.get(current_pair.getId().intValue());
+                    double current_score = map_pair_to_simplified_score.get(current_pair.getId().intValue());
 
-                    if (current_os_cardinality > max_os_cardinality) {
-                        max_os_cardinality = current_os_cardinality;
+                    if (current_score > max_score) {
+                        max_score = current_score;
                         max_pairs = new ObjectArrayList<>();
                         max_pairs.push(current_pair);
-                    } else if (current_os_cardinality == max_os_cardinality) {
+                    } else if (current_score == max_score) {
                         max_pairs.push(current_pair);
                     }
-                }
 
-                // If there are multiple pairs having maximum |OS|, then we consider the pair having maximum simplified score.
-                // Otherwise, we consider the pair having maximum |OS.
-                if(max_pairs.size() > 1) {
-                    double max_simplified_score = -1;
-                    max_pairs = new ObjectArrayList<>();
-
-                    for (NodesPair current_pair : ordered_pairs_neighborhood) {
-                        double current_simplified_score = map_pair_to_simplified_score.get(current_pair.getId().intValue());
-
-                        if (current_simplified_score > max_simplified_score) {
-                            max_simplified_score = current_simplified_score;
-                            max_pairs = new ObjectArrayList<>();
-                            max_pairs.push(current_pair);
-                        } else if (current_simplified_score == max_simplified_score) {
-                            max_pairs.push(current_pair);
-                        }
-
-                    }
                 }
 
                 addPairToTheOrdering(max_pairs.get(0));
             }
-
         }
         //******************************************************************************************************************************************//
         pairs_ordering = selected_pairs;
