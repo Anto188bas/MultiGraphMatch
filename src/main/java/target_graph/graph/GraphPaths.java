@@ -13,17 +13,22 @@ public class GraphPaths {
     private final IntArrayList[][] map_key_to_edge_list;
     private final int num_pairs;
     private final int num_edge_colors;
+    private final Int2ObjectOpenHashMap<Int2IntOpenHashMap> map_node_color_degrees;
+
 
     public GraphPaths(
         Int2ObjectOpenHashMap<Int2IntOpenHashMap> map_pair_to_key,
         Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> tmp_map_key_to_edge_list,
         int num_edge_colors,
-        int num_pairs
+        int num_pairs,
+        Int2ObjectOpenHashMap<Int2IntOpenHashMap> map_node_color_degrees
     ) {
         this.num_pairs            = num_pairs;
         this.num_edge_colors      = num_edge_colors;
         this.map_pair_to_key      = map_pair_to_key;
         this.map_key_to_edge_list = new IntArrayList[this.num_pairs][this.num_edge_colors];
+        this.map_node_color_degrees = map_node_color_degrees;
+
 
         // TABLE POPULATION
         for(int i = 0; i < this.num_pairs; i++) {
@@ -39,6 +44,7 @@ public class GraphPaths {
     // GETTER
     public Int2ObjectOpenHashMap<Int2IntOpenHashMap>    getMap_pair_to_key()      {return map_pair_to_key;}
     public IntArrayList[][]                             getMap_key_to_edge_list() {return map_key_to_edge_list;}
+    public Int2ObjectOpenHashMap<Int2IntOpenHashMap>    getMap_node_color_degrees() {return map_node_color_degrees;}
 
     public ArrayList<Triplet<Integer, Integer, Integer>> getBySRCandDSTs(int src, IntArrayList dsts) {
         ArrayList<Triplet<Integer, Integer, Integer>> result = new ArrayList<>();

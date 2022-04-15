@@ -75,6 +75,22 @@ public class EdgeHandler {
         }
     }
 
+    //
+    private static void node_color_degrees_init(Int2ObjectOpenHashMap<Int2IntOpenHashMap> map_node_color_degrees, int node){
+        if(map_node_color_degrees.containsKey(node)) return;
+        map_node_color_degrees.put(node, new Int2IntOpenHashMap());
+    }
+
+    private static void node_color_degrees_increase(
+        Int2ObjectOpenHashMap<Int2IntOpenHashMap> map_node_color_degrees, int node, int color
+    ){
+        Int2IntOpenHashMap color_degrees = map_node_color_degrees.get(node);
+        if(color_degrees.containsKey(color))
+           color_degrees.replace(color, color_degrees.get(color) + 1);
+        else
+            color_degrees.put(color, 1);
+    }
+
     // ADD EDGE IN LIST (NEW SOLUTION)
     private static void new_add_edge_in_list(
             Row                                                             row,
@@ -86,7 +102,8 @@ public class EdgeHandler {
             Int2ObjectOpenHashMap<Int2IntOpenHashMap>                       map_pair_to_key,
             Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>>      map_key_to_edge_list,
             AtomicInteger                                                   key_count,
-            Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntOpenHashSet[]>>  src_dst_aggregation
+            Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntOpenHashSet[]>>  src_dst_aggregation,
+            Int2ObjectOpenHashMap<Int2IntOpenHashMap>                       map_node_color_degrees
     ){
         int src  = str2int(row, header.get(0));
         int dst  = str2int(row, header.get(1));
@@ -100,6 +117,10 @@ public class EdgeHandler {
         if(!map_pair_to_key.containsKey(src)) {
             map_pair_to_key.put(src, new Int2IntOpenHashMap());
         }
+
+        //node-color-degrees configuration
+        node_color_degrees_init(map_node_color_degrees, src);
+        node_color_degrees_init(map_node_color_degrees, dst);
 
         if(!map_pair_to_key.get(src).containsKey(dst)) {
             key = key_count.getAndIncrement();
@@ -116,6 +137,8 @@ public class EdgeHandler {
         }
 
         map_color_to_edge_list.get(type).add(edge_key);
+        node_color_degrees_increase(map_node_color_degrees, src, type);
+        node_color_degrees_increase(map_node_color_degrees, dst, type);
     }
 
     public static void createGraphEdge(
@@ -161,6 +184,7 @@ public class EdgeHandler {
 
         AtomicInteger edge_id_count   = new AtomicInteger(0);
         AtomicInteger pair_key_count  = new AtomicInteger(0);
+        Int2ObjectOpenHashMap<Int2IntOpenHashMap> map_node_color_degrees = new Int2ObjectOpenHashMap<>();
 
         for(Table table: tables){
             List<String>  header  = table.columnNames();
@@ -171,7 +195,7 @@ public class EdgeHandler {
                     new_add_edge_in_list(
                         row, header, row.getString(header.get(2)), idx_label,
                         edge_id_count, edgeId, tmp_map_pair_to_key, tmp_map_key_to_edge_list,
-                        pair_key_count, src_dst_aggregation
+                        pair_key_count, src_dst_aggregation, map_node_color_degrees
                     )
                 );
                 table.removeColumns(header.get(0), header.get(1), header.get(2));
@@ -182,13 +206,17 @@ public class EdgeHandler {
                     new_add_edge_in_list(
                        row, header, "none", idx_label, edge_id_count,
                        edgeId, tmp_map_pair_to_key, tmp_map_key_to_edge_list,
-                       pair_key_count, src_dst_aggregation
+                       pair_key_count, src_dst_aggregation, map_node_color_degrees
                     )
                 );
                 table.removeColumns(header.get(0), header.get(1));
             }
             table.addColumns(edgeId);
         }
-        return new GraphPaths(tmp_map_pair_to_key, tmp_map_key_to_edge_list,idx_label.getLabelToIdxEdge().size(), pair_key_count.get());
+        return new GraphPaths(
+             tmp_map_pair_to_key, tmp_map_key_to_edge_list,
+             idx_label.getLabelToIdxEdge().size(), pair_key_count.get(),
+             map_node_color_degrees
+        );
     }
 }

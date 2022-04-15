@@ -58,6 +58,8 @@ public class test_on_syntetic_net {
                     QueryStructure query_obj = new QueryStructure();
                     query_obj.parser(query, idx_label);
 
+                    System.out.println(query_obj.getMap_node_color_degrees().get(0));
+
                     // MATCHING
                     OutData outData = NewMatching.matching(
                         true, false, Long.MAX_VALUE, idx_label, target_bitmatrix,
