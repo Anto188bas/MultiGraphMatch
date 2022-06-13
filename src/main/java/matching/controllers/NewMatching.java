@@ -50,7 +50,6 @@ public class NewMatching {
 
         for (int f_node: first_compatibility.keySet()) {
             for (int s_node: first_compatibility.get(f_node)) {
-
                 matchingData.setCandidates[0] = NewFindCandidates.find_first_candidates(
                         q_src, q_dst, f_node, s_node, states.map_state_to_edge[0],
                         query_obj, graphPaths, matchingData, nodes_symmetry, states

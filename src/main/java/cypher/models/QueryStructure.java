@@ -335,6 +335,8 @@ public class QueryStructure {
         // SRC
         Int2IntOpenHashMap color_degrees = map_node_color_degrees.get(q_src);
         Int2IntOpenHashMap target_color_degrees = t_map_node_color_degrees.get(t_src);
+
+        // System.out.println(color_degrees + "; " + target_color_degrees);
         for(int type: color_degrees.keySet()){
             int q_src_degree = color_degrees.get(type);
             int t_src_degree = target_color_degrees.getOrDefault(type, 0);
@@ -362,19 +364,28 @@ public class QueryStructure {
        int c1, int c2, String c1_name, String c2_name,
        Int2ObjectOpenHashMap<Int2IntOpenHashMap> target_map_node_color_degrees
     ) {
-        for(Row query_row: query_bitmatrix_table.where(query_src_index.get(c1).and(query_dst_index.get(c2))))
-            for (int target_id : compatibility.get(query_row.getInt("btx_id")))
-                for(Row target_row : target_bitmatrix_table.where(target_id_index.get(target_id))){
+        for(Row query_row: query_bitmatrix_table.where(query_src_index.get(c1).and(query_dst_index.get(c2)))) {
+            for (int target_id : compatibility.get(query_row.getInt("btx_id"))) {
+                for (Row target_row : target_bitmatrix_table.where(target_id_index.get(target_id))) {
                     int t_src = target_row.getInt(c1_name);
                     int t_dst = target_row.getInt(c2_name);
 
-                    if(!degree_comparison(t_src, c1, t_dst, c2, target_map_node_color_degrees)) continue;
+                    // DEGREE CHECK
+                    int t_src_act = t_src;
+                    int t_dst_act = t_dst;
+                    if(c1_name.equals("dst")){
+                        t_src_act = t_dst;
+                        t_dst_act = t_src;
+                    }
+                    if (!degree_comparison(t_src_act, c1, t_dst_act, c2, target_map_node_color_degrees)) continue;
 
                     if (!first_second.containsKey(t_src)) first_second.put(t_src, new IntArrayList());
                     if (!second_first.containsKey(t_dst)) second_first.put(t_dst, new IntArrayList());
                     first_second.get(t_src).add(t_dst);
                     second_first.get(t_dst).add(t_src);
                 }
+            }
+        }
     }
 
 
@@ -405,7 +416,6 @@ public class QueryStructure {
                 second_first, dst, src, "dst", "src",
                 target_map_node_color_degrees
             );
-
             pair.setCompatibilityDomain(first_second, second_first);
 
         }
