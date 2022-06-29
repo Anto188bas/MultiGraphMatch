@@ -33,7 +33,7 @@ public class test_on_syntetic_net {
         Int2ObjectOpenHashMap<String>            nodes_macro  = new Int2ObjectOpenHashMap<>();
         Int2ObjectOpenHashMap<ArrayList<String>> level_nodeId = new Int2ObjectOpenHashMap<>();
         int max_deep_level = MacroNodeHandler.graph_macro_node_creation(
-            nodes_tables,"type", idx_label, macro_nodes, level_nodeId, nodes_macro
+            nodes_tables,"labels", idx_label, macro_nodes, level_nodeId, nodes_macro
         );
 
         // EDGE ELABORATION
@@ -45,6 +45,8 @@ public class test_on_syntetic_net {
         TargetBitmatrix target_bitmatrix = new TargetBitmatrix();
         target_bitmatrix.create_bitset(src_dst_aggregation, idx_label, macro_nodes, nodes_macro);
 
+        System.out.println(idx_label.getLabelToIdxNode().keySet());
+        System.out.println(idx_label.getLabelToIdxEdge().keySet());
 
         // QUERIES READING
         List<String> queries = FileManager.query_reading(configuration);
@@ -92,5 +94,6 @@ public class test_on_syntetic_net {
 
         System.exit(0);
 
+        //MATCH (n2:officer)-[:OFFICER_OF]->(n1:entity), (n2)-[:OFFICER_OF]->(n4:entity), (n3:officer)-[:OFFICER_OF]->(n1), (n3)-[:OFFICER_OF]->(n4) RETURN count(n1)
     }
 }
