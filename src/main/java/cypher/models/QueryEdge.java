@@ -23,6 +23,7 @@ public class QueryEdge {
     private long                          min_deep;
     private long                          max_deep;
     private final HashMap<String, Object> properties;
+    private HashMap<String, QueryCondition> conditions;
 
     public QueryEdge(RelationshipPattern edgePattern, NodesEdgesLabelsMaps label_type_map){
         properties = new HashMap<>();
@@ -97,6 +98,12 @@ public class QueryEdge {
         }
     }
 
+    // ADD CONDITION
+    public void addCondition(QueryCondition condition, String condKey) {
+        this.conditions.put(condKey, condition);
+    }
+
+
     // GETTER
     public String                  getEdge_name()            {return edge_name;    }
     public IntArrayList            getEdge_label()           {return edge_label;   }
@@ -107,6 +114,8 @@ public class QueryEdge {
     public HashMap<String, Object> getProperties()           {return properties;   }
     public IntArrayList            getType_directed()        {return type_directed;}
     public IntArrayList            getType_reverse()         {return type_reverse; }
+
+    public HashMap<String, QueryCondition> getConditions() {return conditions;}
 
     // EQUIVALENT TO
     public boolean equivalent_to(QueryEdge other_edge) {
@@ -131,13 +140,17 @@ public class QueryEdge {
     // TO STRING
     @Override
     public String toString() {
-        return "QueryEdge{"      +
-                "edge_name='"    + edge_name   + '\'' + "\n" +
-                ", edge_label='" + edge_label  + '\'' + "\n" +
-                ", direction='"  + direction   + '\'' + "\n" +
-                ", min_deep="    + min_deep    + "\n" +
-                ", max_deep="    + max_deep    + "\n" +
-                ", properties="  + properties  + "\n" +
+        return "QueryEdge{" +
+                "edge_name='" + edge_name + '\'' +
+                ", edge_label=" + edge_label +
+                ", type_directed=" + type_directed +
+                ", type_reverse=" + type_reverse +
+                ", direction='" + direction + '\'' +
+                ", codificate_direction=" + codificate_direction +
+                ", min_deep=" + min_deep +
+                ", max_deep=" + max_deep +
+                ", properties=" + properties +
+                ", conditions=" + conditions +
                 '}';
     }
 }

@@ -80,3 +80,5 @@ public class Configuration {
                 '}';
     }
 }
+
+//MATCH (n2:I)-[:N]->(n4:H), (n3:E)-[:M]->(n1:A), (n3)-[:N]->(n2), (n4)-[:N]->(n1), (n5:D)-[:M]->(n1), (n6:L)-[:M]->(n1), (n6)-[:M]->(n3), (n6)-[:M]->(n7:H), (n8:E)-[:N]->(n4) RETURN count(n1)

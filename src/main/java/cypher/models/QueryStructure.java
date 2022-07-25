@@ -1,5 +1,6 @@
 package cypher.models;
 
+import cypher.controller.WhereConditionExtraction;
 import cypher.controller.WhereConditionHandler;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -26,6 +27,7 @@ public class QueryStructure {
     private final Int2ObjectOpenHashMap<QueryNode>                  query_nodes;
     private final Object2IntOpenHashMap<String>                     node_name_idx;
     private final Int2ObjectOpenHashMap<QueryEdge>                  query_edges;
+    private final Object2IntOpenHashMap<String>                     edge_name_idx;
     private final QueryEdgeAggregation                              query_pattern;
     private final ObjectArraySet<NodesPair>                         pairs;
     private final Int2ObjectOpenHashMap<NodesPair>                  map_id_to_pair;
@@ -39,6 +41,7 @@ public class QueryStructure {
         query_nodes                 = new Int2ObjectOpenHashMap<>();
         node_name_idx               = new Object2IntOpenHashMap<>();
         query_edges                 = new Int2ObjectOpenHashMap<>();
+        edge_name_idx               = new Object2IntOpenHashMap<>();
         query_pattern               = new QueryEdgeAggregation();
         pairs                       = new ObjectArraySet<>();
         map_id_to_pair              = new Int2ObjectOpenHashMap<>();
@@ -50,7 +53,7 @@ public class QueryStructure {
     }
 
     // PARSER FUNCTION
-    public void parser(String query, NodesEdgesLabelsMaps label_type_map){
+    public void parser(String query, NodesEdgesLabelsMaps label_type_map, Table[] nodes, Table[] edges){
         CypherParser parser      = new CypherParser();
         Query query_obj          = (Query) parser.parse(query, null);
         if(!(query_obj.part() instanceof SingleQuery)) return;
@@ -63,7 +66,10 @@ public class QueryStructure {
                 match_handler(clause, label_type_map);
                 Option<Where> where_conditions = ((Match) clause).where();
                 if(!where_conditions.isDefined()) continue;
-                Object conditions = WhereConditionHandler.where_condition_handler(where_conditions.get().expression());
+                Object conditions = WhereConditionHandler.where_condition_handler(
+                   where_conditions.get().expression(), nodes, edges,
+                   node_name_idx, edge_name_idx, query_nodes, query_edges
+                );
                 // TODO complete conditions
             }
             else if(clause instanceof Return){
@@ -72,6 +78,7 @@ public class QueryStructure {
                 // TODO implement me
             }
         }
+        query_nodes.forEach((node_id, node_obj) -> {System.out.println(node_obj);});
     }
 
     // MATCH PART ELABORATION
@@ -133,8 +140,8 @@ public class QueryStructure {
     // EDGE CREATION
     private int edge_manager(RelationshipPattern relationship, NodesEdgesLabelsMaps label_type_map){
         int id = query_edges.size();
-        //System.out.println(relationship);
         query_edges.put(id, new QueryEdge(relationship, label_type_map));
+        edge_name_idx.put(query_edges.get(id).getEdge_name(), id);
         return id;
     }
 
@@ -186,11 +193,8 @@ public class QueryStructure {
                 edge_set.add(edge_key);
                 map_endpoints_to_edges.put(endpoints.getId().intValue(), edge_set);
             }
-
             map_edge_to_endpoints.put(edge_key, endpoints);
-
             pairs.add(endpoints);
-
             node_color_degrees_init(endpoints.getFirstEndpoint());
             node_color_degrees_init(endpoints.getSecondEndpoint());
             for(int type: query_edges.get(edge_key).getEdge_label()) {

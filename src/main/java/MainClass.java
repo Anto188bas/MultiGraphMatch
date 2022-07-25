@@ -49,7 +49,7 @@ public class MainClass {
         List<String> queries = FileManager.query_reading(configuration);
         queries.forEach(query -> {
             QueryStructure query_obj = new QueryStructure();
-            query_obj.parser(query, idx_label);
+            query_obj.parser(query, idx_label, nodes_tables, edges_tables_properties);
 
             // MATCHING
             NewMatching.matching(

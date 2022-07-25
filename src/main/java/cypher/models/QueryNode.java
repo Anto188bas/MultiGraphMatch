@@ -10,13 +10,15 @@ import java.util.HashMap;
 
 
 public class QueryNode {
-    private String                        node_name;
-    private final IntArrayList            labels;
-    private final HashMap<String, Object> properties;
+    private String                          node_name;
+    private final IntArrayList              labels;
+    private final HashMap<String, Object>   properties;
+    private HashMap<String, QueryCondition> conditions;
 
     public QueryNode(NodePattern node_pattern, String name, NodesEdgesLabelsMaps label_type_map){
         labels     = new IntArrayList();
         properties = new HashMap<>();
+        conditions = new HashMap<>();
         node_name  = name;
         configure_node_labels(node_pattern, label_type_map);
         configure_node_properties(node_pattern);
@@ -67,18 +69,24 @@ public class QueryNode {
         return true;
     }
 
+    public void setCondition(QueryCondition condition, String condition_key) {
+        this.conditions.put(condition_key, condition);
+    }
+
     // GETTER METHOD
     public String                  getNode_name()  {return node_name; }
     public IntArrayList            getLabels()     {return labels;    }
     public HashMap<String, Object> getProperties() {return properties;}
+    public HashMap<String, QueryCondition> getConditions() {return conditions;}
 
     // TO STRING
     @Override
     public String toString() {
-        return "QueryNode{"     + "\n"       +
-                "node_name='"   + node_name  + '\'' + "\n" +
-                ", labels="     + labels     + "\n" +
-                ", properties=" + properties + "\n" +
+        return "QueryNode{" +
+                "node_name='" + node_name + '\'' +
+                ", labels=" + labels +
+                ", properties=" + properties +
+                ", conditions=" + conditions +
                 '}';
     }
 }

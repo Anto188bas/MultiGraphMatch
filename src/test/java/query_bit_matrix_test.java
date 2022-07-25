@@ -25,7 +25,7 @@ public class query_bit_matrix_test {
         String query             = "MATCH p=(n1:GREEN:YELLOW)-[r:RED]->(n2:PURPLE), (n1)<-[r1:BLUE]-(n2) RETURN p";
         //String query           = "MATCH p=(n1:GREEN:YELLOW)-[:RED|ORANGE *2..3]->(n2:PURPLE) RETURN p";
         QueryStructure query_obj = new QueryStructure();
-        query_obj.parser(query, nodes_edges_labels);
+        query_obj.parser(query, nodes_edges_labels, null, null);
         Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>>> aggregate_edge = query_obj.getQuery_pattern().aggregate_edge();
 
         System.out.println(nodes_edges_labels.getIdxToLabelEdge());

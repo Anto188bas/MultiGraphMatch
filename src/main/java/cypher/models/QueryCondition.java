@@ -1,49 +1,93 @@
 package cypher.models;
-
 import cypher.controller.PropertiesUtility;
+import cypher.controller.TypeConditionSelection;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import org.opencypher.v9_0.expressions.*;
 import scala.collection.Iterator;
+import tech.tablesaw.api.Table;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 
+// TODO HAVE TO BE MORE GENERIC (NODE/EDGE)
 public class QueryCondition {
-    private String  node_name;
-    private String  property_key;
-    private String  operation;
-    private boolean negation;
-    // VALUE COULD ALSO BE ANOTHER QUERY CONDITION
-    private Object  expr_value;
+    private NameValue node_param;
+    private String    operation;
+    private boolean   negation;
+    private Object    expr_value;
+    private TypeConditionSelection conditionCheck;
+    private final HashMap<String, String> associations;
+
 
     // CONSTRUCTOR
-    public QueryCondition(Expression expression){
-        negation = false;
-        conditions_init(expression);
+    public QueryCondition(
+        Expression expression, Table[] nodes, Table[] edges,
+        Object2IntOpenHashMap<String> node_name,
+        Object2IntOpenHashMap<String> edge_name,
+        Int2ObjectOpenHashMap<QueryNode> query_nodes,
+        Int2ObjectOpenHashMap<QueryEdge> query_edges
+        ){
+        negation     = false;
+        associations = new HashMap<>();
+        associations.put("Equals",              "=");
+        associations.put("GreaterThan",         ">");
+        associations.put("LessThan",            "<");
+        associations.put("GreaterThanOrEqual", ">=");
+        associations.put("LessThanOrEqual",    "<=");
+        conditions_init(expression, nodes, edges, node_name, edge_name, query_nodes, query_edges);
     }
+
 
     // CONDITIONS INITIALIZATION
-    private void conditions_init(Expression expression){
-        if (expression instanceof Not){
+    private void conditions_init(
+        Expression expression, Table[] nodes, Table[] edges,
+        Object2IntOpenHashMap<String> node_name,
+        Object2IntOpenHashMap<String> edge_name,
+        Int2ObjectOpenHashMap<QueryNode> query_nodes,
+        Int2ObjectOpenHashMap<QueryEdge> query_edges
+        ){
+        if (expression instanceof Not || expression instanceof NotEquals || expression instanceof IsNotNull) {
             negation = true;
-            expression = ((Not) expression).rhs();
+            if (expression instanceof Not)
+                expression = ((Not) expression).rhs();
         }
-        // TODO regex condition managing
-        this.operation                 = expression.getClass().getSimpleName();
-        Iterator<Expression> arguments = expression.arguments().iterator();
-        while (arguments.hasNext()){
-            Expression sub_expression  = arguments.next();
-            if(sub_expression instanceof Property)
-                property_configuration((Property) sub_expression);
-            else
-                set_property_value(sub_expression);
+        this.operation                 = operator_updating(expression.getClass().getSimpleName());
+        var lh_rh       = expression.arguments().toList();
+        Expression lh                  = lh_rh.head();
+        Expression rh                  = lh_rh.last();
+        // IS NULL; IS NOT NULL
+        if (lh != rh) {
+            if (lh instanceof Property) {
+                Property property = (Property) lh;
+                Variable nodeName = (Variable) property.map();
+                this.node_param   = new NameValue(nodeName.name(), property.propertyKey().name());
+                if (rh instanceof Property) {
+                    property = (Property) rh;
+                    nodeName = (Variable) property.map();
+                    this.expr_value = new NameValue(nodeName.name(), property.propertyKey().name());
+                } else set_property_value(rh);
+            } else {
+                Property property = (Property) rh;
+                Variable nodeName = (Variable) property.map();
+                this.node_param = new NameValue(nodeName.name(), property.propertyKey().name());
+                set_property_value(lh);
+            }
+        } else {
+            Property property = (Property) lh;
+            Variable nodeName = (Variable) property.map();
+            this.node_param   = new NameValue(nodeName.name(), property.propertyKey().name());
         }
+        conditionCheck = new TypeConditionSelection();
+        expr_value     = conditionCheck.inferTypeCondition(nodes, edges, node_name, edge_name, this.node_param, expr_value);
+        String condKey = generate_condition_key();
+        if (node_name.containsKey(this.node_param.getElementName()))
+            query_nodes.get(node_name.getInt(node_param.getElementName())).setCondition(this, condKey);
+        else
+            query_edges.get(edge_name.getInt(node_param.getElementName())).addCondition(this, condKey);
     }
 
-    // PROPERTY DATA ELABORATION
-    private void property_configuration(Property property_data){
-        property_key = property_data.propertyKey().name();
-        node_name    = ((Variable) property_data.map()).name();
-    }
 
     // PROPERTY DATA SET VALUE
     private void set_property_value(Expression value){
@@ -64,23 +108,46 @@ public class QueryCondition {
         }
     }
 
+
+    // UPDATE OPERATOR
+    private String operator_updating(String operator){
+        switch (operator.toLowerCase()){
+            case "notequals":
+            case "isnotnull":
+            case "isnull":
+                return "Equals";
+            default:
+                return operator;
+        }
+    }
+
+    // GENERATE CONDITION KEY
+    public String generate_condition_key(){
+        String condition_key = node_param.toString();
+        if(this.associations.containsKey(this.operation))
+            condition_key += (this.isNegation() ? "!" : "") + associations.get(operation);
+        else
+            condition_key = (isNegation() ? "NOT " : "") + condition_key + " " + operation + " ";
+        condition_key += expr_value.toString();
+        return condition_key;
+    }
+
+
     // GETTER
-    public String  getNode_name()    {return node_name;   }
-    public String  getProperty_key() {return property_key;}
-    public String  getOperation()    {return operation;   }
-    public Object  getExpr_value()   {return expr_value;  }
-    public boolean isNegation()      {return negation;    }
+    public NameValue getNode_param()   {return node_param;}
+    public String    getOperation()    {return operation;}
+    public Object    getExpr_value()   {return expr_value;}
+    public boolean   isNegation()      {return negation;}
+    public TypeConditionSelection getConditionCheck() {return conditionCheck;}
 
     // TO STRING
-
     @Override
     public String toString() {
-        return "QueryCondition{"   +
-                "node_name='"      + node_name    + '\'' +
-                ", property_key='" + property_key + '\'' +
-                ", operation='"    + operation    + '\'' +
-                ", negation="      + negation     +
-                ", expr_value="    + expr_value   +
+        return "QueryCondition{" +
+                "node_param=" + node_param +
+                ", operation='" + operation + '\'' +
+                ", negation=" + negation +
+                ", expr_value=" + expr_value +
                 '}';
     }
 }
