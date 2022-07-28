@@ -3,6 +3,7 @@ package matching.controllers;
 import bitmatrix.controller.BitmatrixManager;
 import bitmatrix.models.QueryBitmatrix;
 import bitmatrix.models.TargetBitmatrix;
+import cypher.controller.WhereConditionExtraction;
 import cypher.models.QueryCondition;
 import cypher.models.QueryEdge;
 import cypher.models.QueryNode;
@@ -25,7 +26,7 @@ import java.util.HashMap;
 
 public class MatchingWhere extends MatchingSimple {
     protected static long matching_procedure(
-            IntArrayList setWhereConditions,
+            WhereConditionExtraction where_managing,
             Int2ObjectOpenHashMap<IntArrayList> first_compatibility,
             MatchingData matchingData,
             StateStructures states,
@@ -40,6 +41,7 @@ public class MatchingWhere extends MatchingSimple {
         // WHERE CONDITIONS
         boolean doWhereCheck = true;
         boolean areThereConditions = true;
+        IntArrayList setWhereConditions = where_managing.getSetWhereConditions();
         if (setWhereConditions.isEmpty()) {
             doWhereCheck = false;
             areThereConditions = false;
@@ -176,7 +178,7 @@ public class MatchingWhere extends MatchingSimple {
     }
 
     public static OutData matching(
-            IntArrayList setWhereConditions,
+            WhereConditionExtraction where_managing,
             boolean justCount,
             boolean distinct,
             long numMaxOccs,
@@ -238,7 +240,7 @@ public class MatchingWhere extends MatchingSimple {
         int q_dst = first_compatibility.getSecondEndpoint();
 
         outData.num_occurrences = matching_procedure(
-                setWhereConditions, first_compatibility.getFirst_second(), matchingData, states, graphPaths,
+                where_managing, first_compatibility.getFirst_second(), matchingData, states, graphPaths,
                 query_obj, nodes_symmetry, edges_symmetry, numQueryEdges, outData.num_occurrences, numMaxOccs,
                 q_src, q_dst, justCount, distinct
         );
@@ -416,6 +418,7 @@ public class MatchingWhere extends MatchingSimple {
         String propertyName = condition.getNode_param().getElementKey();
         Object expressionValue = condition.getExpr_value();
         Object candidateValue = condition.getConditionCheck().getProperty(targetElementID, propertyName);
+        System.out.println("Property Name: " + propertyName + "\tExpression Value: " + expressionValue + "\tCandidate Value: " + candidateValue + "\tOPERATOR: " + operator);
         return condition.getConditionCheck().getComparison().comparison(expressionValue, candidateValue, operator);
     }
 }

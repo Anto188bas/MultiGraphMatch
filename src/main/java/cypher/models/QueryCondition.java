@@ -1,6 +1,7 @@
 package cypher.models;
 import cypher.controller.PropertiesUtility;
 import cypher.controller.TypeConditionSelection;
+import cypher.controller.WhereConditionExtraction;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import matching.models.WhereConditionsData;
@@ -10,6 +11,7 @@ import tech.tablesaw.api.Table;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 
 // TODO HAVE TO BE MORE GENERIC (NODE/EDGE)
@@ -20,7 +22,7 @@ public class QueryCondition {
     private Object    expr_value;
     private TypeConditionSelection conditionCheck;
     private final HashMap<String, String> associations;
-    private final int orPropositionPos;
+    private int orPropositionPos;
 
 
     // CONSTRUCTOR
@@ -30,7 +32,7 @@ public class QueryCondition {
         Object2IntOpenHashMap<String> edge_name,
         Int2ObjectOpenHashMap<QueryNode> query_nodes,
         Int2ObjectOpenHashMap<QueryEdge> query_edges,
-        WhereConditionsData conditionsData
+        Optional<WhereConditionExtraction> where_managing
         ){
         negation     = false;
         associations = new HashMap<>();
@@ -39,8 +41,7 @@ public class QueryCondition {
         associations.put("LessThan",            "<");
         associations.put("GreaterThanOrEqual", ">=");
         associations.put("LessThanOrEqual",    "<=");
-        conditions_init(expression, nodes, edges, node_name, edge_name, query_nodes, query_edges);
-        this.orPropositionPos = conditionsData.conditionIndex++; // Assign and increment the index
+        conditions_init(expression, nodes, edges, node_name, edge_name, query_nodes, query_edges, where_managing);
     }
 
 
@@ -50,7 +51,8 @@ public class QueryCondition {
         Object2IntOpenHashMap<String> node_name,
         Object2IntOpenHashMap<String> edge_name,
         Int2ObjectOpenHashMap<QueryNode> query_nodes,
-        Int2ObjectOpenHashMap<QueryEdge> query_edges
+        Int2ObjectOpenHashMap<QueryEdge> query_edges,
+        Optional<WhereConditionExtraction> where_managing
         ){
         if (expression instanceof Not || expression instanceof NotEquals || expression instanceof IsNotNull) {
             negation = true;
@@ -86,6 +88,11 @@ public class QueryCondition {
         conditionCheck = new TypeConditionSelection();
         expr_value     = conditionCheck.inferTypeCondition(nodes, edges, node_name, edge_name, this.node_param, expr_value);
         String condKey = generate_condition_key();
+
+
+        this.orPropositionPos = where_managing.get().getMap_condition_to_orPropositionPos().getInt(condKey);
+
+
         if (node_name.containsKey(this.node_param.getElementName()))
             query_nodes.get(node_name.getInt(node_param.getElementName())).setCondition(this, condKey);
         else

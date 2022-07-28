@@ -58,7 +58,7 @@ public class test_on_syntetic_net {
                 @Override
                 public Double call() throws Exception {
                     QueryStructure query_obj = new QueryStructure();
-                    query_obj.parser(query, idx_label, nodes_tables, edges_tables_properties);
+                    query_obj.parser(query, idx_label, nodes_tables, edges_tables_properties, Optional.empty());
 
                     System.out.println(query_obj.getMap_node_color_degrees().get(0));
 

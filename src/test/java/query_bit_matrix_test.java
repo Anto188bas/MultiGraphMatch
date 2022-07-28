@@ -4,6 +4,8 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 
+import java.util.Optional;
+
 public class query_bit_matrix_test {
     private static void create_node_colors(NodesEdgesLabelsMaps labels) {
         labels.stringVectorToIntOne("YELLOW");
@@ -25,7 +27,7 @@ public class query_bit_matrix_test {
         String query             = "MATCH p=(n1:GREEN:YELLOW)-[r:RED]->(n2:PURPLE), (n1)<-[r1:BLUE]-(n2) RETURN p";
         //String query           = "MATCH p=(n1:GREEN:YELLOW)-[:RED|ORANGE *2..3]->(n2:PURPLE) RETURN p";
         QueryStructure query_obj = new QueryStructure();
-        query_obj.parser(query, nodes_edges_labels, null, null);
+        query_obj.parser(query, nodes_edges_labels, null, null, Optional.empty());
         Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>>> aggregate_edge = query_obj.getQuery_pattern().aggregate_edge();
 
         System.out.println(nodes_edges_labels.getIdxToLabelEdge());

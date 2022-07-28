@@ -1,4 +1,7 @@
 package cypher.controller;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import matching.models.WhereConditionsData;
 import net.sf.tweety.logics.pl.parser.PlParser;
 import net.sf.tweety.logics.pl.syntax.PlFormula;
 import java.io.StringReader;
@@ -16,6 +19,9 @@ public class WhereConditionExtraction {
     private final String[]  origin;
     private final String[]  replacement;
     private final String[]  new_origin;
+
+    protected IntArrayList setWhereConditions;
+    protected Object2IntOpenHashMap<String> map_condition_to_orPropositionPos;
 
     // WHERE CONDITION
     public WhereConditionExtraction(){
@@ -83,4 +89,46 @@ public class WhereConditionExtraction {
     // # 3
     public HashSet<String> getConditions() {return conditions;}
     public void setConditions(HashSet<String> conditions) {this.conditions = conditions;}
+
+
+    public void buildSetWhereConditions(){
+        this.setWhereConditions = new IntArrayList();
+        this.map_condition_to_orPropositionPos = new Object2IntOpenHashMap();
+
+        System.out.println("********************************************************************************");
+        System.out.println("ORIGINAL WHERE: " + this.where_string);
+        System.out.println("DNF: " + this.disj_where_cond);
+        System.out.println();
+
+        String[] splitOR = this.disj_where_cond.split("\\|\\|");
+
+        for(int i = 0; i < splitOR.length; i++) {
+            System.out.println("SPLIT OR " + i + ": " + splitOR[i]);
+
+            String[] splitAND = splitOR[i].split("&&");
+            for(int j = 0; j < splitAND.length; j++) {
+                splitAND[j] = splitAND[j].replace("(", "").replace(")", "").replace("\"", "");
+                System.out.println("\tSPLIT AND " + j + ": " + splitAND[j] + "\t\torPropositionPos: " + i);
+
+                this.map_condition_to_orPropositionPos.put(splitAND[j], i);
+            }
+
+            setWhereConditions.add(splitAND.length); // numAndConditions
+        }
+
+        System.out.println("setWhereConditions: " + this.setWhereConditions);
+        System.out.println("map_condition_to_orPropositionPos: " + this.map_condition_to_orPropositionPos);
+
+        System.out.println("********************************************************************************");
+
+    }
+
+    // GET
+    public IntArrayList getSetWhereConditions() {
+        return setWhereConditions;
+    }
+
+    public Object2IntOpenHashMap<String> getMap_condition_to_orPropositionPos() {
+        return map_condition_to_orPropositionPos;
+    }
 }

@@ -13,6 +13,8 @@ import org.opencypher.v9_0.expressions.Or;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import tech.tablesaw.api.Table;
 
+import java.util.Optional;
+
 public class WhereConditionHandler {
     public static Object where_condition_handler(
             Expression expression, Table[] nodes, Table[] edges,
@@ -20,27 +22,23 @@ public class WhereConditionHandler {
             Object2IntOpenHashMap<String> edge_name,
             Int2ObjectOpenHashMap<QueryNode> query_nodes,
             Int2ObjectOpenHashMap<QueryEdge> query_edges,
-            WhereConditionsData conditionsData
+            Optional<WhereConditionExtraction> where_managing
     ){
         // COMPLEX WHERE CONDITION
         if (expression instanceof And) {
             And and_cond = (And) expression;
 
-            conditionsData.numAnd++;
-
             return new WhereExpression(
                and_cond.lhs(), and_cond.getClass().getSimpleName(), and_cond.rhs(),
-               nodes, edges, node_name, edge_name, query_nodes, query_edges, conditionsData
+               nodes, edges, node_name, edge_name, query_nodes, query_edges, where_managing
             );
         }
         else if(expression instanceof Or){
             Or or_cond   = (Or) expression;
 
-            conditionsData.numOr++;
-
             return new WhereExpression(
                or_cond.lhs(), or_cond.getClass().getSimpleName(), or_cond.rhs(),
-               nodes, edges, node_name, edge_name, query_nodes, query_edges, conditionsData
+               nodes, edges, node_name, edge_name, query_nodes, query_edges, where_managing
             );
         }
         // SINGLE CONDITION
@@ -48,9 +46,9 @@ public class WhereConditionHandler {
 
             QueryCondition condition = new QueryCondition(
                     expression, nodes, edges, node_name, edge_name,
-                    query_nodes, query_edges, conditionsData
+                    query_nodes, query_edges, where_managing
             );
-            conditionsData.conditionList.add(condition);
+
             return condition;
         }
     }

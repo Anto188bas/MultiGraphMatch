@@ -1,5 +1,6 @@
 package cypher.models;
 
+import cypher.controller.WhereConditionExtraction;
 import cypher.controller.WhereConditionHandler;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -21,6 +22,7 @@ import tech.tablesaw.api.Table;
 import tech.tablesaw.index.IntIndex;
 
 import java.util.LinkedList;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class QueryStructure {
@@ -53,15 +55,13 @@ public class QueryStructure {
     }
 
     // PARSER FUNCTION
-    public void parser(String query, NodesEdgesLabelsMaps label_type_map, Table[] nodes, Table[] edges){
+    public void parser(String query, NodesEdgesLabelsMaps label_type_map, Table[] nodes, Table[] edges, Optional<WhereConditionExtraction> where_managing){
         CypherParser parser      = new CypherParser();
         Query query_obj          = (Query) parser.parse(query, null);
         if(!(query_obj.part() instanceof SingleQuery)) return;
         SingleQuery single_query = (SingleQuery) query_obj.part();
         // MATCHING AND RESULT ELABORATION
         Iterator<Clause> clauses = single_query.clauses().iterator();
-
-        WhereConditionsData conditionsData = new WhereConditionsData();
 
         while (clauses.hasNext()){
             Clause clause = clauses.next();
@@ -71,7 +71,7 @@ public class QueryStructure {
                 if(!where_conditions.isDefined()) continue;
                 Object conditions = WhereConditionHandler.where_condition_handler(
                    where_conditions.get().expression(), nodes, edges,
-                        map_node_name_to_idx, map_edge_name_to_idx, query_nodes, query_edges, conditionsData
+                        map_node_name_to_idx, map_edge_name_to_idx, query_nodes, query_edges, where_managing
                 );
 
                 // TODO complete conditions
@@ -83,12 +83,6 @@ public class QueryStructure {
             }
 
         }
-        System.out.println(conditionsData);
-        QueryCondition condition = conditionsData.conditionList.get(0);
-        System.out.println("NODE NAME: " + condition.getNode_param().getElementName());
-        System.out.println("NODE KEY: " + condition.getNode_param().getElementKey());
-
-        System.out.println("LABELS: " + condition.getConditionCheck().getLabels(0));
 
         query_nodes.forEach((node_id, node_obj) -> {System.out.println(node_obj);});
     }

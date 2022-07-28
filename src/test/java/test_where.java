@@ -16,6 +16,7 @@ import tech.tablesaw.api.Table;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -68,8 +69,11 @@ public class test_where {
         WhereConditionExtraction where_managing = new WhereConditionExtraction();
         where_managing.where_condition_extraction(query_test);
         where_managing.normal_form_computing();
+        where_managing.buildSetWhereConditions();
+
         QueryStructure query = new QueryStructure();
-        query.parser(query_test, labels, nodes_tables, edges_tables_properties);
+        query.parser(query_test, labels, nodes_tables, edges_tables_properties, Optional.of(where_managing));
+
 
 //        System.out.println("NODE 0: " + labels.getIdxToLabelNode().get(0));
 
@@ -83,9 +87,15 @@ public class test_where {
 //        }
 
         OutData outData = MatchingWhere.matching(
+                where_managing,
                 true, false, Long.MAX_VALUE, idx_label, target_bitmatrix,
                 query, graphPaths, macro_nodes, nodes_macro
         );
+
+        System.out.println("ORIGINAL WHERE: " + where_managing.getWhere_string());
+        System.out.println("DNF WHERE: " + where_managing.getDisj_where_cond());
+        System.out.println("CONDITION LIST: " + where_managing.getConditions().toString());
+
 
 //        MatchingWhere.checkQueryCondition(true, ,null);
     }
