@@ -83,8 +83,6 @@ public class QueryStructure {
             }
 
         }
-
-        query_nodes.forEach((node_id, node_obj) -> {System.out.println(node_obj);});
     }
 
     // MATCH PART ELABORATION

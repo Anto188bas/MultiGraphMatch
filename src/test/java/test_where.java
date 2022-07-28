@@ -91,12 +91,5 @@ public class test_where {
                 true, false, Long.MAX_VALUE, idx_label, target_bitmatrix,
                 query, graphPaths, macro_nodes, nodes_macro
         );
-
-        System.out.println("ORIGINAL WHERE: " + where_managing.getWhere_string());
-        System.out.println("DNF WHERE: " + where_managing.getDisj_where_cond());
-        System.out.println("CONDITION LIST: " + where_managing.getConditions().toString());
-
-
-//        MatchingWhere.checkQueryCondition(true, ,null);
     }
 }
