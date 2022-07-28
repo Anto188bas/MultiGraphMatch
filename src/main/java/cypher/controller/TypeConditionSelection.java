@@ -2,7 +2,10 @@ package cypher.controller;
 import condition.*;
 import cypher.models.NameValue;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import tech.tablesaw.api.Table;
+import tech.tablesaw.index.IntIndex;
+
 import java.util.ArrayList;
 
 
@@ -10,6 +13,9 @@ public class TypeConditionSelection {
     private Table      selectedTable;
     private Comparison comparison;
 
+    private Object2ObjectOpenHashMap<String, Object> map_property_name_to_index;
+
+    private IntIndex idIndex;
 
     public Object inferTypeCondition(
         Table[] nodes, Table[] edges,
@@ -39,6 +45,9 @@ public class TypeConditionSelection {
             selectedTable = table;
             break;
         }
+
+        // ID INDEX
+        this.idIndex = new IntIndex(this.selectedTable.intColumn("id"));
 
         // COLUMN TYPE SELECTION
         // System.out.println(selectedTable.column(property_name));
@@ -91,6 +100,21 @@ public class TypeConditionSelection {
                     return rightElement instanceof NameValue ? rightElement : rightElement.toString();
                 }
         }
+    }
+
+    protected String getColumnType(String propertyName) {
+        return selectedTable.column(propertyName).type().name();
+    }
+
+
+    public Object getProperty(int id, String propertyName) {
+        int columnIndex = this.selectedTable.columnIndex(propertyName);
+        return this.selectedTable.where(this.idIndex.get(id)).get(0, columnIndex);
+    }
+
+    public Object getLabels(int id) {
+        int columnIndex = this.selectedTable.columnIndex("labels");
+        return this.selectedTable.where(this.idIndex.get(id)).get(0, columnIndex);
     }
 
     public Table getSelectedTable()   {return selectedTable;}

@@ -3,6 +3,7 @@ import cypher.controller.PropertiesUtility;
 import cypher.controller.TypeConditionSelection;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import matching.models.WhereConditionsData;
 import org.opencypher.v9_0.expressions.*;
 import scala.collection.Iterator;
 import tech.tablesaw.api.Table;
@@ -19,6 +20,7 @@ public class QueryCondition {
     private Object    expr_value;
     private TypeConditionSelection conditionCheck;
     private final HashMap<String, String> associations;
+    private final int orPropositionPos;
 
 
     // CONSTRUCTOR
@@ -27,7 +29,8 @@ public class QueryCondition {
         Object2IntOpenHashMap<String> node_name,
         Object2IntOpenHashMap<String> edge_name,
         Int2ObjectOpenHashMap<QueryNode> query_nodes,
-        Int2ObjectOpenHashMap<QueryEdge> query_edges
+        Int2ObjectOpenHashMap<QueryEdge> query_edges,
+        WhereConditionsData conditionsData
         ){
         negation     = false;
         associations = new HashMap<>();
@@ -37,6 +40,7 @@ public class QueryCondition {
         associations.put("GreaterThanOrEqual", ">=");
         associations.put("LessThanOrEqual",    "<=");
         conditions_init(expression, nodes, edges, node_name, edge_name, query_nodes, query_edges);
+        this.orPropositionPos = conditionsData.conditionIndex++; // Assign and increment the index
     }
 
 
@@ -138,9 +142,11 @@ public class QueryCondition {
     public String    getOperation()    {return operation;}
     public Object    getExpr_value()   {return expr_value;}
     public boolean   isNegation()      {return negation;}
-    public TypeConditionSelection getConditionCheck() {return conditionCheck;}
+    public TypeConditionSelection getConditionCheck()   {return conditionCheck;}
+    public int getOrPropositionPos()                    {return orPropositionPos;}
 
     // TO STRING
+
     @Override
     public String toString() {
         return "QueryCondition{" +
@@ -148,6 +154,7 @@ public class QueryCondition {
                 ", operation='" + operation + '\'' +
                 ", negation=" + negation +
                 ", expr_value=" + expr_value +
+                ", orPropositionPos=" + orPropositionPos +
                 '}';
     }
 }

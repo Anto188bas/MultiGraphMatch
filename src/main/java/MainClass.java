@@ -2,11 +2,10 @@ import configuration.Configuration;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import matching.controllers.NewMatching;
+import matching.controllers.MatchingSimple;
 import reading.FileManager;
 import bitmatrix.models.TargetBitmatrix;
 import target_graph.edges.EdgeHandler;
-import target_graph.edges.NewEdgeAggregation;
 import target_graph.graph.GraphPaths;
 import target_graph.nodes.GraphMacroNode;
 import target_graph.nodes.MacroNodeHandler;
@@ -52,7 +51,7 @@ public class MainClass {
             query_obj.parser(query, idx_label, nodes_tables, edges_tables_properties);
 
             // MATCHING
-            NewMatching.matching(
+            MatchingSimple.matching(
                     true, false, Long.MAX_VALUE, idx_label, target_bitmatrix,
                     query_obj, graphPaths, macro_nodes, nodes_macro
             );

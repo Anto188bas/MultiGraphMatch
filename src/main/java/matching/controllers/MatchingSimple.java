@@ -18,7 +18,7 @@ import target_graph.nodes.GraphMacroNode;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import java.util.HashMap;
 
-public class NewMatching {
+public class MatchingSimple {
     public static OutData outData;
 
     public static void report() {
@@ -146,7 +146,7 @@ public class NewMatching {
     }
 
 
-    private static boolean check_nodes_labels(QueryStructure query_object){
+    protected static boolean check_nodes_labels(QueryStructure query_object){
         for (QueryNode node: query_object.getQuery_nodes().values()) {
             for(int label: node.getLabels())
                 if(label == -1) return true;

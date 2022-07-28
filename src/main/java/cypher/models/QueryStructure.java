@@ -1,6 +1,5 @@
 package cypher.models;
 
-import cypher.controller.WhereConditionExtraction;
 import cypher.controller.WhereConditionHandler;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -8,6 +7,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import matching.models.WhereConditionsData;
 import ordering.EdgeDirection;
 import ordering.NodesPair;
 import org.opencypher.v9_0.ast.*;
@@ -25,9 +25,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class QueryStructure {
     private final Int2ObjectOpenHashMap<QueryNode>                  query_nodes;
-    private final Object2IntOpenHashMap<String>                     node_name_idx;
+    private final Object2IntOpenHashMap<String>                     map_node_name_to_idx;
     private final Int2ObjectOpenHashMap<QueryEdge>                  query_edges;
-    private final Object2IntOpenHashMap<String>                     edge_name_idx;
+    private final Object2IntOpenHashMap<String>                     map_edge_name_to_idx;
     private final QueryEdgeAggregation                              query_pattern;
     private final ObjectArraySet<NodesPair>                         pairs;
     private final Int2ObjectOpenHashMap<NodesPair>                  map_id_to_pair;
@@ -39,9 +39,9 @@ public class QueryStructure {
 
     public QueryStructure(){
         query_nodes                 = new Int2ObjectOpenHashMap<>();
-        node_name_idx               = new Object2IntOpenHashMap<>();
+        map_node_name_to_idx = new Object2IntOpenHashMap<>();
         query_edges                 = new Int2ObjectOpenHashMap<>();
-        edge_name_idx               = new Object2IntOpenHashMap<>();
+        map_edge_name_to_idx = new Object2IntOpenHashMap<>();
         query_pattern               = new QueryEdgeAggregation();
         pairs                       = new ObjectArraySet<>();
         map_id_to_pair              = new Int2ObjectOpenHashMap<>();
@@ -60,6 +60,9 @@ public class QueryStructure {
         SingleQuery single_query = (SingleQuery) query_obj.part();
         // MATCHING AND RESULT ELABORATION
         Iterator<Clause> clauses = single_query.clauses().iterator();
+
+        WhereConditionsData conditionsData = new WhereConditionsData();
+
         while (clauses.hasNext()){
             Clause clause = clauses.next();
             if(clause instanceof Match){
@@ -68,8 +71,9 @@ public class QueryStructure {
                 if(!where_conditions.isDefined()) continue;
                 Object conditions = WhereConditionHandler.where_condition_handler(
                    where_conditions.get().expression(), nodes, edges,
-                   node_name_idx, edge_name_idx, query_nodes, query_edges
+                        map_node_name_to_idx, map_edge_name_to_idx, query_nodes, query_edges, conditionsData
                 );
+
                 // TODO complete conditions
             }
             else if(clause instanceof Return){
@@ -77,7 +81,15 @@ public class QueryStructure {
                 query_return.return_elaboration((Return) clause);
                 // TODO implement me
             }
+
         }
+        System.out.println(conditionsData);
+        QueryCondition condition = conditionsData.conditionList.get(0);
+        System.out.println("NODE NAME: " + condition.getNode_param().getElementName());
+        System.out.println("NODE KEY: " + condition.getNode_param().getElementKey());
+
+        System.out.println("LABELS: " + condition.getConditionCheck().getLabels(0));
+
         query_nodes.forEach((node_id, node_obj) -> {System.out.println(node_obj);});
     }
 
@@ -127,13 +139,13 @@ public class QueryStructure {
         }
         String name_str = name.get().name();
         // NODE HAS ALREADY BEEN CREATED
-        if (node_name_idx.containsKey(name_str))
-            return node_name_idx.getInt(name_str);
+        if (map_node_name_to_idx.containsKey(name_str))
+            return map_node_name_to_idx.getInt(name_str);
         // NODE HAVE TO BE CREATED
         QueryNode node  = new QueryNode(nodePattern, name_str, label_type_map);
         int id          = query_nodes.size();
         query_nodes.put(id, node);
-        node_name_idx.put(name_str, id);
+        map_node_name_to_idx.put(name_str, id);
         return id;
     }
 
@@ -141,7 +153,7 @@ public class QueryStructure {
     private int edge_manager(RelationshipPattern relationship, NodesEdgesLabelsMaps label_type_map){
         int id = query_edges.size();
         query_edges.put(id, new QueryEdge(relationship, label_type_map));
-        edge_name_idx.put(query_edges.get(id).getEdge_name(), id);
+        map_edge_name_to_idx.put(query_edges.get(id).getEdge_name(), id);
         return id;
     }
 
@@ -442,7 +454,7 @@ public class QueryStructure {
     // GETTER
     public Int2ObjectOpenHashMap<QueryNode>                 getQuery_nodes()                {return query_nodes;          }
     public QueryNode                                        getQuery_node(int node)         {return query_nodes.get(node);}
-    public Object2IntOpenHashMap<String>                    getNode_name_idx()              {return node_name_idx;        }
+    public Object2IntOpenHashMap<String> getMap_node_name_to_idx()              {return map_node_name_to_idx;        }
     public Int2ObjectOpenHashMap<QueryEdge>                 getQuery_edges()                {return query_edges;          }
     public QueryEdge                                        getQuery_edge(int edge)         {return query_edges.get(edge);}
     public QueryEdgeAggregation                             getQuery_pattern()              {return query_pattern;        }
@@ -462,7 +474,7 @@ public class QueryStructure {
     public String toString() {
         return "QueryStructure{"   + "\n"          +
                 "query_nodes="     + query_nodes   + "\n" +
-                ", node_name_idx=" + node_name_idx + "\n" +
+                ", node_name_idx=" + map_node_name_to_idx + "\n" +
                 ", query_edges="   + query_edges   + "\n" +
                 ", query_pattern=" + query_pattern + "\n" +
                 '}';

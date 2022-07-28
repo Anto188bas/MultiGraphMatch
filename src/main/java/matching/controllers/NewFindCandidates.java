@@ -10,6 +10,7 @@ import org.javatuples.Triplet;
 import state_machine.StateStructures;
 import target_graph.graph.GraphPaths;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 
 public class NewFindCandidates {
@@ -32,6 +33,7 @@ public class NewFindCandidates {
     ) {
 //        // PARAMETERS
         IntArrayList listCandidates    = new IntArrayList();
+
         int           edge_id           = states.map_state_to_edge[sel_state];
         NodesPair     edge_data         = query.getMap_edge_to_endpoints().get(edge_id);
         QueryEdge     queryEdge         = query.getQuery_edge(edge_id);
