@@ -33,6 +33,7 @@ public class QueryEdge {
         edge_label    = new IntArrayList();
         type_directed = new IntArrayList();
         type_reverse  = new IntArrayList();
+        conditions = new HashMap<>();
         configure_edge_name(edgePattern);
         configure_edge_type(edgePattern, label_type_map);
         configure_path_length(edgePattern);

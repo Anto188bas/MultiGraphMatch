@@ -22,6 +22,7 @@ import target_graph.graph.GraphPaths;
 import target_graph.nodes.GraphMacroNode;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class MatchingWhere extends MatchingSimple {
@@ -38,13 +39,11 @@ public class MatchingWhere extends MatchingSimple {
             int q_src, int q_dst,
             boolean justCount, boolean distinct
     ) {
-        System.out.println("WHERE MATCHING PROCEDURE");
         // WHERE CONDITIONS
         boolean doWhereCheck = true;
         boolean areThereConditions = true;
         IntArrayList setWhereConditions = where_managing.getSetWhereConditions();
 
-        System.out.println("SET WHERE CONDITIONS: " + setWhereConditions);
         if (setWhereConditions.isEmpty()) {
             doWhereCheck = false;
             areThereConditions = false;
@@ -65,27 +64,30 @@ public class MatchingWhere extends MatchingSimple {
                         query_obj, graphPaths, matchingData, nodes_symmetry, states
                 );
 
+                System.out.println("FIRST CANIDATES: " + matchingData.setCandidates[0]);
+
                 while (matchingData.candidatesIT[0] < matchingData.setCandidates[0].size() - 1) {
                     // STATE ZERO
+                    System.out.println("SI: " + si + "\tCANDIDATES IT SI: " + matchingData.candidatesIT[si] + "\tsetCandidates SI: " + matchingData.setCandidates[si]);
                     matchingData.solution_edges[si] = matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
                     matchingData.solution_nodes[states.map_state_to_src[si]] = matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
                     matchingData.solution_nodes[states.map_state_to_dst[si]] = matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
                     matchingData.matchedEdges.add(matchingData.solution_edges[si]);
                     matchingData.matchedNodes.add(matchingData.solution_nodes[0]);
                     matchingData.matchedNodes.add(matchingData.solution_nodes[1]);
-                    psi = si;
-                    si++;
-                    matchingData.setCandidates[si] = NewFindCandidates.find_candidates(
-                            graphPaths, query_obj, si, nodes_symmetry, edges_symmetry, states, matchingData
-                    );
-                    matchingData.candidatesIT[si] = -1;
-
                     //Check where conditions
                     boolean whereCheckOk = true;
                     if (doWhereCheck)
                         whereCheckOk = checkWhereCond(query_obj, states, si, matchingData, setWhereConditions, setLogicalWhereConditions,
                                 currPosWhereCond, currLogWhereCond);
-                    if(whereCheckOk) {
+                    if (whereCheckOk) {
+                        psi = si;
+                        si++;
+                        matchingData.setCandidates[si] = NewFindCandidates.find_candidates(
+                                graphPaths, query_obj, si, nodes_symmetry, edges_symmetry, states, matchingData
+                        );
+                        matchingData.candidatesIT[si] = -1;
+
                         while (si > 0) {
                             // BACK TRACKING ON EDGES
                             if (psi >= si) {
@@ -175,6 +177,7 @@ public class MatchingWhere extends MatchingSimple {
                             }
                         }
                     }
+                    si = 0;
                     // CLEANING OF STRUCTURES
                     matchingData.matchedEdges.remove(matchingData.solution_edges[si]);
                     matchingData.solution_edges[si] = -1;
@@ -217,6 +220,8 @@ public class MatchingWhere extends MatchingSimple {
         query_obj.domains_elaboration(query_bitmatrix.getTable(), target_bitmatrix.getTable(), compatibility, graphPaths.getMap_node_color_degrees());
         outData.domain_time = (System.currentTimeMillis() - outData.domain_time) / 1000;
 
+        System.out.println("TARGET BITMATRIX: " + target_bitmatrix.getTable());
+        System.out.println("QUERY BITMATRIX: " + query_bitmatrix.getTable());
 
         // EDGE ORDERING AND STATE OBJECT CREATION
         outData.ordering_time = System.currentTimeMillis();
@@ -248,7 +253,7 @@ public class MatchingWhere extends MatchingSimple {
          */
         System.out.println("QUERY NODES");
         query_obj.getQuery_nodes().forEach((id, node) -> {
-            System.out.println("ID: " + id + "-> " +node);
+            System.out.println("ID: " + id + "-> " + node);
         });
 
         System.out.println("QUERY EDGES");
@@ -256,19 +261,39 @@ public class MatchingWhere extends MatchingSimple {
             System.out.println(key + "->" + list);
         });
 
+        System.out.println("DOMAINS");
+        query_obj.getPairs().forEach((pair) -> {
+            System.out.print("P: " + pair + "\tDOMAIN: ");
+            pair.getFirst_second().forEach((key, list) -> {
+                for (int dst : list) {
+                    System.out.println("[" + key + ", " + dst + "], ");
+                }
+                ;
+            });
+
+            pair.getSecond_first().forEach((key, list) -> {
+                for (int dst : list) {
+                    System.out.println("[" + key + ", " + dst + "], ");
+                }
+                ;
+            });
+            System.out.print("\n");
+
+            System.out.println("\tF_S_SIZE: " + pair.getFirst_second().size());
+            System.out.println("\tS_F_SIZE: " + pair.getSecond_first().size());
+        });
+
         System.out.println("PARIS ORDERING");
         System.out.println(edgeOrdering.getPairs_ordering());
 
         System.out.println("ORDERING DETAILS");
-        for(int i = 0; i < states.map_state_to_src.length; i++) {
+        for (int i = 0; i < states.map_state_to_src.length; i++) {
             int edge = states.map_state_to_edge[i];
             int src = states.map_state_to_src[i];
             int dst = states.map_state_to_dst[i];
             EdgeDirection direction = states.map_edge_to_direction[i];
             System.out.println("STATE: " + i + "\tSRC: " + src + "\tDST: " + dst + "\tEDGE: " + edge + "\tDIRECTION: " + direction);
         }
-
-
 
 
         // START MATCHING PHASE
@@ -291,10 +316,8 @@ public class MatchingWhere extends MatchingSimple {
 
     private static boolean checkWhereCond(QueryStructure query_obj, StateStructures states, int si, MatchingData matchingData, IntArrayList setWhereConditions,
                                           int[] setLogicalWhereConditions, IntArrayList currPosWhereCond, IntArrayList currLogWhereCond) {
-
-        System.out.println("CHECK WHERE COND");
         boolean whereCheckOk = false;
-
+        System.out.println("CHECK WHERE COND FOR STATE " + si);
         //Check edge conditions
         int edgeCand = matchingData.solution_edges[si];
         int queryEdgeId = states.map_state_to_edge[si];
@@ -324,13 +347,15 @@ public class MatchingWhere extends MatchingSimple {
 
         if (si == 0) {
             int srcCand, dstCand;
-            if(states.map_edge_to_direction[queryEdgeId] == EdgeDirection.OUT) {
+            if (states.map_edge_to_direction[queryEdgeId] == EdgeDirection.OUT) {
                 srcCand = matchingData.solution_nodes[0];
                 dstCand = matchingData.solution_nodes[1];
             } else {
                 srcCand = matchingData.solution_nodes[1];
                 dstCand = matchingData.solution_nodes[0];
             }
+
+            System.out.println("\tSRC CAND: " + srcCand + "\tDST CAND: " + dstCand);
 
             // SRC
             for (QueryCondition condition : querySrc.getConditions().values()) {
@@ -454,6 +479,7 @@ public class MatchingWhere extends MatchingSimple {
             currPosWhereCond.clear();
             currLogWhereCond.clear();
         }
+        System.out.println("\tRES: : " + whereCheckOk);
         return whereCheckOk;
     }
 

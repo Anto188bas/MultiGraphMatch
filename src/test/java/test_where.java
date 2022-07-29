@@ -1,5 +1,6 @@
 import bitmatrix.models.TargetBitmatrix;
 import cypher.controller.WhereConditionExtraction;
+import cypher.models.QueryNode;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -14,6 +15,7 @@ import target_graph.nodes.MacroNodeHandler;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import tech.tablesaw.api.Table;
 
+import javax.sound.midi.SysexMessage;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
@@ -35,7 +37,8 @@ public class test_where {
         String root_dir  = System.getProperty("user.dir");
         String netw_path = root_dir + "/Networks/Person";
 
-        // NETWORK
+
+        // TARGET READING
         Table[] nodes_tables            = FileManager.files_reading(netw_path + "/nodes", ',');
         Table[] edges_tables_properties = FileManager.files_reading(netw_path + "/edges", ',');
 
@@ -62,9 +65,6 @@ public class test_where {
 
         // QUERY
         String query_test           = "MATCH (n1:Person)-[r1:college]->(n2:Person), (n3:Person) -[r2:college]-> (n2:Person) WHERE (n1.name <> n2.name AND NOT n1.name IN [\"Antonio\", \"Paolo\"]) OR (n2.name <> \"Franco\" AND n1.age > 18) RETURN n1,n2,n3";
-        NodesEdgesLabelsMaps labels = new NodesEdgesLabelsMaps();
-        labels.stringVectorToIntOne("Person");
-        labels.createEdgeLabelIdx("friend");
 
         WhereConditionExtraction where_managing = new WhereConditionExtraction();
         where_managing.where_condition_extraction(query_test);
@@ -72,7 +72,13 @@ public class test_where {
         where_managing.buildSetWhereConditions();
 
         QueryStructure query = new QueryStructure();
-        query.parser(query_test, labels, nodes_tables, edges_tables_properties, Optional.of(where_managing));
+        query.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.of(where_managing));
+
+        System.out.println("NODES");
+        for(QueryNode node : query.getQuery_nodes().values())
+        {
+            System.out.println(node);
+        }
 
 
 //        System.out.println("NODE 0: " + labels.getIdxToLabelNode().get(0));

@@ -26,11 +26,18 @@ public class TypeConditionSelection {
     ) {
         // CHECK IF THE ELEMENT IS A NODE OR AN EDGE
         //   1. NODE
-        if (node_name.containsKey(leftElement.getElementName()))
-            return tableSelection(leftElement.getElementKey(), nodes, rightElement);
+        Object tableSelection;
+        if (node_name.containsKey(leftElement.getElementName())) {
+            tableSelection = tableSelection(leftElement.getElementKey(), nodes, rightElement);
+            // ID INDEX
+            this.idIndex = new IntIndex(this.selectedTable.intColumn("id"));
+        }
         //   2. EDGES
-        else
-            return tableSelection(leftElement.getElementKey(), edges, rightElement);
+        else {
+            tableSelection = tableSelection(leftElement.getElementKey(), edges, rightElement);
+        }
+
+        return tableSelection;
     }
 
     @SuppressWarnings("unchecked")
@@ -46,11 +53,11 @@ public class TypeConditionSelection {
             break;
         }
 
-        // ID INDEX
-        this.idIndex = new IntIndex(this.selectedTable.intColumn("id"));
+
 
         // COLUMN TYPE SELECTION
         // System.out.println(selectedTable.column(property_name));
+        System.out.println("PROPERTY NAME: " + property_name);
         String columnType = selectedTable.column(property_name).type().name();
         switch (columnType) {
             // INTEGER ELABORATION
