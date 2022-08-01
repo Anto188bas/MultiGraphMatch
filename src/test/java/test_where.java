@@ -64,7 +64,8 @@ public class test_where {
         System.out.println(idx_label.getLabelToIdxEdge().keySet());
 
         // QUERY
-        String query_test           = "MATCH (n1:Person)-[r1:college]->(n2:Person), (n3:Person) -[r2:college]-> (n2:Person) WHERE (n1.name <> n2.name AND NOT n1.name IN [\"Antonio\", \"Paolo\"]) OR (n2.name <> \"Franco\" AND n1.age > 18) RETURN n1,n2,n3";
+//        String query_test           = "MATCH (n1:Person)-[r1:college]->(n2:Person), (n3:Person) -[r2:college]-> (n2:Person) WHERE (n1.name <> n2.name AND NOT n1.name IN [\"Antonio\", \"Paolo\"]) OR (n2.name <> \"Franco\" AND n1.age > 18) RETURN n1,n2,n3";
+        String query_test           = "MATCH (n1:Person)-[r1:college]->(n2:Person), (n3:Person) -[r2:college]-> (n2:Person) WHERE (n2.name <> \"Franco\" AND n1.age > 18) RETURN n1,n2,n3";
 
         WhereConditionExtraction where_managing = new WhereConditionExtraction();
         where_managing.where_condition_extraction(query_test);
@@ -73,12 +74,6 @@ public class test_where {
 
         QueryStructure query = new QueryStructure();
         query.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.of(where_managing));
-
-        System.out.println("NODES");
-        for(QueryNode node : query.getQuery_nodes().values())
-        {
-            System.out.println(node);
-        }
 
 
 //        System.out.println("NODE 0: " + labels.getIdxToLabelNode().get(0));

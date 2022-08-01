@@ -13,7 +13,7 @@ public class StringComparison extends Comparison{
     // METHODS
     private void init_object() {
         this.functions = new HashMap<>();
-        this.functions.put("=",          String::equals    );
+        this.functions.put("Equals"    , String::equals    );
         this.functions.put("StartsWith", String::startsWith);
         this.functions.put("EndsWith"  , String::endsWith  );
         this.functions.put("Contains"  , String::contains  );

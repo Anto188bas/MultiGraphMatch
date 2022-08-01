@@ -57,7 +57,6 @@ public class TypeConditionSelection {
 
         // COLUMN TYPE SELECTION
         // System.out.println(selectedTable.column(property_name));
-        System.out.println("PROPERTY NAME: " + property_name);
         String columnType = selectedTable.column(property_name).type().name();
         switch (columnType) {
             // INTEGER ELABORATION
