@@ -35,7 +35,8 @@ public class test_where {
 
         // PATH
         String root_dir  = System.getProperty("user.dir");
-        String netw_path = root_dir + "/Networks/Person";
+//        String netw_path = root_dir + "/Networks/Person";
+        String netw_path = root_dir + "/Networks/Test";
 
 
         // TARGET READING
@@ -65,7 +66,13 @@ public class test_where {
 
         // QUERY
 //        String query_test           = "MATCH (n1:Person)-[r1:college]->(n2:Person), (n3:Person) -[r2:college]-> (n2:Person) WHERE (n1.name <> n2.name AND NOT n1.name IN [\"Antonio\", \"Paolo\"]) OR (n2.name <> \"Franco\" AND n1.age > 18) RETURN n1,n2,n3";
-        String query_test           = "MATCH (n1:Person)-[r1:college]->(n2:Person), (n3:Person) -[r2:college]-> (n2:Person) WHERE (n2.name <> \"Franco\" AND n1.age > 18) RETURN n1,n2,n3";
+//        String query_test           = "MATCH (n1:Person)-[r1:college]->(n2:Person), (n3:Person) -[r2:college]-> (n2:Person) WHERE (n2.name <> \"Franco\" AND n1.age > 18) RETURN n1,n2,n3";
+
+        String query_test           = "MATCH (n1:P)<-[r0:F]-(n0:P), (n0:P) -[r1:F]-> (n2:P), (n0:P) -[r2:F]-> (n3:P) WHERE (n0.name <> \"Franco\" AND n1.age > 18 AND n3.age >=25) RETURN n0,n1,n2,n3";
+//        String query_test           = "MATCH (n1:P)<-[r0:F]-(n0:P), (n0:P) -[r1:F]-> (n2:P), (n0:P) -[r2:F]-> (n3:P) WHERE (n0.name <> \"Franco\" AND n1.age > 18) RETURN n0,n1,n2,n3";
+//        String query_test           = "MATCH (n1:P)<-[r0:F]-(n0:P), (n0:P) -[r1:F]-> (n2:P), (n0:P) -[r2:F]-> (n3:P) WHERE (n0.name = \"Leonardo\" AND n1.age = 25) RETURN n0,n1,n2,n3";
+
+
 
         WhereConditionExtraction where_managing = new WhereConditionExtraction();
         where_managing.where_condition_extraction(query_test);

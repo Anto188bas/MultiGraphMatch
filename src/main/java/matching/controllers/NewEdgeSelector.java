@@ -23,7 +23,9 @@ public class NewEdgeSelector {
                 condCheck = false;
                 break;
             }
-        } return condCheck;
+        }
+        System.out.println("\t\t\tCOND CHECK NODE: " + condCheck);
+        return condCheck;
     }
 
     // EDGE CHECK CONDITION
@@ -116,6 +118,7 @@ public class NewEdgeSelector {
                 int t_node = (column == 0 ? triplet.getValue0() : triplet.getValue1());
                 if (!matchingData.matchedNodes.contains(t_node) &&
                         nodeCondCheck(q_node, t_node, matchingData, nodes_symmetry)){
+                    System.out.println("\t\t\tinside IF");
                     IntArrayList[] colors_edges = graphPaths.getMap_key_to_edge_list()[triplet.getValue2()];
                     for(int color: query_edge.getEdge_label()) {
                         IntArrayList edges = colors_edges[color];
@@ -129,6 +132,7 @@ public class NewEdgeSelector {
                 }
             });
         }
+        System.out.println("\t\tCANDIDATES: " + listCandidates);
     }
 
     // 2B. TYPE VECTOR IS SET (FIRST NODE)

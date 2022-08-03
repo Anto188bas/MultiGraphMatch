@@ -1,4 +1,5 @@
 package cypher.controller;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import matching.models.WhereConditionsData;
@@ -22,6 +23,7 @@ public class WhereConditionExtraction {
 
     protected IntArrayList setWhereConditions;
     protected Object2IntOpenHashMap<String> map_condition_to_orPropositionPos;
+    protected Int2IntOpenHashMap mapPropositionToNumConditions;
 
     // WHERE CONDITION
     public WhereConditionExtraction(){
@@ -94,6 +96,7 @@ public class WhereConditionExtraction {
     public void buildSetWhereConditions(){
         this.setWhereConditions = new IntArrayList();
         this.map_condition_to_orPropositionPos = new Object2IntOpenHashMap();
+        this.mapPropositionToNumConditions = new Int2IntOpenHashMap();
 
         System.out.println("********************************************************************************");
         System.out.println("ORIGINAL WHERE: " + this.where_string);
@@ -112,6 +115,7 @@ public class WhereConditionExtraction {
 
                 this.map_condition_to_orPropositionPos.put(splitAND[j], i);
             }
+            this.mapPropositionToNumConditions.put(i, splitAND.length);
 
             setWhereConditions.add(splitAND.length); // numAndConditions
         }
@@ -130,5 +134,9 @@ public class WhereConditionExtraction {
 
     public Object2IntOpenHashMap<String> getMap_condition_to_orPropositionPos() {
         return map_condition_to_orPropositionPos;
+    }
+
+    public Int2IntOpenHashMap getMapPropositionToNumConditions() {
+        return mapPropositionToNumConditions;
     }
 }
