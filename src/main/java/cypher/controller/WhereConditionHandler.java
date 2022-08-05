@@ -6,7 +6,6 @@ import cypher.models.QueryNode;
 import cypher.models.WhereExpression;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import matching.models.WhereConditionsData;
 import org.opencypher.v9_0.expressions.And;
 import org.opencypher.v9_0.expressions.Expression;
 import org.opencypher.v9_0.expressions.Or;

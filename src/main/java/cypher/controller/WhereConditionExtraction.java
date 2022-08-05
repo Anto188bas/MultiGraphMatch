@@ -1,8 +1,9 @@
 package cypher.controller;
+import cypher.models.QueryCondition;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import matching.models.WhereConditionsData;
 import net.sf.tweety.logics.pl.parser.PlParser;
 import net.sf.tweety.logics.pl.syntax.PlFormula;
 import java.io.StringReader;
@@ -24,7 +25,12 @@ public class WhereConditionExtraction {
     protected IntArrayList setWhereConditions;
     protected Object2IntOpenHashMap<String> map_condition_to_orPropositionPos;
     protected Int2IntOpenHashMap mapPropositionToNumConditions;
+    protected Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<QueryCondition>> mapOrPropositionToConditionSet;
+    protected Int2ObjectOpenHashMap<PropositionStatus> mapOrPropositionToStatus;
+    protected Int2ObjectOpenHashMap<PropositionStatus> mapConditionToStatus;
+    protected Object2IntOpenHashMap<String> mapConditionToAndChainPos;
 
+    public int conditionIndex = 0;
     // WHERE CONDITION
     public WhereConditionExtraction(){
         this.origin      = new String[] {
@@ -97,6 +103,10 @@ public class WhereConditionExtraction {
         this.setWhereConditions = new IntArrayList();
         this.map_condition_to_orPropositionPos = new Object2IntOpenHashMap();
         this.mapPropositionToNumConditions = new Int2IntOpenHashMap();
+        this.mapOrPropositionToConditionSet = new Int2ObjectOpenHashMap<>();
+        this.mapOrPropositionToStatus = new Int2ObjectOpenHashMap<>();
+        this.mapConditionToAndChainPos = new Object2IntOpenHashMap<>();
+        this.mapConditionToStatus = new Int2ObjectOpenHashMap<>();
 
         System.out.println("********************************************************************************");
         System.out.println("ORIGINAL WHERE: " + this.where_string);
@@ -106,6 +116,9 @@ public class WhereConditionExtraction {
         String[] splitOR = this.disj_where_cond.split("\\|\\|");
 
         for(int i = 0; i < splitOR.length; i++) {
+            this.mapOrPropositionToConditionSet.put(i, new Int2ObjectOpenHashMap<>());
+            this.mapOrPropositionToStatus.put(i, PropositionStatus.NOT_EVALUATED);
+
             System.out.println("SPLIT OR " + i + ": " + splitOR[i]);
 
             String[] splitAND = splitOR[i].split("&&");
@@ -114,6 +127,7 @@ public class WhereConditionExtraction {
                 System.out.println("\tSPLIT AND " + j + ": " + splitAND[j] + "\t\torPropositionPos: " + i);
 
                 this.map_condition_to_orPropositionPos.put(splitAND[j], i);
+                this.mapConditionToAndChainPos.put(splitAND[j], j);
             }
             this.mapPropositionToNumConditions.put(i, splitAND.length);
 
@@ -138,5 +152,21 @@ public class WhereConditionExtraction {
 
     public Int2IntOpenHashMap getMapPropositionToNumConditions() {
         return mapPropositionToNumConditions;
+    }
+
+    public Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<QueryCondition>> getMapOrPropositionToConditionSet() {
+        return mapOrPropositionToConditionSet;
+    }
+
+    public Int2ObjectOpenHashMap<PropositionStatus> getMapOrPropositionToStatus() {
+        return mapOrPropositionToStatus;
+    }
+
+    public Object2IntOpenHashMap<String> getMapConditionToAndChainPos() {
+        return mapConditionToAndChainPos;
+    }
+
+    public Int2ObjectOpenHashMap<PropositionStatus> getMapConditionToStatus() {
+        return mapConditionToStatus;
     }
 }

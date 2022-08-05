@@ -1,10 +1,10 @@
 package cypher.models;
+import cypher.controller.PropositionStatus;
 import cypher.controller.PropertiesUtility;
 import cypher.controller.TypeConditionSelection;
 import cypher.controller.WhereConditionExtraction;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import matching.models.WhereConditionsData;
 import org.opencypher.v9_0.expressions.*;
 import scala.collection.Iterator;
 import tech.tablesaw.api.Table;
@@ -23,7 +23,11 @@ public class QueryCondition {
     private TypeConditionSelection conditionCheck;
     private final HashMap<String, String> associations;
     private int orPropositionPos;
+    private int andChainPos;
 
+    private int conditionIndex;
+
+    private PropositionStatus status;
 
     // CONSTRUCTOR
     public QueryCondition(
@@ -91,6 +95,12 @@ public class QueryCondition {
 
 
         this.orPropositionPos = where_managing.get().getMap_condition_to_orPropositionPos().getInt(condKey);
+        this.andChainPos = where_managing.get().getMapConditionToAndChainPos().getInt(condKey);
+        this.status = PropositionStatus.NOT_EVALUATED;
+        this.conditionIndex = where_managing.get().conditionIndex++;
+        where_managing.get().getMapOrPropositionToConditionSet().get(this.orPropositionPos).put(this.andChainPos, this);
+        where_managing.get().getMapOrPropositionToConditionSet().get(this.orPropositionPos).put(this.andChainPos, this);
+
 
 
         if (node_name.containsKey(this.node_param.getElementName()))
@@ -151,6 +161,18 @@ public class QueryCondition {
     public boolean   isNegation()      {return negation;}
     public TypeConditionSelection getConditionCheck()   {return conditionCheck;}
     public int getOrPropositionPos()                    {return orPropositionPos;}
+    public int getAndChainPos()                         {return andChainPos;}
+
+    public PropositionStatus getStatus() {
+        return status;
+    }
+    // SETTER
+
+    public void setStatus(PropositionStatus status) {
+        this.status = status;
+    }
+
+
 
     // TO STRING
 

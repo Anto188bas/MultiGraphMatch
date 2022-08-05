@@ -8,7 +8,6 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import matching.models.WhereConditionsData;
 import ordering.EdgeDirection;
 import ordering.NodesPair;
 import org.opencypher.v9_0.ast.*;

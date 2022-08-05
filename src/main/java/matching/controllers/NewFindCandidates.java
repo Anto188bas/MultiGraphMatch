@@ -85,7 +85,6 @@ public class NewFindCandidates {
                 // 1. EDGE FROM q_src TO q_dst (OUTBOUND)
                 if (direction == EdgeDirection.OUT) {
                     edges_submap.addAll(graphPaths.getBySRCandDSTs(t_src, compatible_subtable));
-                    System.out.println("\t\tOUTBOUND, submap: " + edges_submap);
                     cols = dst_vet;
                 }
                 // 2. EDGE FROM q_dst TO q_src (INBOUND)
@@ -104,7 +103,6 @@ public class NewFindCandidates {
                     NewEdgeSelector.no_types_case(edges_submap, matchingData, nodes_symmetry, listCandidates, q_dst, cols, graphPaths);
                 }
                 else {
-                    System.out.println("\t\tEDGE TYPE");
                     NewEdgeSelector.types_case(edges_submap, matchingData, nodes_symmetry, listCandidates, q_dst, cols, graphPaths, queryEdge);
                 }
             }

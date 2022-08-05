@@ -5,7 +5,6 @@ import cypher.controller.WhereConditionExtraction;
 import cypher.controller.WhereConditionHandler;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import matching.models.WhereConditionsData;
 import org.opencypher.v9_0.expressions.Expression;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import tech.tablesaw.api.Table;
