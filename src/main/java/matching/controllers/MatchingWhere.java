@@ -34,237 +34,7 @@ public class MatchingWhere extends MatchingSimple {
     public static int si;
     public static int psi;
 
-    protected static long matching_procedure_old(
-            WhereConditionExtraction where_managing,
-            Int2ObjectOpenHashMap<IntArrayList> first_compatibility,
-            MatchingData matchingData,
-            StateStructures states,
-            GraphPaths graphPaths,
-            QueryStructure query_obj,
-            IntArrayList[] nodes_symmetry,
-            IntArrayList[] edges_symmetry,
-            int numQueryEdges, long numTotalOccs, long numMaxOccs,
-            int q_src, int q_dst,
-            boolean justCount, boolean distinct
-    ) {
-        // WHERE CONDITIONS
-        doWhereCheck = true;
-        boolean areThereConditions = true;
-        IntArrayList setWhereConditions = where_managing.getSetWhereConditions();
-
-        if (setWhereConditions.isEmpty()) {
-            doWhereCheck = false;
-            areThereConditions = false;
-        }
-
-        int[] setLogicalWhereConditions = new int[setWhereConditions.size()];
-        IntArrayList numSatisfiedConditionsPerOrProposition = new IntArrayList();
-        for(int i = 0; i < setWhereConditions.size(); i++) {
-            numSatisfiedConditionsPerOrProposition.add(i, 0);
-        }
-        IntArrayList currPosWhereCond = new IntArrayList();
-        IntArrayList currLogWhereCond = new IntArrayList();
-        Int2IntOpenHashMap mapPropostionToNumConditions = where_managing.getMapPropositionToNumConditions();
-        System.out.println("********************************************************************************");
-        System.out.println("SET WHERE CONDITIONS: " + setWhereConditions);
-        System.out.println("SET LOGICAL WHERE CONDITIONS: " + Arrays.toString(setLogicalWhereConditions));
-        System.out.println("CUR POS WHERE CONDITIONS: " + currPosWhereCond);
-        System.out.println("CUR LOG WHERE CONDITIONS: " + currLogWhereCond);
-        System.out.println("********************************************************************************");
-
-
-        // STATES
-        int si = 0;
-        int psi = -1;
-        int sip1;
-
-        // CANDIDATES FOR STATE 0 (src, dst, edge)
-        for (int f_node : first_compatibility.keySet()) {
-            for (int s_node : first_compatibility.get(f_node)) {
-                matchingData.setCandidates[0] = NewFindCandidates.find_first_candidates(
-                        q_src, q_dst, f_node, s_node, states.map_state_to_edge[0],
-                        query_obj, graphPaths, matchingData, nodes_symmetry, states
-                );
-
-                System.out.println("FIRST CANIDATES: " + matchingData.setCandidates[0]);
-
-                while (matchingData.candidatesIT[0] < matchingData.setCandidates[0].size() - 1) {
-                    // STATE ZERO
-                    System.out.println("SI: " + si + "\tCANDIDATES IT SI: " + matchingData.candidatesIT[si] + "\tsetCandidates SI: " + matchingData.setCandidates[si]);
-                    matchingData.solution_edges[si] = matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
-                    matchingData.solution_nodes[states.map_state_to_src[si]] = matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
-                    matchingData.solution_nodes[states.map_state_to_dst[si]] = matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
-                    matchingData.matchedEdges.add(matchingData.solution_edges[si]);
-                    matchingData.matchedNodes.add(matchingData.solution_nodes[0]);
-                    matchingData.matchedNodes.add(matchingData.solution_nodes[1]);
-
-                    //Check where conditions
-                    boolean whereCheckOk = true;
-                    if (doWhereCheck)
-                        whereCheckOk = checkWhereCond(query_obj, states, si, matchingData, setWhereConditions, setLogicalWhereConditions,
-                                currPosWhereCond, currLogWhereCond, numSatisfiedConditionsPerOrProposition, mapPropostionToNumConditions, where_managing);
-
-                    if (whereCheckOk) {
-                        psi = si;
-                        si++;
-                        System.out.println("WHERE CHECK OK FOR STATE "+si+", GO AHEAD");
-                        matchingData.setCandidates[si] = NewFindCandidates.find_candidates(
-                                graphPaths, query_obj, si, nodes_symmetry, edges_symmetry, states, matchingData
-                        );
-                        matchingData.candidatesIT[si] = -1;
-                        System.out.println("\tSTATE: " + si + "\tPSI: " + psi + "\tCandidate Set " + (matchingData.setCandidates[si]) + "\titerator: " + matchingData.candidatesIT[si]);
-
-                        while (si > 0) {
-                            System.out.println("while si > 0 true");
-
-                            // BACK TRACKING ON EDGES
-                            if (psi >= si) {
-                                System.out.println("\t psi >= si, BACKTRACKING");
-                                matchingData.matchedEdges.remove(matchingData.solution_edges[si]);
-                                matchingData.solution_edges[si] = -1;
-                                // REMOVE THE NODE IF EXIST
-                                int selected_candidate = states.map_state_to_mnode[si];
-                                if (selected_candidate != -1) {
-                                    matchingData.matchedNodes.remove(matchingData.solution_nodes[selected_candidate]);
-                                    matchingData.solution_nodes[selected_candidate] = -1;
-                                }
-
-                                // WHERE CONDITIONS MANAGEMENT
-                                if (areThereConditions) {
-                                    for (int i = 0; i < currPosWhereCond.size(); i++) {
-                                        int pos = currPosWhereCond.getInt(i);
-                                        int val = currLogWhereCond.getInt(i);
-                                        setLogicalWhereConditions[pos] = 0;
-                                        if (val == 1) {
-                                            int newCount = setWhereConditions.getInt(pos) + 1;
-                                            setWhereConditions.set(pos, newCount);
-
-                                            int newSatisfiedCount=numSatisfiedConditionsPerOrProposition.getInt(pos)-1;
-                                            numSatisfiedConditionsPerOrProposition.set(pos, newSatisfiedCount);
-
-                                            if (newCount > 0)
-                                                doWhereCheck = true;
-                                        }
-                                    }
-                                    currPosWhereCond.clear();
-                                    currLogWhereCond.clear();
-                                }
-                            }
-
-                            // NEXT CANDIDATE
-                            matchingData.candidatesIT[si]++;
-                            boolean backtrack = matchingData.candidatesIT[si] == matchingData.setCandidates[si].size();
-
-                            // BACKTRACK OR GO AHEAD
-                            if (backtrack) { // BACKTRACK
-                                System.out.println("BACKTRACK TO STATE " + (si -1) + "\tset cand size: " + matchingData.setCandidates[si].size() + "\tit: " + matchingData.candidatesIT[si]);
-                                psi = si;
-                                si--;
-                            }
-
-                            // FORWARD TRACKING ON EDGES
-                            else { // GO AEHAD
-                                System.out.println("GO AHED");
-                                // SET NODE AND EDGE TO MATCH
-                                matchingData.solution_edges[si] = matchingData.setCandidates[si].getInt(matchingData.candidatesIT[si]);
-                                int node_to_match = states.map_state_to_mnode[si];
-                                if (node_to_match != -1)
-                                    matchingData.solution_nodes[node_to_match] =
-                                            matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
-
-                                //Check where conditions
-                                whereCheckOk = true;
-                                if (doWhereCheck)
-                                    whereCheckOk = checkWhereCond(query_obj, states, si, matchingData, setWhereConditions, setLogicalWhereConditions,
-                                            currPosWhereCond, currLogWhereCond, numSatisfiedConditionsPerOrProposition, mapPropostionToNumConditions, where_managing);
-
-                                if (whereCheckOk) {
-                                    System.out.println("whereCheckOk");
-                                    // INCREASE OCCURRENCES
-                                    if (si == numQueryEdges - 1) {
-                                        System.out.println("\tOCCURRENCE FOUND!");
-                                        System.out.println("\t\tSOLUTION NODES: " + Arrays.toString(matchingData.solution_nodes));
-
-                                        //New occurrence found
-                                        numTotalOccs++;
-                                        if (!justCount || distinct) {
-                                            // TODO implement me
-                                        }
-                                        if (numTotalOccs == numMaxOccs) {
-                                            report();
-                                            System.exit(0);
-                                        }
-                                        psi = si;
-                                    }
-                                    // GO AHEAD
-                                    else {
-                                        System.out.println("\tGO AHEAD TO STATE " + (si + 1));
-                                        //Update auxiliary info
-                                        matchingData.matchedEdges.add(matchingData.solution_edges[si]);
-                                        node_to_match = states.map_state_to_mnode[si];
-                                        if (node_to_match != -1) {
-                                            matchingData.matchedNodes.add(matchingData.solution_nodes[node_to_match]);
-                                        }
-                                        sip1 = si + 1;
-                                        System.out.println("\t\tSOLUTION NODES: " + Arrays.toString(matchingData.solution_nodes));
-                                        System.out.println("FIND CANDIDATES FOR STATE " + sip1);
-                                        matchingData.setCandidates[sip1] = NewFindCandidates.find_candidates(
-                                                graphPaths, query_obj, sip1, nodes_symmetry, edges_symmetry, states, matchingData
-                                        );
-                                        matchingData.candidatesIT[sip1] = -1;
-                                        psi = si;
-                                        si = sip1;
-                                        System.out.println("\t\tSTATE: " + si + "\tPSI: " + psi + "\tCandidate Set " + (matchingData.setCandidates[si]) + "\titerator: " + matchingData.candidatesIT[si]);
-
-                                    }
-                                } else {
-                                    System.out.println("whereCheck not Ok (doWhereCheck: " + doWhereCheck);
-                                }
-                            }
-                        }
-                    }
-
-                    if(areThereConditions)
-                    {
-                        for(int i=0;i<currPosWhereCond.size();i++)
-                        {
-                            int pos=currPosWhereCond.getInt(i);
-                            int val=currLogWhereCond.getInt(i);
-                            setLogicalWhereConditions[pos]=0;
-                            if(val==1)
-                            {
-                                int newCount=setWhereConditions.getInt(pos)+1;
-                                setWhereConditions.set(pos,newCount);
-
-                                int newSatisfiedCount=numSatisfiedConditionsPerOrProposition.getInt(pos)-1;
-                                numSatisfiedConditionsPerOrProposition.set(pos, newSatisfiedCount);
-                                if(newCount>0)
-                                    doWhereCheck=true;
-                            }
-                        }
-
-                        currPosWhereCond.clear();
-                        currLogWhereCond.clear();
-                    }
-
-                    // CLEANING OF STRUCTURES
-                    System.out.println("CLEANING DATA STRUCTURES");
-                    si = 0;
-                    psi = - 1;
-                    matchingData.matchedEdges.remove(matchingData.solution_edges[si]);
-                    matchingData.solution_edges[si] = -1;
-                    matchingData.matchedNodes.remove(matchingData.solution_nodes[0]);
-                    matchingData.matchedNodes.remove(matchingData.solution_nodes[1]);
-                    matchingData.solution_nodes[0] = -1;
-                    matchingData.solution_nodes[1] = -1;
-                }
-                matchingData.candidatesIT[0] = -1;
-            }
-        }
-        return numTotalOccs;
-    }
-
-
+    public static long numTotalOccs;
 
     private static long matching_procedure(
             WhereConditionExtraction where_managing,
@@ -275,10 +45,11 @@ public class MatchingWhere extends MatchingSimple {
             QueryStructure query_obj,
             IntArrayList[] nodes_symmetry,
             IntArrayList[] edges_symmetry,
-            int numQueryEdges, long numTotalOccs, long numMaxOccs,
+            int numQueryEdges, long numMaxOccs,
             int q_src, int q_dst,
             boolean justCount, boolean distinct
     ) {
+        numTotalOccs = 0;
 
         // WHERE CONDITIONS
         doWhereCheck = true;
@@ -299,9 +70,10 @@ public class MatchingWhere extends MatchingSimple {
                 while (matchingData.candidatesIT[0] < matchingData.setCandidates[0].size() -1) {
                     // STATE ZERO
                     startFromStateZero();
-                    updateMatchingInfoForStateZero(matchingData, states);
+                    updateSolutionNodesAndEdgeForStateZero(matchingData, states);
 
                     if(areWhereConditionsVerified(matchingData, states, query_obj, setWhereConditions, where_managing)) {
+                        updateMatchingInfoForStateZero(matchingData);
                         goAhead();
                         updateCandidatesForStateGraterThanZero(matchingData, states, query_obj, nodes_symmetry, edges_symmetry, graphPaths);
 
@@ -310,49 +82,32 @@ public class MatchingWhere extends MatchingSimple {
                             if (psi >= si) {
                                 removeMatchingInfoForStateGraterThanZero(si, states, matchingData);
 
-                                // RESET CONDITIONS FOR THE CURRENT STATE
+                                // RESET CONDITIONS FOR THE PREVIOUS MATCHED STATE
                                 if(areThereConditions) {
-                                    resetConditionsForState(where_managing, si, matchingData, states, query_obj);
+                                    resetConditionsForState(where_managing, psi, matchingData, states, query_obj);
                                 }
                             }
 
                             // NEXT CANDIDATE
                             matchingData.candidatesIT[si]++;
 
-
-                            if (shouldBacktrack(matchingData)) {
+                            if (shouldBacktrack(matchingData)) { // BACKTRACKING
                                 backtrack();
-                            }
-
-                            // FORWARD TRACKING ON EDGES
-                            else {
+                            } else {  // FORWARD TRACKING ON EDGES
                                 // SET NODE AND EDGE TO MATCH
                                 updateSolutionNodesAndEdgeForStateGreaterThanZero(matchingData, states);
 
                                 if(areWhereConditionsVerified(matchingData, states, query_obj, setWhereConditions, where_managing)) {
-                                    // INCREASE OCCURRENCES
-                                    if (lastStateReached(numQueryEdges)) {
-                                        //New occurrence found
-                                        numTotalOccs++;
-                                        if (!justCount || distinct) {
-                                            // TODO implement me
-                                        }
-                                        if (numTotalOccs == numMaxOccs) {
-                                            report();
-                                            System.exit(0);
-                                        }
-                                        psi = si;
-                                    }
-                                    // GO AHEAD
-                                    else {
-                                        updateMatchingInfoForStateGreaterThanZero(matchingData, states);
+                                    updateMatchingInfoForStateGreaterThanZero(matchingData, states);
+                                    if (lastStateReached(numQueryEdges)) { // INCREASE OCCURRENCES
+                                        // New occurrence found
+                                        newOccurrenceFound(numMaxOccs, justCount, distinct);
+                                    } else { // GO AHEAD
                                         goAhead();
                                         updateCandidatesForStateGraterThanZero(matchingData, states, query_obj, nodes_symmetry, edges_symmetry, graphPaths);
-
                                     }
                                 }
                             }
-
                         }
                     }
                     //WHERE CHECK FAILED OR NO MORE CANDIDATES
@@ -509,7 +264,7 @@ public class MatchingWhere extends MatchingSimple {
 
         outData.num_occurrences = matching_procedure(
                 where_managing, first_compatibility.getFirst_second(), matchingData, states, graphPaths,
-                query_obj, nodes_symmetry, edges_symmetry, numQueryEdges, outData.num_occurrences, numMaxOccs,
+                query_obj, nodes_symmetry, edges_symmetry, numQueryEdges, numMaxOccs,
                 q_src, q_dst, justCount, distinct
         );
         report();
@@ -517,10 +272,7 @@ public class MatchingWhere extends MatchingSimple {
     }
 
 
-    private static boolean checkWhereCond(QueryStructure query_obj, StateStructures states, int si, MatchingData matchingData, IntArrayList setWhereConditions,
-                                          int[] setLogicalWhereConditions, IntArrayList currPosWhereCond, IntArrayList currLogWhereCond, IntArrayList numSatisfiedConditionsPerOrProposition,
-                                          Int2IntOpenHashMap mapPropostionToNumConditions, WhereConditionExtraction where_managing) {
-        System.out.println("CHECK WHERE COND FOR STATE " + si);
+    private static boolean checkWhereCond(QueryStructure query_obj, StateStructures states, int si, MatchingData matchingData, WhereConditionExtraction where_managing) {
         //Check edge conditions
         int edgeCand = matchingData.solution_edges[si];
         int queryEdgeId = states.map_state_to_edge[si];
@@ -549,8 +301,6 @@ public class MatchingWhere extends MatchingSimple {
             srcCand = matchingData.solution_nodes[0];
             dstCand = matchingData.solution_nodes[1];
 
-            System.out.println("\tSRC CAND: " + srcCand + "\tDST CAND: " + dstCand);
-
             // SRC
             for (QueryCondition condition : querySrc.getConditions().values()) {
                 if (checkQueryCondition(srcCand, condition)) {
@@ -570,13 +320,10 @@ public class MatchingWhere extends MatchingSimple {
             }
         } else { // STATE > 0, ONLY THE NEW MATCHED NODE MUST BE CHECKED
             int nodeToMatch = states.map_state_to_mnode[si];
-            System.out.println("NODE TO MATCH: " + nodeToMatch);
+
             if (nodeToMatch != -1) {
                 QueryNode matchedNode = query_obj.getQuery_node(nodeToMatch);
                 int nodeCand = matchingData.solution_nodes[nodeToMatch];
-                System.out.println("NODE CAND: " + nodeCand);
-                System.out.println(Arrays.toString(matchingData.setCandidates));
-                System.out.println(Arrays.toString(matchingData.candidatesIT));
                 for (QueryCondition condition : matchedNode.getConditions().values()) {
                     if (checkQueryCondition(nodeCand, condition)) {
                         condition.setStatus(PropositionStatus.EVALUATED);
@@ -612,10 +359,12 @@ public class MatchingWhere extends MatchingSimple {
         matchingData.solution_nodes[0] = -1;
         matchingData.solution_nodes[1] = -1;
     }
-    public static void updateMatchingInfoForStateZero(MatchingData matchingData, StateStructures states) {
+    public static void updateSolutionNodesAndEdgeForStateZero(MatchingData matchingData, StateStructures states) {
         matchingData.solution_edges[0] = matchingData.setCandidates[0].getInt(++matchingData.candidatesIT[0]);
         matchingData.solution_nodes[states.map_state_to_src[0]] = matchingData.setCandidates[0].getInt(++matchingData.candidatesIT[0]);
         matchingData.solution_nodes[states.map_state_to_dst[0]] = matchingData.setCandidates[0].getInt(++matchingData.candidatesIT[0]);
+    }
+    public static void updateMatchingInfoForStateZero(MatchingData matchingData) {
         matchingData.matchedEdges.add(matchingData.solution_edges[0]);
         matchingData.matchedNodes.add(matchingData.solution_nodes[0]);
         matchingData.matchedNodes.add(matchingData.solution_nodes[1]);
@@ -684,24 +433,15 @@ public class MatchingWhere extends MatchingSimple {
             boolean allConditionsVerified = true;
             boolean canBeTrue = true;
 
-            System.out.println("OR PROP: " + i);
-
             for(QueryCondition condition: conditionSet.values()) {
                 switch (condition.getStatus()) {
                     case NOT_EVALUATED -> {
                         allConditionsVerified = false;
-                        System.out.println("\tCONDITION " + condition.getAndChainPos() + ", NOT EVAL " + condition.getExpr_value());
                     }
 
                     case FAILED -> {
                         allConditionsVerified = false;
                         canBeTrue = false;
-                        System.out.println("\tCONDITION " + condition.getAndChainPos() + ", FAILED "+ condition.getExpr_value());
-
-                    }
-
-                    case EVALUATED -> {
-                        System.out.println("\tCONDITION " + condition.getAndChainPos() + ", EVALUATED "+ condition.getExpr_value());
                     }
 
                     // otherwise is evaluated
@@ -723,13 +463,10 @@ public class MatchingWhere extends MatchingSimple {
 
         if(atLeastOnePropositionVerified) { // One OR proposition is verified, we don't need other controls
             doWhereCheck = false;
-            System.out.println("TUTTE LE CONDIZIONI SONO SODDISFATTE!!!!!");
             return true;
         } else if(!allPropositionsFailed) { // No OR proposition is verified, we need other controls
-            System.out.println("ANCORA C'è speranza!!!!!");
             return true;
         }
-        System.out.println("ALL PROPOSITION FAILED!!!!!");
         // All OR propositions are FALSE, we must backtrack
         return false;
     }
@@ -774,7 +511,6 @@ public class MatchingWhere extends MatchingSimple {
         }
 
         boolean res = evaluateAllConditions(where_managing);
-        System.out.println("RESET CONDITIONS FOR STATE " + state + ", result: " + res);
     }
 
     public static boolean checkQueryCondition(int targetElementID, QueryCondition condition) {
@@ -805,8 +541,7 @@ public class MatchingWhere extends MatchingSimple {
 
     public static boolean areWhereConditionsVerified(MatchingData matchingData, StateStructures states, QueryStructure query_obj, IntArrayList setWhereConditions, WhereConditionExtraction where_managing) {
         if (doWhereCheck) {
-            return checkWhereCond(query_obj, states, si, matchingData, setWhereConditions, null,
-                    null, null, null, null, where_managing);
+            return checkWhereCond(query_obj, states, si, matchingData, where_managing);
         }
         return true;
     }
@@ -814,4 +549,17 @@ public class MatchingWhere extends MatchingSimple {
     public static boolean lastStateReached(int numQueryEdges) {
         return si == numQueryEdges - 1;
     }
+
+    public static void newOccurrenceFound(long numMaxOccs, boolean justCount, boolean distinct) {
+        numTotalOccs++;
+        if (!justCount || distinct) {
+            // TODO implement me
+        }
+        if (numTotalOccs == numMaxOccs) {
+            report();
+            System.exit(0);
+        }
+        psi = si;
+    }
+
 }

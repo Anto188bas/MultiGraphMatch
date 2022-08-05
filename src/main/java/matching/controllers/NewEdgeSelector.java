@@ -6,10 +6,8 @@ import matching.models.MatchingData;
 import org.javatuples.Triplet;
 import state_machine.StateStructures;
 import target_graph.graph.GraphPaths;
-import tech.tablesaw.api.Row;
-import tech.tablesaw.api.Table;
+
 import java.util.ArrayList;
-import java.util.stream.Stream;
 
 
 public class NewEdgeSelector {

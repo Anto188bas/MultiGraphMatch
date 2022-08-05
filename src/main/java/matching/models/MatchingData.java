@@ -20,8 +20,8 @@ public class MatchingData {
         solution_edges = new int[edges_num];
         solution_nodes = new int[nodes_num];
         candidatesIT   = new int[edges_num];
-        matchedEdges   = new IntOpenHashSet();
-        matchedNodes   = new IntOpenHashSet();
+        matchedEdges = new IntOpenHashSet();
+        matchedNodes = new IntOpenHashSet();
         setCandidates  = new IntArrayList[edges_num];
 
         // SETTING
