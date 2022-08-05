@@ -6,7 +6,6 @@ import bitmatrix.models.TargetBitmatrix;
 import cypher.controller.PropositionStatus;
 import cypher.controller.WhereConditionExtraction;
 import cypher.models.*;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import matching.models.MatchingData;
@@ -106,6 +105,8 @@ public class MatchingWhere extends MatchingSimple {
                                         goAhead();
                                         updateCandidatesForStateGraterThanZero(matchingData, states, query_obj, nodes_symmetry, edges_symmetry, graphPaths);
                                     }
+                                } else {
+                                    psi = si;
                                 }
                             }
                         }
@@ -492,7 +493,7 @@ public class MatchingWhere extends MatchingSimple {
     public static void resetConditionsForState(WhereConditionExtraction where_managing, int state, MatchingData matchingData, StateStructures states, QueryStructure query_obj) {
         // STATE > 0
 
-        //Reset edge considitions
+        //Reset edge conditions
         int queryEdgeId = states.map_state_to_edge[state];
         QueryEdge queryEdge = query_obj.getQuery_edge(queryEdgeId);
 
