@@ -445,7 +445,8 @@ public class QueryStructure {
     // GETTER
     public Int2ObjectOpenHashMap<QueryNode>                 getQuery_nodes()                {return query_nodes;          }
     public QueryNode                                        getQuery_node(int node)         {return query_nodes.get(node);}
-    public Object2IntOpenHashMap<String> getMap_node_name_to_idx()              {return map_node_name_to_idx;        }
+    public Object2IntOpenHashMap<String>                    getMap_node_name_to_idx()       {return map_node_name_to_idx;        }
+    public Object2IntOpenHashMap<String>                    getMap_edge_name_to_idx()       {return map_edge_name_to_idx;}
     public Int2ObjectOpenHashMap<QueryEdge>                 getQuery_edges()                {return query_edges;          }
     public QueryEdge                                        getQuery_edge(int edge)         {return query_edges.get(edge);}
     public QueryEdgeAggregation                             getQuery_pattern()              {return query_pattern;        }

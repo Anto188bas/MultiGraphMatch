@@ -4,6 +4,7 @@ import cypher.controller.PropertiesUtility;
 import cypher.controller.TypeConditionSelection;
 import cypher.controller.WhereConditionExtraction;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import org.opencypher.v9_0.expressions.*;
 import scala.collection.Iterator;
@@ -25,7 +26,7 @@ public class QueryCondition {
     private int orPropositionPos;
     private int andChainPos;
 
-    private int conditionIndex;
+    private String conditionKey;
 
     private PropositionStatus status;
 
@@ -91,22 +92,17 @@ public class QueryCondition {
         }
         conditionCheck = new TypeConditionSelection();
         expr_value     = conditionCheck.inferTypeCondition(nodes, edges, node_name, edge_name, this.node_param, expr_value);
-        String condKey = generate_condition_key();
+        this.conditionKey = generate_condition_key();
 
 
-        this.orPropositionPos = where_managing.get().getMap_condition_to_orPropositionPos().getInt(condKey);
-        this.andChainPos = where_managing.get().getMapConditionToAndChainPos().getInt(condKey);
+        this.orPropositionPos = where_managing.get().getMap_condition_to_orPropositionPos().getInt(this.conditionKey);
+        this.andChainPos = where_managing.get().getMapConditionToAndChainPos().getInt(this.conditionKey);
         this.status = PropositionStatus.NOT_EVALUATED;
-        this.conditionIndex = where_managing.get().conditionIndex++;
+
         where_managing.get().getMapOrPropositionToConditionSet().get(this.orPropositionPos).put(this.andChainPos, this);
         where_managing.get().getMapOrPropositionToConditionSet().get(this.orPropositionPos).put(this.andChainPos, this);
 
-
-
-        if (node_name.containsKey(this.node_param.getElementName()))
-            query_nodes.get(node_name.getInt(node_param.getElementName())).setCondition(this, condKey);
-        else
-            query_edges.get(edge_name.getInt(node_param.getElementName())).addCondition(this, condKey);
+        where_managing.get().getQueryConditions().add(this);
     }
 
 
@@ -151,6 +147,49 @@ public class QueryCondition {
             condition_key = (isNegation() ? "NOT " : "") + condition_key + " " + operation + " ";
         condition_key += expr_value.toString();
         return condition_key;
+    }
+
+    /**
+     * Assign the condition to a node or to an edge depending on the ordering.
+     */
+    public void assign(QueryStructure queryStructure, IntArrayList nodesOrdering, IntArrayList edgesOrdering) {
+        Object2IntOpenHashMap<String> mapNodeNameToID = queryStructure.getMap_node_name_to_idx();
+        Object2IntOpenHashMap<String> mapEdgeNameToID = queryStructure.getMap_edge_name_to_idx();
+
+        if(this.expr_value instanceof NameValue) { // COMPLEX QUERY CONDITION
+            String firstName = this.node_param.getElementName();
+            String secondName = ((NameValue) this.expr_value).getElementName();
+            if (mapNodeNameToID.containsKey(firstName) && mapNodeNameToID.containsKey(secondName)) { // CONDITION ON NODES
+                int firstId = mapNodeNameToID.getInt(firstName);
+                int secondId = mapNodeNameToID.getInt(secondName);
+
+                // Here we assign the condition to the node that comes first in the ordering
+                if(nodesOrdering.indexOf(firstId) < nodesOrdering.indexOf(secondId)) {
+                    queryStructure.getQuery_nodes().get(firstId).addCondition(this, this.conditionKey);
+                } else {
+                    queryStructure.getQuery_nodes().get(secondId).addCondition(this, this.conditionKey);
+                }
+            } else if(mapEdgeNameToID.containsKey(firstName) && mapEdgeNameToID.containsKey(secondName)) { // CONDITION ON EDGES
+                int firstId = mapEdgeNameToID.getInt(firstName);
+                int secondId = mapEdgeNameToID.getInt(secondName);
+
+                // Here we assign the condition to the edge that comes first in the ordering
+                if(edgesOrdering.indexOf(firstId) < edgesOrdering.indexOf(secondId)) {
+                    queryStructure.getQuery_edges().get(firstId).addCondition(this, this.conditionKey);
+                } else {
+                    queryStructure.getQuery_edges().get(secondId).addCondition(this, this.conditionKey);
+                }
+            } else {
+                System.err.println("This kind of condition is not handled!");
+                System.exit(-1);
+            }
+        } else { // SIMPLE QUERY CONDITION
+            if (mapNodeNameToID.containsKey(this.node_param.getElementName())) { // CONDITION ON NODE
+                queryStructure.getQuery_nodes().get(mapNodeNameToID.getInt(node_param.getElementName())).addCondition(this, this.conditionKey);
+            } else { // CONDITION ON EDGE
+                queryStructure.getQuery_edges().get(mapEdgeNameToID.getInt(node_param.getElementName())).addCondition(this, this.conditionKey);
+            }
+        }
     }
 
 

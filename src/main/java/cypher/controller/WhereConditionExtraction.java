@@ -1,9 +1,11 @@
 package cypher.controller;
 import cypher.models.QueryCondition;
+import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.sf.tweety.logics.pl.parser.PlParser;
 import net.sf.tweety.logics.pl.syntax.PlFormula;
 import java.io.StringReader;
@@ -21,7 +23,6 @@ public class WhereConditionExtraction {
     private final String[]  origin;
     private final String[]  replacement;
     private final String[]  new_origin;
-
     protected IntArrayList setWhereConditions;
     protected Object2IntOpenHashMap<String> map_condition_to_orPropositionPos;
     protected Int2IntOpenHashMap mapPropositionToNumConditions;
@@ -29,6 +30,7 @@ public class WhereConditionExtraction {
     protected Int2ObjectOpenHashMap<PropositionStatus> mapOrPropositionToStatus;
     protected Int2ObjectOpenHashMap<PropositionStatus> mapConditionToStatus;
     protected Object2IntOpenHashMap<String> mapConditionToAndChainPos;
+    protected ObjectArrayList<QueryCondition> queryConditions;
 
     public int conditionIndex = 0;
     // WHERE CONDITION
@@ -46,6 +48,7 @@ public class WhereConditionExtraction {
           "|", "!=", "<=", ">=", ">", "<", "=~", "=", "=NULL", "!=NULL", "NOT ", " StartsWith ", " EndsWith ",
           " Contains ", " In "
         };
+        this.queryConditions = new ObjectArrayList<>();
     }
 
     // METHODS
@@ -138,7 +141,17 @@ public class WhereConditionExtraction {
         System.out.println("map_condition_to_orPropositionPos: " + this.map_condition_to_orPropositionPos);
 
         System.out.println("********************************************************************************");
+    }
 
+    /**
+     * Here we assign symmetry conditions to nodes and edges.
+     * Suppose we have the following condition: n1.name = n2.name.
+     * The idea is simple. If n1 precedes n2 in the ordering, then we assign the condition to n1. Otherwise, we assign the condition to n2.
+     */
+    public void assignConditionsToNodesAndEdges(QueryStructure queryStructure, IntArrayList nodesOrdering, IntArrayList edgesOrdering) {
+        this.queryConditions.forEach((condition -> {
+            condition.assign(queryStructure, nodesOrdering, edgesOrdering);
+        }));
     }
 
     // GET
@@ -168,5 +181,9 @@ public class WhereConditionExtraction {
 
     public Int2ObjectOpenHashMap<PropositionStatus> getMapConditionToStatus() {
         return mapConditionToStatus;
+    }
+
+    public ObjectArrayList<QueryCondition> getQueryConditions() {
+        return queryConditions;
     }
 }

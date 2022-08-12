@@ -1,7 +1,6 @@
 package cypher.models;
 
 import cypher.controller.PropertiesUtility;
-import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import org.opencypher.v9_0.expressions.*;
 import scala.Option;
@@ -69,7 +68,7 @@ public class QueryNode {
         return true;
     }
 
-    public void setCondition(QueryCondition condition, String condition_key) {
+    public void addCondition(QueryCondition condition, String condition_key) {
         this.conditions.put(condition_key, condition);
     }
 

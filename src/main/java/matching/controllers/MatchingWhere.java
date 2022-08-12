@@ -27,12 +27,9 @@ public class MatchingWhere extends MatchingSimple {
     public static boolean doWhereCheck;
     public static boolean atLeastOnePropositionVerified;
     public static boolean allPropositionsFailed;
-
     public static boolean areThereConditions;
-
     public static int si;
     public static int psi;
-
     public static long numTotalOccs;
 
     private static long matching_procedure(
@@ -165,25 +162,14 @@ public class MatchingWhere extends MatchingSimple {
         states.map_edge_to_direction = edgeOrdering.getMap_edge_to_direction();
         outData.ordering_time = (System.currentTimeMillis() - outData.ordering_time) / 1000;
 
+        // SYMMETRY CONDITIONS ORDERING
+        where_managing.assignConditionsToNodesAndEdges(query_obj, edgeOrdering.getNodes_ordering(), edgeOrdering.getEdges_ordering());
 
         // SYMMETRY CONDITION COMPUTING
         outData.symmetry_time = System.currentTimeMillis();
         IntArrayList[] nodes_symmetry = SymmetryCondition.getNodeSymmetryConditions(query_obj);
         IntArrayList[] edges_symmetry = SymmetryCondition.getEdgeSymmetryConditions(query_obj);
 
-        System.out.println("NODES SIMMETRY: " + Arrays.toString(nodes_symmetry)) ;
-        System.out.println("EDGES SIMMETRY: " + Arrays.toString(edges_symmetry)) ;
-
-
-        //FIXME: symmetry conditions don't work as expected (RG)
-//        IntArrayList[] nodes_symmetry = new IntArrayList[query_obj.getQuery_nodes().size()];
-//        for(int i = 0; i < query_obj.getQuery_nodes().size(); i++) {
-//            nodes_symmetry[i] = new IntArrayList();
-//        }
-//        IntArrayList[] edges_symmetry = new IntArrayList[query_obj.getQuery_edges().size()];
-//        for(int i = 0; i < query_obj.getQuery_edges().size(); i++) {
-//            edges_symmetry[i] = new IntArrayList();
-//        }
         outData.symmetry_time = (System.currentTimeMillis() - outData.symmetry_time) / 1000;
 
         // QUERY INFORMATION
@@ -191,69 +177,6 @@ public class MatchingWhere extends MatchingSimple {
 
         // OTHER CONFIGURATION
         MatchingData matchingData = new MatchingData(query_obj);
-
-        /**
-         * LOG
-         */
-
-        System.out.println("TARGET GRAPH");
-        graphPaths.getMap_pair_to_key().forEach((src, map) -> {
-            map.forEach((dst, key) -> {
-                System.out.print("(SRC: " + src +", DST: " + dst + ") -> {");
-                IntArrayList[] edgeList = graphPaths.getMap_key_to_edge_list()[key];
-                for(int color = 0; color < edgeList.length; color++) {
-                    int finalColor = color;
-                    edgeList[color].forEach((IntConsumer) (edge) -> {
-                        System.out.print("( " + edge + ":C" + finalColor + "), " );
-                    });
-                }
-                System.out.print("}\n");
-            });
-        });
-
-        System.out.println("QUERY NODES");
-        query_obj.getQuery_nodes().forEach((id, node) -> {
-            System.out.println("ID: " + id + "-> " + node);
-        });
-
-        System.out.println("QUERY EDGES");
-        query_obj.getQuery_pattern().getOut_edges().forEach((key, list) -> {
-            System.out.println(key + "->" + list);
-        });
-
-        System.out.println("DOMAINS");
-        query_obj.getPairs().forEach((pair) -> {
-            System.out.print("P: " + pair + "\tDOMAIN (FS): ");
-            pair.getFirst_second().forEach((key, list) -> {
-                for (int dst : list) {
-                    System.out.print("[" + key + ", " + dst + "], ");
-                }
-
-            });
-
-            System.out.print("\tDOMAIN (SF): ");
-
-            pair.getSecond_first().forEach((key, list) -> {
-                for (int dst : list) {
-                    System.out.print("[" + key + ", " + dst + "], ");
-                }
-            });
-            System.out.print("\n");
-        });
-
-        System.out.println("PARIS ORDERING");
-        System.out.println(edgeOrdering.getPairs_ordering());
-
-        System.out.println("ORDERING DETAILS");
-        for (int i = 0; i < states.map_state_to_src.length; i++) {
-            int edge = states.map_state_to_edge[i];
-            int src = states.map_state_to_src[i];
-            int dst = states.map_state_to_dst[i];
-            int matchedNode = states.map_state_to_mnode[i];
-            EdgeDirection direction = states.map_edge_to_direction[i];
-            System.out.println("STATE: " + i + "\tSRC: " + src + "\tDST: " + dst + "\tEDGE: " + edge + "\tDIRECTION: " + direction + "\tMATCHED_NODE: " + matchedNode);
-        }
-
 
         // START MATCHING PHASE
         int si = 0;
@@ -272,7 +195,6 @@ public class MatchingWhere extends MatchingSimple {
         return outData;
     }
 
-
     private static boolean checkWhereCond(QueryStructure query_obj, StateStructures states, int si, MatchingData matchingData, WhereConditionExtraction where_managing) {
         //Check edge conditions
         int edgeCand = matchingData.solution_edges[si];
@@ -286,7 +208,6 @@ public class MatchingWhere extends MatchingSimple {
                 condition.setStatus(PropositionStatus.FAILED);
             }
         }
-
 
         //Check node conditions
         int querySrcID = states.map_state_to_src[si];
@@ -447,7 +368,6 @@ public class MatchingWhere extends MatchingSimple {
 
                     // otherwise is evaluated
                 }
-
             }
 
             if(allConditionsVerified) { // COMPLETELY EVALUATED
@@ -484,7 +404,6 @@ public class MatchingWhere extends MatchingSimple {
             for(QueryCondition condition: conditionSet.values()) {
                 condition.setStatus(PropositionStatus.NOT_EVALUATED);
             }
-
         }
 
         doWhereCheck = true;
@@ -511,7 +430,7 @@ public class MatchingWhere extends MatchingSimple {
             }
         }
 
-        boolean res = evaluateAllConditions(where_managing);
+        evaluateAllConditions(where_managing);
     }
 
     public static boolean checkQueryCondition(int targetElementID, QueryCondition condition) {
@@ -528,14 +447,11 @@ public class MatchingWhere extends MatchingSimple {
         }
 
         boolean negate = condition.isNegation();
-//        System.out.println("\tCondition: " + condition);
-//        System.out.println("\tProperty Name: " + propertyName + "\tExpression Value: " + expressionValue + "\tCandidate Value: " + candidateValue + "\tOPERATOR: " + operator + "\tNEGATE: " + negate);
+
         boolean res = condition.getConditionCheck().getComparison().comparison(candidateValue, expressionValue, operator);
         if (negate) {
-//            System.out.println("\t\tRES: " + !res);
             return !res;
         }
-//        System.out.println("\t\tRES: " + res);
 
         return res;
     }
@@ -563,4 +479,72 @@ public class MatchingWhere extends MatchingSimple {
         psi = si;
     }
 
+    public static void printDebugInfo(GraphPaths graphPaths, QueryStructure query_obj, StateStructures states, EdgeOrdering edgeOrdering) {
+        /**
+         * LOG
+         */
+
+        System.out.println("TARGET GRAPH");
+        graphPaths.getMap_pair_to_key().forEach((src, map) -> {
+            map.forEach((dst, key) -> {
+                System.out.print("(SRC: " + src +", DST: " + dst + ") -> {");
+                IntArrayList[] edgeList = graphPaths.getMap_key_to_edge_list()[key];
+                for(int color = 0; color < edgeList.length; color++) {
+                    int finalColor = color;
+                    edgeList[color].forEach((IntConsumer) (edge) -> {
+                        System.out.print("( " + edge + ":C" + finalColor + "), " );
+                    });
+                }
+                System.out.print("}\n");
+            });
+        });
+
+        System.out.println("QUERY NODES");
+        query_obj.getQuery_nodes().forEach((id, node) -> {
+            System.out.println("ID: " + id + "-> " + node);
+        });
+
+        System.out.println("QUERY EDGES");
+        query_obj.getQuery_pattern().getOut_edges().forEach((key, list) -> {
+            System.out.println(key + "->" + list);
+        });
+
+        System.out.println("DOMAINS");
+        query_obj.getPairs().forEach((pair) -> {
+            System.out.print("P: " + pair + "\tDOMAIN (FS): ");
+            pair.getFirst_second().forEach((key, list) -> {
+                for (int dst : list) {
+                    System.out.print("[" + key + ", " + dst + "], ");
+                }
+
+            });
+
+            System.out.print("\tDOMAIN (SF): ");
+
+            pair.getSecond_first().forEach((key, list) -> {
+                for (int dst : list) {
+                    System.out.print("[" + key + ", " + dst + "], ");
+                }
+            });
+            System.out.print("\n");
+        });
+
+        System.out.println("PARIS ORDERING");
+        System.out.println(edgeOrdering.getPairs_ordering());
+
+        System.out.println("ORDERING DETAILS");
+        for (int i = 0; i < states.map_state_to_src.length; i++) {
+            int edge = states.map_state_to_edge[i];
+            int src = states.map_state_to_src[i];
+            int dst = states.map_state_to_dst[i];
+            int matchedNode = states.map_state_to_mnode[i];
+            EdgeDirection direction = states.map_edge_to_direction[i];
+            System.out.println("STATE: " + i + "\tSRC: " + src + "\tDST: " + dst + "\tEDGE: " + edge + "\tDIRECTION: " + direction + "\tMATCHED_NODE: " + matchedNode);
+        }
+    }
+
+    public static void printSymmetryConditions(IntArrayList[] nodes_symmetry, IntArrayList[] edges_symmetry) {
+        System.out.println("NODES SIMMETRY: " + Arrays.toString(nodes_symmetry)) ;
+        System.out.println("EDGES SIMMETRY: " + Arrays.toString(edges_symmetry)) ;
+    }
 }

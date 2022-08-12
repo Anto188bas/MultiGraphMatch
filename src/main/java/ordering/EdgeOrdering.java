@@ -9,8 +9,8 @@ public class EdgeOrdering {
     private ObjectArraySet<NodesPair> selected_pairs;
     private ObjectArraySet<NodesPair> unselected_pairs;
     private Int2ObjectOpenHashMap<IntArraySet> map_endpoints_to_edges;
-    private IntArrayList edge_ordering;
-    private IntArraySet ordered_nodes;
+    private IntArrayList edges_ordering;
+    private IntArrayList nodes_ordering;
     int state_index;
 
     /*******/
@@ -33,12 +33,15 @@ public class EdgeOrdering {
         unselected_pairs.remove(query_pair_to_add);
         selected_pairs.add(query_pair_to_add);
         IntArraySet current_edge_set = map_endpoints_to_edges.get(query_pair_to_add.getId().intValue());
-        edge_ordering.addAll(current_edge_set);
+        edges_ordering.addAll(current_edge_set);
 
-        if (!ordered_nodes.contains(query_pair_to_add.getFirstEndpoint().intValue())) {
-            map_state_to_unmapped_nodes[state_index++] = query_pair_to_add.getFirstEndpoint().intValue();
-        } else if (!ordered_nodes.contains(query_pair_to_add.getSecondEndpoint().intValue())) {
-            map_state_to_unmapped_nodes[state_index++] = query_pair_to_add.getSecondEndpoint().intValue();
+        int firstEndpoint = query_pair_to_add.getFirstEndpoint().intValue();
+        int secondEndpoint = query_pair_to_add.getSecondEndpoint().intValue();
+
+        if (!nodes_ordering.contains(firstEndpoint)) {
+            map_state_to_unmapped_nodes[state_index++] = firstEndpoint;
+        } else if (!nodes_ordering.contains(secondEndpoint)) {
+            map_state_to_unmapped_nodes[state_index++] = secondEndpoint;
         } else {
             map_state_to_unmapped_nodes[state_index++] = -1;
         }
@@ -49,13 +52,18 @@ public class EdgeOrdering {
             }
         }
 
-        ordered_nodes.add(query_pair_to_add.getFirstEndpoint().intValue());
-        ordered_nodes.add(query_pair_to_add.getSecondEndpoint().intValue());
+        if(!nodes_ordering.contains(firstEndpoint)) {
+            nodes_ordering.add(firstEndpoint);
+        }
+
+        if(!nodes_ordering.contains(secondEndpoint)) {
+            nodes_ordering.add(secondEndpoint);
+        }
     }
 
     private void computePairsOrdering() {
         //************************************************************* PRE PROCESSING *************************************************************//
-        edge_ordering = new IntArrayList();
+        edges_ordering = new IntArrayList();
         // NODES
         IntSet node_keys = query_structure.getQuery_nodes().keySet();
 
@@ -90,7 +98,7 @@ public class EdgeOrdering {
         //******************************************************************************************************************************************//
 
         //*************************************************************** FIRST PAIR ***************************************************************//
-        ordered_nodes = new IntArraySet();
+        nodes_ordering = new IntArrayList();
         map_state_to_unmapped_nodes = new int[edge_keys.size()];
 
         state_index = 0;
@@ -160,7 +168,7 @@ public class EdgeOrdering {
             // Pairs having both endpoints matched
             ObjectArraySet<NodesPair> pairs_with_both_endpoints_matched = new ObjectArraySet<>();
             ordered_pairs_neighborhood.forEach((pair) -> {
-                if (ordered_nodes.contains(pair.getFirstEndpoint().intValue()) && ordered_nodes.contains((pair.getSecondEndpoint().intValue()))) {
+                if (nodes_ordering.contains(pair.getFirstEndpoint().intValue()) && nodes_ordering.contains((pair.getSecondEndpoint().intValue()))) {
                     pairs_with_both_endpoints_matched.add(pair);
                 }
             });
@@ -187,7 +195,7 @@ public class EdgeOrdering {
 
                     int neighbour;
                     int node;
-                    if(ordered_nodes.contains(current_pair.getFirstEndpoint().intValue())) {
+                    if(nodes_ordering.contains(current_pair.getFirstEndpoint().intValue())) {
                         neighbour = current_pair.getSecondEndpoint().intValue();
                         node = current_pair.getFirstEndpoint().intValue();
                     } else {
@@ -228,7 +236,7 @@ public class EdgeOrdering {
         }
         //******************************************************************************************************************************************//
         pairs_ordering = selected_pairs;
-        map_state_to_edge = edge_ordering.toIntArray();
+        map_state_to_edge = edges_ordering.toIntArray();
         map_edge_to_state = this.getInverseMap(map_state_to_edge);
 
         map_state_to_src = new int[edge_keys.size()];
@@ -237,7 +245,7 @@ public class EdgeOrdering {
 
 
         int i = 0;
-        for (int edge : edge_ordering) {
+        for (int edge : edges_ordering) {
             NodesPair pair = map_edge_to_endpoints.get(edge);
 
             map_state_to_src[i] = pair.getFirstEndpoint().intValue();
@@ -285,5 +293,13 @@ public class EdgeOrdering {
 
     public EdgeDirection[] getMap_edge_to_direction() {
         return map_edge_to_direction;
+    }
+
+    public IntArrayList getEdges_ordering() {
+        return edges_ordering;
+    }
+
+    public IntArrayList getNodes_ordering() {
+        return nodes_ordering;
     }
 }
