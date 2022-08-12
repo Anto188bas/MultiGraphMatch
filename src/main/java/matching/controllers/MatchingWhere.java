@@ -8,6 +8,7 @@ import cypher.controller.WhereConditionExtraction;
 import cypher.models.*;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import matching.models.MatchingData;
 import matching.models.OutData;
 import ordering.EdgeDirection;
@@ -202,7 +203,7 @@ public class MatchingWhere extends MatchingSimple {
         QueryEdge queryEdge = query_obj.getQuery_edge(queryEdgeId);
 
         for (QueryCondition condition : queryEdge.getConditions().values()) {
-            if (checkQueryCondition(edgeCand, condition)) {
+            if (checkQueryCondition(edgeCand, condition, query_obj, matchingData.solution_nodes, matchingData.solution_edges)) {
                 condition.setStatus(PropositionStatus.EVALUATED);
             } else {
                 condition.setStatus(PropositionStatus.FAILED);
@@ -225,7 +226,7 @@ public class MatchingWhere extends MatchingSimple {
 
             // SRC
             for (QueryCondition condition : querySrc.getConditions().values()) {
-                if (checkQueryCondition(srcCand, condition)) {
+                if (checkQueryCondition(srcCand, condition, query_obj, matchingData.solution_nodes, matchingData.solution_edges)) {
                     condition.setStatus(PropositionStatus.EVALUATED);
                 } else {
                     condition.setStatus(PropositionStatus.FAILED);
@@ -234,7 +235,7 @@ public class MatchingWhere extends MatchingSimple {
 
             // DST
             for (QueryCondition condition : queryDst.getConditions().values()) {
-                if (checkQueryCondition(dstCand, condition)) {
+                if (checkQueryCondition(dstCand, condition, query_obj, matchingData.solution_nodes, matchingData.solution_edges)) {
                     condition.setStatus(PropositionStatus.EVALUATED);
                 } else {
                     condition.setStatus(PropositionStatus.FAILED);
@@ -247,7 +248,7 @@ public class MatchingWhere extends MatchingSimple {
                 QueryNode matchedNode = query_obj.getQuery_node(nodeToMatch);
                 int nodeCand = matchingData.solution_nodes[nodeToMatch];
                 for (QueryCondition condition : matchedNode.getConditions().values()) {
-                    if (checkQueryCondition(nodeCand, condition)) {
+                    if (checkQueryCondition(nodeCand, condition, query_obj, matchingData.solution_nodes, matchingData.solution_edges)) {
                         condition.setStatus(PropositionStatus.EVALUATED);
                     } else {
                         condition.setStatus(PropositionStatus.FAILED);
@@ -433,22 +434,48 @@ public class MatchingWhere extends MatchingSimple {
         evaluateAllConditions(where_managing);
     }
 
-    public static boolean checkQueryCondition(int targetElementID, QueryCondition condition) {
+    public static boolean checkQueryCondition(int targetElementID, QueryCondition condition, QueryStructure queryStructure, int[] solution_nodes, int[] solution_edges) {
         //TODO: rewrite without if
         String operator = condition.getOperation();
+        String elementName = condition.getNode_param().getElementName();
         String propertyName = condition.getNode_param().getElementKey();
         Object expressionValue = condition.getExpr_value();
-        Object candidateValue = condition.getConditionCheck().getProperty(targetElementID, propertyName);
 
-        if(expressionValue instanceof NameValue) {
-            System.out.println("WHERE VARIABILE, IMPLEMENTARE CONTROLLO");
+        boolean res;
 
-            return true;
+        if(expressionValue instanceof NameValue) { // COMPLEX CONDITION
+            String secondElementName = ((NameValue) expressionValue).getElementName();
+            String secondPropertyName = ((NameValue) expressionValue).getElementKey();
+
+            Object2IntOpenHashMap<String> mapNodeNameToID = queryStructure.getMap_node_name_to_idx();
+            Object2IntOpenHashMap<String> mapEdgeNameToID = queryStructure.getMap_edge_name_to_idx();
+
+            int firstID, secondID, firstCandidateID, secondCandidateID;
+            if (mapNodeNameToID.containsKey(elementName) && mapNodeNameToID.containsKey(secondElementName)) { // CONDITION ON NODES
+                firstID = mapNodeNameToID.getInt(elementName);
+                secondID = mapNodeNameToID.getInt(secondElementName);
+
+                firstCandidateID = solution_nodes[firstID];
+                secondCandidateID = solution_nodes[secondID];
+            } else {  // CONDITION ON EDGES  -> mapEdgeNameToID.containsKey(elementName) && mapEdgeNameToID.containsKey(secondElementName)
+                firstID = mapEdgeNameToID.getInt(elementName);
+                secondID = mapEdgeNameToID.getInt(secondElementName);
+
+                firstCandidateID = solution_edges[firstID];
+                secondCandidateID = solution_edges[secondID];
+            }
+
+            Object firstCandidateValue = condition.getConditionCheck().getProperty(firstCandidateID, propertyName);
+            Object secondCandidateValue = condition.getConditionCheck().getProperty(secondCandidateID, secondPropertyName);
+
+            res = condition.getConditionCheck().getComparison().comparison(firstCandidateValue, secondCandidateValue, operator);
+        } else { // SIMPLE CONDITION
+            Object candidateValue = condition.getConditionCheck().getProperty(targetElementID, propertyName);
+            res = condition.getConditionCheck().getComparison().comparison(candidateValue, expressionValue, operator);
         }
 
         boolean negate = condition.isNegation();
 
-        boolean res = condition.getConditionCheck().getComparison().comparison(candidateValue, expressionValue, operator);
         if (negate) {
             return !res;
         }

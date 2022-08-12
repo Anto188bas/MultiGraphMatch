@@ -69,7 +69,7 @@ public class test_where {
 //        String query_test           = "MATCH (n1:P)<-[r0:F]-(n0:P), (n0:P) -[r1:F]-> (n2:P), (n0:P) -[r2:F]-> (n3:P) WHERE (n0.name = \"PIPPO\" AND n1.age = 250) RETURN n0,n1,n2,n3";
 //        String query_test           = "MATCH (n1:P)<-[r0:F]-(n0:P), (n0:P) -[r1:F]-> (n2:P), (n0:P) -[r2:F]-> (n3:P) WHERE (n0.name <> \"Franco\" AND n1.age > 18 AND n3.age >= 25) RETURN n0,n1,n2,n3";
 
-        String query_test           = "MATCH (n1:P)<-[r0:F]-(n0:P), (n0:P) -[r1:F]-> (n2:P), (n0:P) -[r2:F]-> (n3:P) WHERE (n0.name <> \"Franco\" AND n1.age > 18 AND n3.age >= 25) OR (n0.name = \"Leonardo\" AND n0.age =30) RETURN n0,n1,n2,n3";
+        String query_test           = "MATCH (n1:P)<-[r0:F]-(n0:P), (n0:P) -[r1:F]-> (n2:P), (n0:P) -[r2:F]-> (n3:P) WHERE (n0.name = n1.name AND n1.age > 18 AND n3.age >= 25) OR (n0.name = \"Leonardo\" AND n0.age =30) RETURN n0,n1,n2,n3";
 
         WhereConditionExtraction where_managing = new WhereConditionExtraction();
         where_managing.where_condition_extraction(query_test);
