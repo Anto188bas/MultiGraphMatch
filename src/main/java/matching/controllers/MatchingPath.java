@@ -111,8 +111,8 @@ public class MatchingPath extends MatchingSimple {
 
         System.out.println(Arrays.toString(states.map_state_to_edge));
 
-        matchingData.solution_nodes[1] = 5;
-        System.out.println(NewFindCandidates.findPaths(0, query_obj, graphPaths,matchingData, nodes_symmetry, edges_symmetry, states));
+        matchingData.solution_nodes[1] = 2;
+        System.out.println(PathsUtils.findPaths(0, query_obj, graphPaths,matchingData, nodes_symmetry, edges_symmetry, states));
 
 
         return 0;
