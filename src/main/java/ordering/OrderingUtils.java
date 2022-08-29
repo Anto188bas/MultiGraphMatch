@@ -4,6 +4,8 @@ import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 
+import java.util.function.IntConsumer;
+
 public class OrderingUtils {
 
     public static Double computeSetWeight(ObjectArraySet<NodesPair> pair_set, Int2ObjectOpenHashMap<NodesPair> map_id_to_pair) {
@@ -26,6 +28,19 @@ public class OrderingUtils {
     public static IntArraySet intArraySetIntersection(IntArraySet a, IntArraySet b) {
         IntArraySet result = a.clone();
         result.retainAll(b);
+
+        return result;
+    }
+
+    public static Int2ObjectOpenHashMap<IntArraySet> mergeInt2ObjectOpenHashMap(Int2ObjectOpenHashMap<IntArraySet> a, Int2ObjectOpenHashMap<IntArraySet> b) {
+        Int2ObjectOpenHashMap<IntArraySet> result = new Int2ObjectOpenHashMap<>();
+        b.keySet().forEach((IntConsumer) (key) -> {
+            if(a.containsKey(key)) {
+                result.put(key, intArraySetUnion(a.get(key), b.get(key)));
+            } else {
+                result.put(key, b.get(key));
+            }
+        });
 
         return result;
     }

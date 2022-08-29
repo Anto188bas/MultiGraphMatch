@@ -2,10 +2,14 @@ package matching.controllers;
 
 import cypher.models.QueryEdge;
 import cypher.models.QueryStructure;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import matching.models.MatchingData;
 import ordering.EdgeDirection;
 import ordering.NodesPair;
+import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import state_machine.StateStructures;
 import target_graph.graph.GraphPaths;
@@ -178,4 +182,68 @@ public class NewFindCandidates {
         return listCandidates;
     }
 
+    public static ObjectArrayList<IntArrayList> findStartPaths(int startTargetNode, int si, QueryStructure query, GraphPaths graphPaths, MatchingData matchingData, IntArrayList[] nodesSymmetryConditions, StateStructures states) {
+        ObjectArrayList<IntArrayList> listCandidates = new ObjectArrayList<>();
+        int queryEdgeID = states.map_state_to_edge[si];
+        int source = states.map_state_to_src[si];
+        EdgeDirection direction = states.map_edge_to_direction[queryEdgeID];
+        QueryEdge queryEdge = query.getQuery_edge(queryEdgeID);
+
+        IntArrayList edgeLabels = queryEdge.getEdge_label();
+
+        ObjectArrayList<Pair<Integer, Integer>> adiacs = new ObjectArrayList<>(); // <node, edge>
+        Int2ObjectOpenHashMap<IntArrayList> adiacs_map = new Int2ObjectOpenHashMap<>(); // <node, edge>
+
+
+        if(edgeLabels.size() == 0) { // Edge without labels
+            if(direction == EdgeDirection.IN) { // 1. EDGE FROM q_src TO q_dst (OUTBOUND)
+                adiacs.addAll(graphPaths.getAdiacsBySrc(source));
+            } else if (direction == EdgeDirection.OUT) { // 2. EDGE FROM q_dst TO q_src (INBOUND)
+                adiacs.addAll(graphPaths.getAdiacsByDst(source));
+            } else { // 3. UNDIRECTED CASE (BOTH)
+                adiacs.addAll(graphPaths.getAdiacsBySrc(source));
+                adiacs.addAll(graphPaths.getAdiacsByDst(source));
+            }
+        } else { // Edge with one or more labels
+            if(direction == EdgeDirection.IN) { // 1. EDGE FROM q_src TO q_dst (OUTBOUND)
+                adiacs.addAll(graphPaths.getAdiacsBySrcAndColors(source, edgeLabels));
+            } else if (direction == EdgeDirection.OUT) { // 2. EDGE FROM q_dst TO q_src (INBOUND)
+                adiacs.addAll(graphPaths.getAdiacsByDstAndColors(source, edgeLabels));
+            } else { // 3. UNDIRECTED CASE (BOTH)
+                adiacs.addAll(graphPaths.getAdiacsBySrcAndColors(source, edgeLabels));
+                adiacs.addAll(graphPaths.getAdiacsByDstAndColors(source, edgeLabels));
+            }
+        }
+
+        //TODO: call exploreStartPaths
+
+        return listCandidates;
+    }
+
+    public static void exploreStartPaths(int startTargetNode, int currentTargetNode, int depth, int minLength, int maxLength, QueryEdge queryEdge, MatchingData matchingData,
+    QueryStructure queryStructure, IntArrayList[] nodeSymmetry, StateStructures states, IntArrayList[] nodesSymmetryConditions, ObjectArrayList<IntArrayList> listCandidates,
+                                         ObjectArrayList<Pair<Integer, Integer>> adiacs, int sourceQueryNode, IntArrayList currentCand, IntArrayList setVisited) {
+
+        if(depth >= minLength && depth <= maxLength) {
+            // If the currentTargetNode is in the currentQueryNode's domain AND the conditions are satisfied
+            if(queryStructure.getMap_node_to_domain().get(sourceQueryNode).contains(currentTargetNode) && NewEdgeSelector.nodeCondCheck(sourceQueryNode, startTargetNode, matchingData, nodeSymmetry)) {
+                IntArrayList newCand=new IntArrayList(currentCand);
+                newCand.add(startTargetNode);
+                listCandidates.add(newCand);
+            }
+        }
+
+        if(depth < maxLength) {
+            for(Pair<Integer, Integer> adiac: adiacs) {
+                int adiacNodeID = adiac.getValue0().intValue();
+                int edgeID = adiac.getValue1().intValue();
+
+                if(!setVisited.contains(adiacNodeID)) {
+
+                }
+
+            }
+
+        }
+    }
 }

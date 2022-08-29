@@ -1,6 +1,8 @@
 package target_graph.graph;
 
 import it.unimi.dsi.fastutil.ints.*;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
 import java.util.ArrayList;
@@ -72,6 +74,98 @@ public class GraphPaths {
                 result = new Triplet<>(src, dst, src_map.get(dst));
             }
         }
+        return result;
+    }
+
+    /**
+     * Given a source node, this method returns a list of pairs <dst, edge_id> such that:
+     * - dst is an out-neighbor of src;
+     * - edge_id is the id of the edge between src and dst.
+     * This method does not consider the edge color.
+     * @param src source node.
+     */
+    public ObjectArrayList<Pair<Integer, Integer>> getAdiacsBySrc(int src) {
+        ObjectArrayList<Pair<Integer, Integer>> result = new ObjectArrayList<>();
+
+       map_pair_to_key.get(src).forEach((dst, pairKey) -> {
+            for(int color = 0; color < map_key_to_edge_list[pairKey.intValue()].length; color++) {
+                for(int edge : map_key_to_edge_list[pairKey.intValue()][color]) {
+                    result.add(new Pair<>(dst, edge));
+                }
+            }
+        });
+
+        return result;
+    }
+
+    /**
+     * Given a destination node, this method returns a list of pairs <src, edge_id> such that:
+     * - src is an in-neighbor of dst;
+     * - edge_id is the id of the edge between src and dst.
+     * This method does not consider the edge color.
+     * @param dst destination node.
+     */
+    public ObjectArrayList<Pair<Integer, Integer>> getAdiacsByDst(int dst) {
+        ObjectArrayList<Pair<Integer, Integer>> result = new ObjectArrayList<>();
+        map_pair_to_key.forEach((src, outNeighbours) -> {
+            if(outNeighbours.containsKey(dst)) {
+                int pairKey = outNeighbours.get(dst);
+                for(int color = 0; color < map_key_to_edge_list[pairKey].length; color++) {
+                    for(int edge : map_key_to_edge_list[pairKey][color]) {
+                        result.add(new Pair<>(src, edge));
+                    }
+                }
+            }
+        });
+
+        return result;
+    }
+
+    /**
+     * Given a source node, this method returns a list of pairs <dst, edge_id> such that:
+     * - dst is an out-neighbor of src;
+     * - the color of the edge is contained is colors.
+     * - edge_id is the id of the edge between src and dst.
+     *
+     * @param src    source node.
+     * @param colors list of colors.
+     */
+    public ObjectArrayList<Pair<Integer, Integer>> getAdiacsBySrcAndColors(int src, IntArrayList colors) {
+        ObjectArrayList<Pair<Integer, Integer>> result = new ObjectArrayList<>();
+
+        map_pair_to_key.get(src).forEach((dst, pairKey) -> {
+            for(int color: colors) {
+                for(int edge : map_key_to_edge_list[pairKey.intValue()][color]) {
+                    result.add(new Pair<>(dst, edge));
+                }
+            }
+        });
+
+        return result;
+    }
+
+    /**
+     * Given a destination node, this method returns a list of pairs <src, edge_id> such that:
+     * - src is an in-neighbor of dst;
+     * - the color of the edge is contained is colors.
+     * - edge_id is the id of the edge between src and dst.
+     *
+     * @param dst    destination node.
+     * @param colors list of colors.
+     */
+    public ObjectArrayList<Pair<Integer, Integer>> getAdiacsByDstAndColors(int dst, IntArrayList colors) {
+        ObjectArrayList<Pair<Integer, Integer>> result = new ObjectArrayList<>();
+        map_pair_to_key.forEach((src, outNeighbours) -> {
+            if(outNeighbours.containsKey(dst)) {
+                int pairKey = outNeighbours.get(dst);
+                for(int color = 0; color < map_key_to_edge_list[pairKey].length; color++) {
+                    for(int edge : map_key_to_edge_list[pairKey][color]) {
+                        result.add(new Pair<>(src, edge));
+                    }
+                }
+            }
+        });
+
         return result;
     }
 

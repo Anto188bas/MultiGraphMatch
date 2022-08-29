@@ -37,7 +37,7 @@ public class QueryStructure {
     private final Int2ObjectOpenHashMap<IntArraySet>                map_node_to_neighborhood;
     private final Int2ObjectOpenHashMap<ObjectArraySet<NodesPair>>  map_pair_to_neighborhood;
     private final Int2ObjectOpenHashMap<Int2IntOpenHashMap>         map_node_color_degrees;
-
+    private final Int2ObjectOpenHashMap<IntArraySet>                map_node_to_domain;
     public QueryStructure(){
         query_nodes                 = new Int2ObjectOpenHashMap<>();
         map_node_name_to_idx = new Object2IntOpenHashMap<>();
@@ -51,6 +51,7 @@ public class QueryStructure {
         map_node_to_neighborhood    = new Int2ObjectOpenHashMap<>();
         map_pair_to_neighborhood    = new Int2ObjectOpenHashMap<>();
         map_node_color_degrees      = new Int2ObjectOpenHashMap<>();
+        map_node_to_domain          = new Int2ObjectOpenHashMap<>();
     }
 
     // PARSER FUNCTION
@@ -401,6 +402,8 @@ public class QueryStructure {
         IntIndex query_dst_index = new IntIndex(query_bitmatrix_table.intColumn("dst"));
         IntIndex target_id_index = new IntIndex(target_bitmatrix_table.intColumn("btx_id"));
 
+        Int2ObjectOpenHashMap<IntArrayList> mapNodeToDomain = new Int2ObjectOpenHashMap<>();
+
         for(NodesPair pair: pairs) {
             int src = pair.getFirstEndpoint();
             int dst = pair.getSecondEndpoint();
@@ -424,7 +427,22 @@ public class QueryStructure {
                 target_map_node_color_degrees
             );
             pair.setCompatibilityDomain(first_second, second_first);
+        }
+        //TODO: compute nodes domains only if there are paths
+        computeNodesDomains();
+    }
 
+    protected void computeNodesDomains() {
+        for(int nodeID: query_nodes.keySet()) {
+            IntArraySet domain = new IntArraySet();
+            for(NodesPair pair: pairs) {
+                if(pair.getFirstEndpoint() == nodeID) {
+                    domain.addAll(pair.getFirst_second().keySet());
+                } else if(pair.getSecondEndpoint() == nodeID) {
+                    domain.addAll(pair.getSecond_first().keySet());
+                }
+            }
+            map_node_to_domain.put(nodeID, domain);
         }
     }
 
@@ -460,6 +478,7 @@ public class QueryStructure {
     public Int2ObjectOpenHashMap<IntArraySet>               getMap_node_to_neighborhood()   {return map_node_to_neighborhood;}
     public Int2ObjectOpenHashMap<ObjectArraySet<NodesPair>> getMap_pair_to_neighborhood()   {return map_pair_to_neighborhood;}
     public Int2ObjectOpenHashMap<NodesPair>                 getMap_id_to_pair()             {return map_id_to_pair;}
+    public Int2ObjectOpenHashMap<IntArraySet>               getMap_node_to_domain()         {return map_node_to_domain;}
 
     // TO STRING
     @Override
