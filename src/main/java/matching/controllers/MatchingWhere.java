@@ -22,6 +22,7 @@ import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.function.IntConsumer;
 
 public class MatchingWhere extends MatchingSimple {
@@ -124,7 +125,6 @@ public class MatchingWhere extends MatchingSimple {
 
 
     public static OutData matching(
-            WhereConditionExtraction where_managing,
             boolean justCount,
             boolean distinct,
             long numMaxOccs,
@@ -133,7 +133,8 @@ public class MatchingWhere extends MatchingSimple {
             QueryStructure query_obj,
             GraphPaths graphPaths,
             HashMap<String, GraphMacroNode> macro_nodes,
-            Int2ObjectOpenHashMap<String> nodes_macro
+            Int2ObjectOpenHashMap<String> nodes_macro,
+            Optional<WhereConditionExtraction> where_managing
     ) {
         outData = new OutData();
 
@@ -157,14 +158,14 @@ public class MatchingWhere extends MatchingSimple {
         StateStructures states = new StateStructures();
         states.map_state_to_edge = edgeOrdering.getMap_state_to_edge();
         states.map_edge_to_state = edgeOrdering.getMap_edge_to_state();
-        states.map_state_to_src = edgeOrdering.getMap_state_to_src();
-        states.map_state_to_dst = edgeOrdering.getMap_state_to_dst();
-        states.map_state_to_mnode = edgeOrdering.getMap_state_to_unmapped_nodes();
+        states.map_state_to_first_endpoint = edgeOrdering.getMap_state_to_first_endpoint();
+        states.map_state_to_second_endpoint = edgeOrdering.getMap_state_to_second_endpoint();
+        states.map_state_to_unmatched_node = edgeOrdering.getMap_state_to_unmapped_nodes();
         states.map_edge_to_direction = edgeOrdering.getMap_edge_to_direction();
         outData.ordering_time = (System.currentTimeMillis() - outData.ordering_time) / 1000;
 
-        // SYMMETRY CONDITIONS ORDERING
-        where_managing.assignConditionsToNodesAndEdges(query_obj, edgeOrdering.getNodes_ordering(), edgeOrdering.getEdges_ordering());
+        // WHERE CONDITIONS ORDERING
+        where_managing.get().assignConditionsToNodesAndEdges(query_obj, edgeOrdering.getNodes_ordering(), edgeOrdering.getEdges_ordering());
 
         // SYMMETRY CONDITION COMPUTING
         outData.symmetry_time = System.currentTimeMillis();
@@ -188,7 +189,7 @@ public class MatchingWhere extends MatchingSimple {
         int q_dst = first_compatibility.getSecondEndpoint();
 
         outData.num_occurrences = matching_procedure(
-                where_managing, first_compatibility.getFirst_second(), matchingData, states, graphPaths,
+                where_managing.get(), first_compatibility.getFirst_second(), matchingData, states, graphPaths,
                 query_obj, nodes_symmetry, edges_symmetry, numQueryEdges, numMaxOccs,
                 q_src, q_dst, justCount, distinct
         );
@@ -211,8 +212,8 @@ public class MatchingWhere extends MatchingSimple {
         }
 
         //Check node conditions
-        int querySrcID = states.map_state_to_src[si];
-        int queryDstID = states.map_state_to_dst[si];
+        int querySrcID = states.map_state_to_first_endpoint[si];
+        int queryDstID = states.map_state_to_second_endpoint[si];
 
         QueryNode querySrc = query_obj.getQuery_node(querySrcID);
         QueryNode queryDst = query_obj.getQuery_node(queryDstID);
@@ -242,7 +243,7 @@ public class MatchingWhere extends MatchingSimple {
                 }
             }
         } else { // STATE > 0, ONLY THE NEW MATCHED NODE MUST BE CHECKED
-            int nodeToMatch = states.map_state_to_mnode[si];
+            int nodeToMatch = states.map_state_to_unmatched_node[si];
 
             if (nodeToMatch != -1) {
                 QueryNode matchedNode = query_obj.getQuery_node(nodeToMatch);
@@ -267,7 +268,7 @@ public class MatchingWhere extends MatchingSimple {
         matchingData.matchedEdges.remove(matchingData.solution_edges[state]);
         matchingData.solution_edges[state] = -1;
         // REMOVE THE NODE IF EXIST
-        int selected_candidate = states.map_state_to_mnode[si];
+        int selected_candidate = states.map_state_to_unmatched_node[si];
         if (selected_candidate != -1) {
             matchingData.matchedNodes.remove(matchingData.solution_nodes[selected_candidate]);
             matchingData.solution_nodes[selected_candidate] = -1;
@@ -284,8 +285,8 @@ public class MatchingWhere extends MatchingSimple {
     }
     public static void updateSolutionNodesAndEdgeForStateZero(MatchingData matchingData, StateStructures states) {
         matchingData.solution_edges[0] = matchingData.setCandidates[0].getInt(++matchingData.candidatesIT[0]);
-        matchingData.solution_nodes[states.map_state_to_src[0]] = matchingData.setCandidates[0].getInt(++matchingData.candidatesIT[0]);
-        matchingData.solution_nodes[states.map_state_to_dst[0]] = matchingData.setCandidates[0].getInt(++matchingData.candidatesIT[0]);
+        matchingData.solution_nodes[states.map_state_to_first_endpoint[0]] = matchingData.setCandidates[0].getInt(++matchingData.candidatesIT[0]);
+        matchingData.solution_nodes[states.map_state_to_second_endpoint[0]] = matchingData.setCandidates[0].getInt(++matchingData.candidatesIT[0]);
     }
     public static void updateMatchingInfoForStateZero(MatchingData matchingData) {
         matchingData.matchedEdges.add(matchingData.solution_edges[0]);
@@ -295,7 +296,7 @@ public class MatchingWhere extends MatchingSimple {
 
     public static void updateMatchingInfoForStateGreaterThanZero(MatchingData matchingData, StateStructures states) {
         matchingData.matchedEdges.add(matchingData.solution_edges[si]);
-        int node_to_match = states.map_state_to_mnode[si];
+        int node_to_match = states.map_state_to_unmatched_node[si];
         if (node_to_match != -1) {
             matchingData.matchedNodes.add(matchingData.solution_nodes[node_to_match]);
         }
@@ -303,7 +304,7 @@ public class MatchingWhere extends MatchingSimple {
 
     public static void updateSolutionNodesAndEdgeForStateGreaterThanZero(MatchingData matchingData, StateStructures states) {
         matchingData.solution_edges[si] = matchingData.setCandidates[si].getInt(matchingData.candidatesIT[si]);
-        int node_to_match = states.map_state_to_mnode[si];
+        int node_to_match = states.map_state_to_unmatched_node[si];
         if (node_to_match != -1)
             matchingData.solution_nodes[node_to_match] =
                     matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
@@ -422,7 +423,7 @@ public class MatchingWhere extends MatchingSimple {
         }
 
         // Reset node conditions
-        int nodeToMatch = states.map_state_to_mnode[state];
+        int nodeToMatch = states.map_state_to_unmatched_node[state];
         if (nodeToMatch != -1) {
             QueryNode matchedNode = query_obj.getQuery_node(nodeToMatch);
 
@@ -506,72 +507,5 @@ public class MatchingWhere extends MatchingSimple {
         psi = si;
     }
 
-    public static void printDebugInfo(GraphPaths graphPaths, QueryStructure query_obj, StateStructures states, EdgeOrdering edgeOrdering) {
-        /**
-         * LOG
-         */
 
-        System.out.println("TARGET GRAPH");
-        graphPaths.getMap_pair_to_key().forEach((src, map) -> {
-            map.forEach((dst, key) -> {
-                System.out.print("(SRC: " + src +", DST: " + dst + ") -> {");
-                IntArrayList[] edgeList = graphPaths.getMap_key_to_edge_list()[key];
-                for(int color = 0; color < edgeList.length; color++) {
-                    int finalColor = color;
-                    edgeList[color].forEach((IntConsumer) (edge) -> {
-                        System.out.print("( " + edge + ":C" + finalColor + "), " );
-                    });
-                }
-                System.out.print("}\n");
-            });
-        });
-
-        System.out.println("QUERY NODES");
-        query_obj.getQuery_nodes().forEach((id, node) -> {
-            System.out.println("ID: " + id + "-> " + node);
-        });
-
-        System.out.println("QUERY EDGES");
-        query_obj.getQuery_pattern().getOut_edges().forEach((key, list) -> {
-            System.out.println(key + "->" + list);
-        });
-
-        System.out.println("DOMAINS");
-        query_obj.getPairs().forEach((pair) -> {
-            System.out.print("P: " + pair + "\tDOMAIN (FS): ");
-            pair.getFirst_second().forEach((key, list) -> {
-                for (int dst : list) {
-                    System.out.print("[" + key + ", " + dst + "], ");
-                }
-
-            });
-
-            System.out.print("\tDOMAIN (SF): ");
-
-            pair.getSecond_first().forEach((key, list) -> {
-                for (int dst : list) {
-                    System.out.print("[" + key + ", " + dst + "], ");
-                }
-            });
-            System.out.print("\n");
-        });
-
-        System.out.println("PARIS ORDERING");
-        System.out.println(edgeOrdering.getPairs_ordering());
-
-        System.out.println("ORDERING DETAILS");
-        for (int i = 0; i < states.map_state_to_src.length; i++) {
-            int edge = states.map_state_to_edge[i];
-            int src = states.map_state_to_src[i];
-            int dst = states.map_state_to_dst[i];
-            int matchedNode = states.map_state_to_mnode[i];
-            EdgeDirection direction = states.map_edge_to_direction[i];
-            System.out.println("STATE: " + i + "\tSRC: " + src + "\tDST: " + dst + "\tEDGE: " + edge + "\tDIRECTION: " + direction + "\tMATCHED_NODE: " + matchedNode);
-        }
-    }
-
-    public static void printSymmetryConditions(IntArrayList[] nodes_symmetry, IntArrayList[] edges_symmetry) {
-        System.out.println("NODES SIMMETRY: " + Arrays.toString(nodes_symmetry)) ;
-        System.out.println("EDGES SIMMETRY: " + Arrays.toString(edges_symmetry)) ;
-    }
 }

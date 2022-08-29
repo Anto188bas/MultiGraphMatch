@@ -78,51 +78,58 @@ public class GraphPaths {
     }
 
     /**
-     * Given a source node, this method returns a list of pairs <dst, edge_id> such that:
+     * Given a source node, this method returns map <dst, {edge_id1, edge_id2, ...}> such that:
      * - dst is an out-neighbor of src;
      * - edge_id is the id of the edge between src and dst.
      * This method does not consider the edge color.
      * @param src source node.
      */
-    public ObjectArrayList<Pair<Integer, Integer>> getAdiacsBySrc(int src) {
-        ObjectArrayList<Pair<Integer, Integer>> result = new ObjectArrayList<>();
-
-       map_pair_to_key.get(src).forEach((dst, pairKey) -> {
-            for(int color = 0; color < map_key_to_edge_list[pairKey.intValue()].length; color++) {
-                for(int edge : map_key_to_edge_list[pairKey.intValue()][color]) {
-                    result.add(new Pair<>(dst, edge));
+    public Int2ObjectOpenHashMap<IntArraySet> getAdiacsBySrc(int src) {
+        Int2ObjectOpenHashMap<IntArraySet> result = new Int2ObjectOpenHashMap<>();
+        if(map_pair_to_key.containsKey(src)) {
+            map_pair_to_key.get(src).forEach((dst, pairKey) -> {
+                IntArraySet adiacs = new IntArraySet();
+                for (int color = 0; color < map_key_to_edge_list[pairKey.intValue()].length; color++) {
+                    for (int edge : map_key_to_edge_list[pairKey.intValue()][color]) {
+                        adiacs.add(edge);
+                    }
                 }
-            }
-        });
+
+                result.put(dst.intValue(), adiacs);
+            });
+        }
 
         return result;
     }
 
     /**
-     * Given a destination node, this method returns a list of pairs <src, edge_id> such that:
+     * Given a destination node, this method returns a map <src, {edge_id1, edge_id2, ...}> such that:
      * - src is an in-neighbor of dst;
      * - edge_id is the id of the edge between src and dst.
      * This method does not consider the edge color.
      * @param dst destination node.
      */
-    public ObjectArrayList<Pair<Integer, Integer>> getAdiacsByDst(int dst) {
-        ObjectArrayList<Pair<Integer, Integer>> result = new ObjectArrayList<>();
+    public Int2ObjectOpenHashMap<IntArraySet> getAdiacsByDst(int dst) {
+        Int2ObjectOpenHashMap<IntArraySet> result = new Int2ObjectOpenHashMap<>();
+
         map_pair_to_key.forEach((src, outNeighbours) -> {
+            IntArraySet adiacs = new IntArraySet();
             if(outNeighbours.containsKey(dst)) {
                 int pairKey = outNeighbours.get(dst);
                 for(int color = 0; color < map_key_to_edge_list[pairKey].length; color++) {
                     for(int edge : map_key_to_edge_list[pairKey][color]) {
-                        result.add(new Pair<>(src, edge));
+                        adiacs.add(edge);
                     }
                 }
             }
+            result.put(src.intValue(), adiacs);
         });
 
         return result;
     }
 
     /**
-     * Given a source node, this method returns a list of pairs <dst, edge_id> such that:
+     * Given a source node, this method returns a <dst, {edge_id1, edge_id2, ...}> such that:
      * - dst is an out-neighbor of src;
      * - the color of the edge is contained is colors.
      * - edge_id is the id of the edge between src and dst.
@@ -130,22 +137,27 @@ public class GraphPaths {
      * @param src    source node.
      * @param colors list of colors.
      */
-    public ObjectArrayList<Pair<Integer, Integer>> getAdiacsBySrcAndColors(int src, IntArrayList colors) {
-        ObjectArrayList<Pair<Integer, Integer>> result = new ObjectArrayList<>();
+    public Int2ObjectOpenHashMap<IntArraySet> getAdiacsBySrcAndColors(int src, IntArrayList colors) {
+        Int2ObjectOpenHashMap<IntArraySet> result = new Int2ObjectOpenHashMap<>();
 
-        map_pair_to_key.get(src).forEach((dst, pairKey) -> {
-            for(int color: colors) {
-                for(int edge : map_key_to_edge_list[pairKey.intValue()][color]) {
-                    result.add(new Pair<>(dst, edge));
+        if(map_pair_to_key.containsKey(src)) {
+            map_pair_to_key.get(src).forEach((dst, pairKey) -> {
+                IntArraySet adiacs = new IntArraySet();
+                for(int color: colors) {
+                    for(int edge : map_key_to_edge_list[pairKey.intValue()][color]) {
+                        adiacs.add(edge);
+                    }
                 }
-            }
-        });
+
+                result.put(dst.intValue(), adiacs);
+            });
+        }
 
         return result;
     }
 
     /**
-     * Given a destination node, this method returns a list of pairs <src, edge_id> such that:
+     * Given a destination node, this method returns <src, {edge_id1, edge_id2, ...}> such that:
      * - src is an in-neighbor of dst;
      * - the color of the edge is contained is colors.
      * - edge_id is the id of the edge between src and dst.
@@ -153,16 +165,20 @@ public class GraphPaths {
      * @param dst    destination node.
      * @param colors list of colors.
      */
-    public ObjectArrayList<Pair<Integer, Integer>> getAdiacsByDstAndColors(int dst, IntArrayList colors) {
-        ObjectArrayList<Pair<Integer, Integer>> result = new ObjectArrayList<>();
+    public Int2ObjectOpenHashMap<IntArraySet> getAdiacsByDstAndColors(int dst, IntArrayList colors) {
+        Int2ObjectOpenHashMap<IntArraySet> result = new Int2ObjectOpenHashMap<>();
+
         map_pair_to_key.forEach((src, outNeighbours) -> {
+            IntArraySet adiacs = new IntArraySet();
+
             if(outNeighbours.containsKey(dst)) {
                 int pairKey = outNeighbours.get(dst);
-                for(int color = 0; color < map_key_to_edge_list[pairKey].length; color++) {
+                for(int color: colors) {
                     for(int edge : map_key_to_edge_list[pairKey][color]) {
-                        result.add(new Pair<>(src, edge));
+                        adiacs.add(edge);
                     }
                 }
+                result.put(src.intValue(), adiacs);
             }
         });
 

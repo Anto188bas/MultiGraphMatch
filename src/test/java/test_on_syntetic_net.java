@@ -65,7 +65,7 @@ public class test_on_syntetic_net {
                     // MATCHING
                     OutData outData = MatchingSimple.matching(
                         true, false, Long.MAX_VALUE, idx_label, target_bitmatrix,
-                        query_obj, graphPaths, macro_nodes, nodes_macro
+                        query_obj, graphPaths, macro_nodes, nodes_macro, Optional.empty()
                     );
 
                     // SAVING

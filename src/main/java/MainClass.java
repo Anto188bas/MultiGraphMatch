@@ -53,7 +53,7 @@ public class MainClass {
             // MATCHING
             MatchingSimple.matching(
                     true, false, Long.MAX_VALUE, idx_label, target_bitmatrix,
-                    query_obj, graphPaths, macro_nodes, nodes_macro
+                    query_obj, graphPaths, macro_nodes, nodes_macro, Optional.empty()
             );
         });
 

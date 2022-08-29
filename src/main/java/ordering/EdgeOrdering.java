@@ -18,8 +18,8 @@ public class EdgeOrdering {
     private int[] map_edge_to_state;
     private EdgeDirection[] map_edge_to_direction;
     private int[] map_state_to_edge;
-    private int[] map_state_to_src;
-    private int[] map_state_to_dst;
+    private int[] map_state_to_first_endpoint;
+    private int[] map_state_to_second_endpoint;
     private int[] map_state_to_unmapped_nodes;
     private ObjectArraySet<NodesPair> pairs_ordering;
 
@@ -239,8 +239,8 @@ public class EdgeOrdering {
         map_state_to_edge = edges_ordering.toIntArray();
         map_edge_to_state = this.getInverseMap(map_state_to_edge);
 
-        map_state_to_src = new int[edge_keys.size()];
-        map_state_to_dst = new int[edge_keys.size()];
+        map_state_to_first_endpoint = new int[edge_keys.size()];
+        map_state_to_second_endpoint = new int[edge_keys.size()];
         map_edge_to_direction = new EdgeDirection[edge_keys.size()];
 
 
@@ -248,8 +248,8 @@ public class EdgeOrdering {
         for (int edge : edges_ordering) {
             NodesPair pair = map_edge_to_endpoints.get(edge);
 
-            map_state_to_src[i] = pair.getFirstEndpoint().intValue();
-            map_state_to_dst[i] = pair.getSecondEndpoint().intValue();
+            map_state_to_first_endpoint[i] = pair.getFirstEndpoint().intValue();
+            map_state_to_second_endpoint[i] = pair.getSecondEndpoint().intValue();
             map_edge_to_direction[edge] = query_structure.getDirection(pair.getFirstEndpoint(), pair.getSecondEndpoint(), edge);
 
             i++;
@@ -279,12 +279,12 @@ public class EdgeOrdering {
         return map_edge_to_state;
     }
 
-    public int[] getMap_state_to_src() {
-        return map_state_to_src;
+    public int[] getMap_state_to_first_endpoint() {
+        return map_state_to_first_endpoint;
     }
 
-    public int[] getMap_state_to_dst() {
-        return map_state_to_dst;
+    public int[] getMap_state_to_second_endpoint() {
+        return map_state_to_second_endpoint;
     }
 
     public int[] getMap_state_to_unmapped_nodes() {

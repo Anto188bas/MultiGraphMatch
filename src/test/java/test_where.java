@@ -81,9 +81,8 @@ public class test_where {
 
 
         OutData outData = MatchingWhere.matching(
-                where_managing,
                 true, false, Long.MAX_VALUE, idx_label, target_bitmatrix,
-                query, graphPaths, macro_nodes, nodes_macro
+                query, graphPaths, macro_nodes, nodes_macro, Optional.of(where_managing)
         );
     }
 }

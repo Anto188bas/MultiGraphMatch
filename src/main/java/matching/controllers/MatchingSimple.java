@@ -3,6 +3,7 @@ package matching.controllers;
 import bitmatrix.controller.BitmatrixManager;
 import bitmatrix.models.QueryBitmatrix;
 import bitmatrix.models.TargetBitmatrix;
+import cypher.controller.WhereConditionExtraction;
 import cypher.models.QueryNode;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -17,6 +18,7 @@ import target_graph.graph.GraphPaths;
 import target_graph.nodes.GraphMacroNode;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import java.util.HashMap;
+import java.util.Optional;
 
 public class MatchingSimple {
     public static OutData outData;
@@ -58,8 +60,8 @@ public class MatchingSimple {
                 while (matchingData.candidatesIT[0] < matchingData.setCandidates[0].size() -1) {
                     // STATE ZERO
                     matchingData.solution_edges[si] = matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
-                    matchingData.solution_nodes[states.map_state_to_src[si]] = matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
-                    matchingData.solution_nodes[states.map_state_to_dst[si]] = matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
+                    matchingData.solution_nodes[states.map_state_to_first_endpoint[si]] = matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
+                    matchingData.solution_nodes[states.map_state_to_second_endpoint[si]] = matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
                     matchingData.matchedEdges.add(matchingData.solution_edges[si]);
                     matchingData.matchedNodes.add(matchingData.solution_nodes[0]);
                     matchingData.matchedNodes.add(matchingData.solution_nodes[1]);
@@ -75,7 +77,7 @@ public class MatchingSimple {
                             matchingData.matchedEdges.remove(matchingData.solution_edges[si]);
                             matchingData.solution_edges[si] = -1;
                             // REMOVE THE NODE IF EXIST
-                            int selected_candidate = states.map_state_to_mnode[si];
+                            int selected_candidate = states.map_state_to_unmatched_node[si];
                             if(selected_candidate != -1) {
                                 matchingData.matchedNodes.remove(matchingData.solution_nodes[selected_candidate]);
                                 matchingData.solution_nodes[selected_candidate]=-1;
@@ -96,7 +98,7 @@ public class MatchingSimple {
                         else {
                             // SET NODE AND EDGE TO MATCH
                             matchingData.solution_edges[si] = matchingData.setCandidates[si].getInt(matchingData.candidatesIT[si]);
-                            int node_to_match = states.map_state_to_mnode[si];
+                            int node_to_match = states.map_state_to_unmatched_node[si];
                             if(node_to_match != -1)
                                 matchingData.solution_nodes[node_to_match] =
                                         matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
@@ -117,7 +119,7 @@ public class MatchingSimple {
                             else {
                                 //Update auxiliary info
                                 matchingData.matchedEdges.add(matchingData.solution_edges[si]);
-                                node_to_match = states.map_state_to_mnode[si];
+                                node_to_match = states.map_state_to_unmatched_node[si];
                                 if(node_to_match != -1) {
                                     matchingData.matchedNodes.add(matchingData.solution_nodes[node_to_match]);
                                 }
@@ -163,7 +165,8 @@ public class MatchingSimple {
             QueryStructure                  query_obj,
             GraphPaths                      graphPaths,
             HashMap<String, GraphMacroNode> macro_nodes,
-            Int2ObjectOpenHashMap<String>   nodes_macro
+            Int2ObjectOpenHashMap<String>   nodes_macro,
+            Optional<WhereConditionExtraction> where_managing
     ) {
         outData = new OutData();
 
@@ -188,9 +191,9 @@ public class MatchingSimple {
         StateStructures states    = new StateStructures();
         states.map_state_to_edge  = edgeOrdering.getMap_state_to_edge();
         states.map_edge_to_state  = edgeOrdering.getMap_edge_to_state();
-        states.map_state_to_src   = edgeOrdering.getMap_state_to_src();
-        states.map_state_to_dst   = edgeOrdering.getMap_state_to_dst();
-        states.map_state_to_mnode = edgeOrdering.getMap_state_to_unmapped_nodes();
+        states.map_state_to_first_endpoint = edgeOrdering.getMap_state_to_first_endpoint();
+        states.map_state_to_second_endpoint = edgeOrdering.getMap_state_to_second_endpoint();
+        states.map_state_to_unmatched_node = edgeOrdering.getMap_state_to_unmapped_nodes();
         states.map_edge_to_direction = edgeOrdering.getMap_edge_to_direction();
         outData.ordering_time        = (System.currentTimeMillis() - outData.ordering_time) / 1000;
 
