@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import matching.models.MatchingData;
+import matching.models.PathsMatchingData;
 import ordering.EdgeDirection;
 import ordering.OrderingUtils;
 import state_machine.StateStructures;
@@ -140,7 +141,7 @@ public class PathsUtils {
         }
     }
 
-    public static ObjectArrayList<IntArrayList> findPaths(int si, QueryStructure query, GraphPaths graphPaths, MatchingData matchingData, IntArrayList[] nodesSymmetryConditions, IntArrayList[] edgesSymmetryConditions,  StateStructures states) {
+    public static ObjectArrayList<IntArrayList> findPaths(int si, QueryStructure query, GraphPaths graphPaths, PathsMatchingData matchingData, IntArrayList[] nodesSymmetryConditions, IntArrayList[] edgesSymmetryConditions,  StateStructures states) {
         ObjectArrayList<IntArrayList> listCandidates = new ObjectArrayList<>();
 
         int firstQueryEndpointID = states.map_state_to_first_endpoint[si];
@@ -228,12 +229,12 @@ public class PathsUtils {
     }
 
 
-    public static boolean pathConditionCheck(int queryEdgeID, IntArrayList path, MatchingData matchingData, StateStructures states, IntArrayList[] edgesSymmetryConditions) {
+    public static boolean pathConditionCheck(int queryEdgeID, IntArrayList path, PathsMatchingData matchingData, StateStructures states, IntArrayList[] edgesSymmetryConditions) {
         boolean check = true;
 
         IntArrayList condEdge = edgesSymmetryConditions[queryEdgeID];
         for(int i = 0; i < condEdge.size(); i++) {
-            IntArrayList refPath = matchingData.solution_paths[states.map_edge_to_state[condEdge.getInt(i)]];
+            IntArrayList refPath = matchingData.solutionPaths[states.map_edge_to_state[condEdge.getInt(i)]];
             if(refPath!=null && (path.size()!=refPath.size() || path.getInt(0)<refPath.getInt(0)))
             {
                 check = false;
@@ -244,7 +245,7 @@ public class PathsUtils {
         return check;
     }
 
-    public static void explorePaths(int startQueryNodeID, int endQueryNodeID, int startTargetNodeID, int endTargetNodeID, int currentTargetNodeID, EdgeDirection directionToConsider, int depth, int minLength, int maxLength, QueryEdge queryEdge, int queryEdgeID, MatchingData matchingData,
+    public static void explorePaths(int startQueryNodeID, int endQueryNodeID, int startTargetNodeID, int endTargetNodeID, int currentTargetNodeID, EdgeDirection directionToConsider, int depth, int minLength, int maxLength, QueryEdge queryEdge, int queryEdgeID, PathsMatchingData matchingData,
                                     QueryStructure queryStructure, StateStructures states, IntArrayList[] nodesSymmetryConditions, IntArrayList[] edgesSymmetryConditions, ObjectArrayList<IntArrayList> listCandidates,
                                     Int2ObjectOpenHashMap<IntArraySet> adiacs, IntArrayList currentCand, IntArrayList setVisited, GraphPaths graphPaths, QueryStructure query) {
         if(depth >= minLength && depth <= maxLength) {

@@ -59,9 +59,9 @@ public class TestPaths {
         QueryStructure query_obj = new QueryStructure();
         query_obj.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.empty());
 
-        OutData outData = MatchingPath.matching(
-                true, false, Long.MAX_VALUE, idx_label, target_bitmatrix,
-                query_obj, graphPaths, macro_nodes, nodes_macro, Optional.empty()
-        );
+        OutData outData = new OutData();
+
+        MatchingPath matchingMachine = new MatchingPath(outData, query_obj,true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, Optional.empty());
+        outData = matchingMachine.matching();
     }
 }

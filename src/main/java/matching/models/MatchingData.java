@@ -13,7 +13,6 @@ public class MatchingData {
     public IntOpenHashSet matchedEdges;
     public IntArrayList[] setCandidates;
 
-    public IntArrayList[] solution_paths;
 
     public MatchingData(QueryStructure query_obj){
         // INITIALIZATION
@@ -25,7 +24,6 @@ public class MatchingData {
         matchedEdges = new IntOpenHashSet();
         matchedNodes = new IntOpenHashSet();
         setCandidates  = new IntArrayList[edges_num];
-        solution_paths = new IntArrayList[edges_num];
 
         // SETTING
         Arrays.fill(solution_nodes, -1);

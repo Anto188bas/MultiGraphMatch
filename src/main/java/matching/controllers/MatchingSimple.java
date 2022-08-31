@@ -162,7 +162,7 @@ public class MatchingSimple {
             long                            numMaxOccs,
             NodesEdgesLabelsMaps            labels_types_idx,
             TargetBitmatrix                 target_bitmatrix,
-            QueryStructure                  query_obj,
+            QueryStructure                  query,
             GraphPaths                      graphPaths,
             HashMap<String, GraphMacroNode> macro_nodes,
             Int2ObjectOpenHashMap<String>   nodes_macro,
@@ -170,7 +170,7 @@ public class MatchingSimple {
     ) {
         outData = new OutData();
 
-        if(check_nodes_labels(query_obj)) {
+        if(check_nodes_labels(query)) {
             report();
             return outData;
         }
@@ -179,15 +179,15 @@ public class MatchingSimple {
         // QUERY BITMATRIX COMPUTING
         outData.domain_time = System.currentTimeMillis();
         QueryBitmatrix query_bitmatrix = new QueryBitmatrix();
-        query_bitmatrix.create_bitset(query_obj, labels_types_idx);
+        query_bitmatrix.create_bitset(query, labels_types_idx);
         Int2ObjectOpenHashMap<IntArrayList> compatibility = BitmatrixManager.bitmatrix_manager(query_bitmatrix, target_bitmatrix);
-        query_obj.domains_elaboration(query_bitmatrix.getTable(), target_bitmatrix.getTable(), compatibility, graphPaths.getMap_node_color_degrees());
+        query.domains_elaboration(query_bitmatrix.getTable(), target_bitmatrix.getTable(), compatibility, graphPaths.getMap_node_color_degrees());
         outData.domain_time = (System.currentTimeMillis() - outData.domain_time) / 1000;
 
 
         // EDGE ORDERING AND STATE OBJECT CREATION
         outData.ordering_time     = System.currentTimeMillis();
-        EdgeOrdering edgeOrdering = new EdgeOrdering(query_obj);
+        EdgeOrdering edgeOrdering = new EdgeOrdering(query);
         StateStructures states    = new StateStructures();
         states.map_state_to_edge  = edgeOrdering.getMap_state_to_edge();
         states.map_edge_to_state  = edgeOrdering.getMap_edge_to_state();
@@ -200,27 +200,27 @@ public class MatchingSimple {
 
         // SYMMETRY CONDITION COMPUTING
         outData.symmetry_time = System.currentTimeMillis();
-        IntArrayList[] nodes_symmetry = SymmetryCondition.getNodeSymmetryConditions(query_obj);
-        IntArrayList[] edges_symmetry = SymmetryCondition.getEdgeSymmetryConditions(query_obj);
+        IntArrayList[] nodes_symmetry = SymmetryCondition.getNodeSymmetryConditions(query);
+        IntArrayList[] edges_symmetry = SymmetryCondition.getEdgeSymmetryConditions(query);
         outData.symmetry_time = (System.currentTimeMillis() - outData.symmetry_time) / 1000;
 
         // QUERY INFORMATION
-        int numQueryEdges = query_obj.getQuery_edges().size();
+        int numQueryEdges = query.getQuery_edges().size();
 
         // OTHER CONFIGURATION
-        MatchingData matchingData = new MatchingData(query_obj);
+        MatchingData matchingData = new MatchingData(query);
 
         // START MATCHING PHASE
         int si    = 0;
         // FIRST QUERY NODES
         outData.matching_time = System.currentTimeMillis();
-        NodesPair first_compatibility = query_obj.getMap_edge_to_endpoints().get(states.map_state_to_edge[si]);
+        NodesPair first_compatibility = query.getMap_edge_to_endpoints().get(states.map_state_to_edge[si]);
         int q_src = first_compatibility.getFirstEndpoint();
         int q_dst = first_compatibility.getSecondEndpoint();
 
         outData.num_occurrences = matching_procedure(
                 first_compatibility.getFirst_second(), matchingData, states, graphPaths,
-                query_obj, nodes_symmetry, edges_symmetry, numQueryEdges, outData.num_occurrences, numMaxOccs,
+                query, nodes_symmetry, edges_symmetry, numQueryEdges, outData.num_occurrences, numMaxOccs,
                 q_src, q_dst, justCount, distinct
         );
         report();
