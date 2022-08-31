@@ -7,8 +7,6 @@ import cypher.controller.WhereConditionExtraction;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import matching.models.MatchingData;
 import matching.models.OutData;
 import matching.models.PathsMatchingData;
 import ordering.EdgeOrdering;
@@ -20,7 +18,6 @@ import target_graph.nodes.GraphMacroNode;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import utility.Utils;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Optional;
 
@@ -180,7 +177,7 @@ public class MatchingPath extends MatchingBase {
     }
 
     public void updateSolutionNodesAndEdgeForStateZero() {
-        IntArrayList candidatesPaths = matchingData.setCandidatesPaths[0].get(matchingData.candidatesIT[0]);
+        IntArrayList candidatesPaths = matchingData.setCandidatesPaths[0].get(++matchingData.candidatesIT[0]);
         int listSize = candidatesPaths.size();
 
         matchingData.solutionPaths[0] = new IntArrayList(candidatesPaths.subList(0, listSize - 2));
@@ -205,7 +202,7 @@ public class MatchingPath extends MatchingBase {
         matchingData.solution_nodes[1] = -1;
     }
     public void updateCandidatesForStateGraterThanZero() {
-        matchingData.setCandidatesPaths[si] = PathsUtils.findPaths(si, query_obj, graphPaths, matchingData, nodes_symmetry, edges_symmetry, states);
+        matchingData.setCandidatesPaths[si] = PathsUtils.findPaths(si, query, graphPaths, matchingData, nodes_symmetry, edges_symmetry, states);
         matchingData.candidatesIT[si] = -1;
     }
 

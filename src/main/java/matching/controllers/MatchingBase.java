@@ -25,7 +25,6 @@ public abstract class MatchingBase {
     public long numMaxOccs;
     public NodesEdgesLabelsMaps labels_types_idx;
     public TargetBitmatrix target_bitmatrix;
-    public QueryStructure query_obj;
     public GraphPaths graphPaths;
     public HashMap<String, GraphMacroNode> macro_nodes;
     public Int2ObjectOpenHashMap<String> nodes_macro;
@@ -56,7 +55,6 @@ public abstract class MatchingBase {
         this.numMaxOccs = numMaxOccs;
         this.labels_types_idx = labels_types_idx;
         this.target_bitmatrix = target_bitmatrix;
-        this.query_obj = query_obj;
         this.graphPaths = graphPaths;
         this.macro_nodes = macro_nodes;
         this.nodes_macro = nodes_macro;
