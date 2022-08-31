@@ -85,13 +85,6 @@ public class MatchingPath extends MatchingBase {
     }
 
     private long matching_procedure() {
-//        matchingData.solution_nodes[1] = 2;
-//        System.out.println(PathsUtils.findPaths(0, query_obj, graphPaths,matchingData, nodes_symmetry, edges_symmetry, states));
-
-//        matchingData.solution_nodes[0] = 7;
-//        System.out.println(PathsUtils.findStartPaths(0, query, graphPaths,matchingData, nodes_symmetry, states));
-
-
         NodesPair firstPair = this.query.getMap_edge_to_endpoints().get(states.map_state_to_edge[0]);
         int q_src = firstPair.getFirstEndpoint();
         int q_dst = firstPair.getSecondEndpoint();
@@ -128,7 +121,6 @@ public class MatchingPath extends MatchingBase {
                         if (lastStateReached()) { // INCREASE OCCURRENCES
                             // New occurrence found
                             newOccurrenceFound();
-                            System.out.println("SolutionNodes: " + Arrays.toString(matchingData.solution_nodes) + "\tSolutionPaths: " + Arrays.toString(matchingData.solutionPaths));
                         } else { // GO AHEAD
                             goAhead();
                             updateCandidatesForStateGraterThanZero();
@@ -210,7 +202,7 @@ public class MatchingPath extends MatchingBase {
         removeAuxiliaryInfo();
 
         // REMOVE THE NODE IF EXIST
-        int selected_candidate = states.map_state_to_unmatched_node[this.si];
+        int selected_candidate = states.map_state_to_unmatched_node[si];
         if (selected_candidate != -1) {
             matchingData.matchedNodes.remove(matchingData.solution_nodes[selected_candidate]);
             matchingData.solution_nodes[selected_candidate] = -1;
@@ -218,7 +210,7 @@ public class MatchingPath extends MatchingBase {
     }
 
     public void updateSolutionNodesAndEdgeForStateGreaterThanZero() {
-        IntArrayList candidatesPaths = matchingData.setCandidatesPaths[0].get(matchingData.candidatesIT[0]);
+        IntArrayList candidatesPaths = matchingData.setCandidatesPaths[si].get(matchingData.candidatesIT[si]);
         int listSize = candidatesPaths.size();
 
         matchingData.solutionPaths[si] = new IntArrayList(candidatesPaths.subList(0, listSize -1));
