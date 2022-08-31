@@ -25,7 +25,7 @@ public class TestPaths {
 
         // PATH
         String root_dir  = System.getProperty("user.dir");
-        String netw_path = root_dir + "/Networks/Test";
+        String netw_path = root_dir + "/Networks/TestPaths";
 
 
         // TARGET READING
@@ -54,7 +54,7 @@ public class TestPaths {
         System.out.println(idx_label.getLabelToIdxEdge().keySet());
 
         // QUERY
-        String query_test           = "MATCH (n1:P)<-[r0:F]-(n0:P), (n0:P) -[r1:F]-> (n2:P), (n0:P) -[r2:F]-> (n3:P) RETURN n0,n1,n2,n3";
+        String query_test           = "MATCH (n1:P)<-[:F*2..2]-(n0:P), (n0:P) -[:C]-> (n2:P) RETURN n0,n1,n2";
 
         QueryStructure query_obj = new QueryStructure();
         query_obj.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.empty());

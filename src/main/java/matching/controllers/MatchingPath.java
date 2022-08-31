@@ -18,6 +18,7 @@ import target_graph.nodes.GraphMacroNode;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import utility.Utils;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Optional;
 
@@ -95,51 +96,50 @@ public class MatchingPath extends MatchingBase {
         int q_src = firstPair.getFirstEndpoint();
         int q_dst = firstPair.getSecondEndpoint();
 
-        Int2ObjectOpenHashMap<IntArrayList> firstPairCompatibility = firstPair.getFirst_second();
 
-        for (int f_node : firstPairCompatibility.keySet()) {
-            for (int s_node : firstPairCompatibility.get(f_node)) {
-                updateCandidatesForStateZero(q_src, q_dst, f_node, s_node);
+        for (int f_node : query.getMap_node_to_domain().get(q_src)) {
+            updateCandidatesForStateZero(q_src, q_dst, f_node, -1);
 
-                while (matchingData.candidatesIT[0] < matchingData.setCandidatesPaths[0].size() - 1) {
-                    // STATE ZERO
-                    startFromStateZero();
-                    updateSolutionNodesAndEdgeForStateZero();
+            while (matchingData.candidatesIT[0] < matchingData.setCandidatesPaths[0].size() - 1) {
+                // STATE ZERO
+                startFromStateZero();
+                updateSolutionNodesAndEdgeForStateZero();
 
-                    updateMatchingInfoForStateZero();
-                    goAhead();
-                    updateCandidatesForStateGraterThanZero();
+                updateMatchingInfoForStateZero();
+                goAhead();
+                updateCandidatesForStateGraterThanZero();
 
-                    while (si > 0) {
-                        // BACK TRACKING ON EDGES
-                        if (psi >= si) {
-                            removeMatchingInfoForStateGraterThanZero();
-                        }
-
-                        // NEXT CANDIDATE
-                        matchingData.candidatesIT[si]++;
-
-                        if (shouldBacktrack()) { // BACKTRACKING
-                            backtrack();
-                        } else {  // FORWARD TRACKING ON EDGES
-                            // SET NODE AND EDGE TO MATCH
-                            updateSolutionNodesAndEdgeForStateGreaterThanZero();
-                            updateMatchingInfoForStateGreaterThanZero(); // TODO: check the position (it could be after goAhead)
-
-                            if (lastStateReached()) { // INCREASE OCCURRENCES
-                                // New occurrence found
-                                newOccurrenceFound();
-                            } else { // GO AHEAD
-                                goAhead();
-                                updateCandidatesForStateGraterThanZero();
-                            }
-                        }
+                while (si > 0) {
+                    // BACK TRACKING ON EDGES
+                    if (psi >= si) {
+                        removeMatchingInfoForStateGraterThanZero();
                     }
 
-                    // CLEANING OF STRUCTURES
-                    removeMatchingInfoForStateZero();
+                    // NEXT CANDIDATE
+                    matchingData.candidatesIT[si]++;
+
+                    if (shouldBacktrack()) { // BACKTRACKING
+                        backtrack();
+                    } else {  // FORWARD TRACKING ON EDGES
+                        // SET NODE AND EDGE TO MATCH
+                        updateSolutionNodesAndEdgeForStateGreaterThanZero();
+                        updateMatchingInfoForStateGreaterThanZero(); // TODO: check the position (it could be after goAhead)
+
+                        if (lastStateReached()) { // INCREASE OCCURRENCES
+                            // New occurrence found
+                            newOccurrenceFound();
+                            System.out.println("SolutionNodes: " + Arrays.toString(matchingData.solution_nodes) + "\tSolutionPaths: " + Arrays.toString(matchingData.solutionPaths));
+                        } else { // GO AHEAD
+                            goAhead();
+                            updateCandidatesForStateGraterThanZero();
+                        }
+                    }
                 }
+
+                // CLEANING OF STRUCTURES
+                removeMatchingInfoForStateZero();
             }
+
         }
         return numTotalOccs;
     }
@@ -181,25 +181,25 @@ public class MatchingPath extends MatchingBase {
         int listSize = candidatesPaths.size();
 
         matchingData.solutionPaths[0] = new IntArrayList(candidatesPaths.subList(0, listSize - 2));
-        matchingData.solution_nodes[1] = candidatesPaths.getInt(listSize - 2);
-        matchingData.solution_nodes[0] = candidatesPaths.getInt(listSize - 1);
+        matchingData.solution_nodes[states.map_state_to_second_endpoint[0]] = candidatesPaths.getInt(listSize - 2);
+        matchingData.solution_nodes[states.map_state_to_first_endpoint[0]] = candidatesPaths.getInt(listSize - 1);
     }
 
     public void updateMatchingInfoForStateZero() {
         updateAuxiliaryInfo();
 
-        matchingData.matchedNodes.add(matchingData.solution_nodes[0]);
-        matchingData.matchedNodes.add(matchingData.solution_nodes[1]);
+        matchingData.matchedNodes.add(matchingData.solution_nodes[states.map_state_to_first_endpoint[0]]);
+        matchingData.matchedNodes.add(matchingData.solution_nodes[states.map_state_to_second_endpoint[0]]);
     }
 
 
     public void removeMatchingInfoForStateZero() {
         removeAuxiliaryInfo();
 
-        matchingData.matchedNodes.remove(matchingData.solution_nodes[0]);
-        matchingData.matchedNodes.remove(matchingData.solution_nodes[1]);
-        matchingData.solution_nodes[0] = -1;
-        matchingData.solution_nodes[1] = -1;
+        matchingData.matchedNodes.remove(matchingData.solution_nodes[states.map_state_to_first_endpoint[0]]);
+        matchingData.matchedNodes.remove(matchingData.solution_nodes[states.map_state_to_second_endpoint[0]]);
+        matchingData.solution_nodes[states.map_state_to_first_endpoint[0]] = -1;
+        matchingData.solution_nodes[states.map_state_to_second_endpoint[0]] = -1;
     }
     public void updateCandidatesForStateGraterThanZero() {
         matchingData.setCandidatesPaths[si] = PathsUtils.findPaths(si, query, graphPaths, matchingData, nodes_symmetry, edges_symmetry, states);

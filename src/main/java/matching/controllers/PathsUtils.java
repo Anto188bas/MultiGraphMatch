@@ -14,40 +14,7 @@ import state_machine.StateStructures;
 import target_graph.graph.GraphPaths;
 
 public class PathsUtils {
-    /**
-     * Method used for paths matching.
-     * @return
-     */
-    public static Int2ObjectOpenHashMap<IntArraySet> getAdiacs(int startTargetNode, int queryEdgeID, QueryStructure query, StateStructures states, GraphPaths graphPaths) {
-        Int2ObjectOpenHashMap<IntArraySet> adiacs = new Int2ObjectOpenHashMap<>();  // <node, {edge1, edge2, ...}>
-
-        EdgeDirection direction = states.map_edge_to_direction[queryEdgeID];
-        QueryEdge queryEdge = query.getQuery_edge(queryEdgeID);
-
-        IntArrayList edgeLabels = queryEdge.getEdge_label();
-        // For each state we both know the source and the destination node.
-        // So, if the edge is directed, we can only consider out-coming edges.
-        // Otherwise, we must consider both in-coming and out-coming edges.
-
-        if(edgeLabels.size() == 0) { // Edge without labels
-            if(direction != EdgeDirection.BOTH) { // DIRECTED CASE - EDGE FROM q_src TO q_dst (OUTBOUND)
-                adiacs = graphPaths.getAdiacsBySrc(startTargetNode);
-            } else { // UNDIRECTED CASE (BOTH)
-                adiacs = OrderingUtils.mergeInt2ObjectOpenHashMap(graphPaths.getAdiacsBySrc(startTargetNode), graphPaths.getAdiacsByDst(startTargetNode));
-            }
-        } else { // Edge with one or more labels
-            if(direction != EdgeDirection.BOTH) { // DIRECTED CASE - EDGE FROM q_src TO q_dst (OUTBOUND)
-                adiacs = graphPaths.getAdiacsBySrcAndColors(startTargetNode, edgeLabels);
-            } else { // 3. UNDIRECTED CASE (BOTH)
-                adiacs = OrderingUtils.mergeInt2ObjectOpenHashMap(graphPaths.getAdiacsBySrcAndColors(startTargetNode, edgeLabels), graphPaths.getAdiacsByDstAndColors(startTargetNode, edgeLabels));
-            }
-        }
-
-        return adiacs;
-    }
-
-
-    public static  Int2ObjectOpenHashMap<IntArraySet> getAdiacsByDirection(int targetNode, IntArrayList edgeLabels, GraphPaths graphPaths, EdgeDirection direction) {
+       public static  Int2ObjectOpenHashMap<IntArraySet> getAdiacsByDirection(int targetNode, IntArrayList edgeLabels, GraphPaths graphPaths, EdgeDirection direction) {
         Int2ObjectOpenHashMap<IntArraySet> adiacs;  // <node, {edge1, edge2, ...}>
 
         if(edgeLabels.size() == 0) { // Edge without labels
@@ -101,27 +68,28 @@ public class PathsUtils {
 
         Int2ObjectOpenHashMap<IntArraySet> adjacentMap = getAdiacsByDirection(startTargetNodeID, edgeLabels, graphPaths, direction);
 
-        //TODO: replace with cypher
-        int minDepth = 1;
-        int maxDepth = 10;
+        long minDepth = queryEdge.getMin_deep();
+        long maxDepth = queryEdge.getMax_deep();
 
-        exploreStartPaths(secondQueryEndpointID, startTargetNodeID, direction, 0, minDepth, maxDepth, queryEdge, matchingData, nodesSymmetryConditions, listCandidates, adjacentMap, new IntArrayList(), new IntArrayList(), graphPaths, query);
+        exploreStartPaths(secondQueryEndpointID, startTargetNodeID, startTargetNodeID, direction, 0, minDepth, maxDepth, queryEdge, matchingData, nodesSymmetryConditions, listCandidates, adjacentMap, new IntArrayList(), new IntArrayList(), graphPaths, query);
 
         return listCandidates;
     }
 
-    public static void exploreStartPaths(int endQueryNodeID, int currentTargetNodeID, EdgeDirection directionToConsider, int depth, int minLength, int maxLength, QueryEdge queryEdge, MatchingData matchingData,
+    public static void exploreStartPaths(int endQueryNodeID, int startTargetNodeID, int currentTargetNodeID, EdgeDirection directionToConsider, int depth, long minDepth, long maxDepth, QueryEdge queryEdge, MatchingData matchingData,
                                          IntArrayList[] nodesSymmetryConditions, ObjectArrayList<IntArrayList> listCandidates,
                                     Int2ObjectOpenHashMap<IntArraySet> adiacs, IntArrayList currentCand, IntArrayList setVisited, GraphPaths graphPaths, QueryStructure query) {
-        if(depth >= minLength && depth <= maxLength) {
+        if(depth >= minDepth && depth <= maxDepth) {
             if (query.getMap_node_to_domain().get(endQueryNodeID).contains(currentTargetNodeID) &&
                     NewEdgeSelector.nodeCondCheck(endQueryNodeID, currentTargetNodeID, matchingData, nodesSymmetryConditions)
             ) {
-                listCandidates.add(currentCand.clone());
+                IntArrayList newCandidates = new IntArrayList(currentCand);
+                newCandidates.add(startTargetNodeID);
+                listCandidates.add(newCandidates);
             }
         }
 
-        if(depth < maxLength) {
+        if(depth < maxDepth) {
             adiacs.forEach((currentTargetAdjacentNodeID, currentTargetAdjacentEdgeSet) -> {
                 if(!setVisited.contains(currentTargetAdjacentNodeID.intValue())) {
                     for(int currentTargetAdjacentEdgeID : currentTargetAdjacentEdgeSet) {
@@ -130,7 +98,7 @@ public class PathsUtils {
                         currentCand.add(currentTargetAdjacentNodeID.intValue());
 
                         Int2ObjectOpenHashMap<IntArraySet> newAdjacentMap = getAdiacsByDirection(currentTargetAdjacentNodeID, queryEdge.getEdge_label(),graphPaths, directionToConsider);
-                        exploreStartPaths(endQueryNodeID, currentTargetAdjacentNodeID.intValue(), directionToConsider, depth + 1, minLength, maxLength, queryEdge, matchingData, nodesSymmetryConditions, listCandidates, newAdjacentMap, currentCand, setVisited, graphPaths, query);
+                        exploreStartPaths(endQueryNodeID, startTargetNodeID, currentTargetAdjacentNodeID.intValue(), directionToConsider, depth + 1, minDepth, maxDepth, queryEdge, matchingData, nodesSymmetryConditions, listCandidates, newAdjacentMap, currentCand, setVisited, graphPaths, query);
 
                         currentCand.removeInt(currentCand.size()-1);
                         currentCand.removeInt(currentCand.size()-1);
@@ -216,11 +184,10 @@ public class PathsUtils {
         }
 
         Int2ObjectOpenHashMap<IntArraySet> adjacentMap = getAdiacsByDirection(startTargetNodeID, edgeLabels, graphPaths, directionToConsider);
-        System.out.println("startTargetNodeID: " + startTargetNodeID + "\tendTargetNodeID: " + endTargetNodeID + "\tstartQueryNodeID: " + startQueryNodeID + "\tendQueryNodeID: " + endQueryNodeID + "\tDirection: " + directionToConsider + "\tAdjacentMap: " + adjacentMap);
+//        System.out.println("startTargetNodeID: " + startTargetNodeID + "\tendTargetNodeID: " + endTargetNodeID + "\tstartQueryNodeID: " + startQueryNodeID + "\tendQueryNodeID: " + endQueryNodeID + "\tDirection: " + directionToConsider + "\tAdjacentMap: " + adjacentMap);
 
-        //TODO: replace with cypher
-        int minDepth = 1;
-        int maxDepth = 10;
+        long minDepth = queryEdge.getMin_deep();
+        long maxDepth = queryEdge.getMax_deep();
 
         explorePaths(startQueryNodeID, endQueryNodeID, startTargetNodeID, endTargetNodeID, startTargetNodeID, directionToConsider, 0, minDepth, maxDepth, queryEdge, queryEdgeID, matchingData, query, states, nodesSymmetryConditions, edgesSymmetryConditions, listCandidates, adjacentMap, new IntArrayList(), new IntArrayList(), graphPaths, query);
 
@@ -245,10 +212,10 @@ public class PathsUtils {
         return check;
     }
 
-    public static void explorePaths(int startQueryNodeID, int endQueryNodeID, int startTargetNodeID, int endTargetNodeID, int currentTargetNodeID, EdgeDirection directionToConsider, int depth, int minLength, int maxLength, QueryEdge queryEdge, int queryEdgeID, PathsMatchingData matchingData,
+    public static void explorePaths(int startQueryNodeID, int endQueryNodeID, int startTargetNodeID, int endTargetNodeID, int currentTargetNodeID, EdgeDirection directionToConsider, long depth, long minDepth, long maxDepth, QueryEdge queryEdge, int queryEdgeID, PathsMatchingData matchingData,
                                     QueryStructure queryStructure, StateStructures states, IntArrayList[] nodesSymmetryConditions, IntArrayList[] edgesSymmetryConditions, ObjectArrayList<IntArrayList> listCandidates,
                                     Int2ObjectOpenHashMap<IntArraySet> adiacs, IntArrayList currentCand, IntArrayList setVisited, GraphPaths graphPaths, QueryStructure query) {
-        if(depth >= minLength && depth <= maxLength) {
+        if(depth >= minDepth && depth <= maxDepth) {
             if (
                     (
                             (endTargetNodeID == -1) || // un-matched target node
@@ -260,7 +227,7 @@ public class PathsUtils {
                 listCandidates.add(currentCand.clone());
             }
         }
-        if(depth < maxLength) {
+        if(depth < maxDepth) {
             adiacs.forEach((currentTargetAdjacentNodeID, currentTargetAdjacentEdgeSet) -> {
                 if(!matchingData.matchedNodes.contains(currentTargetAdjacentNodeID.intValue()) && !setVisited.contains(currentTargetAdjacentNodeID.intValue())) {
                     for(int currentTargetAdjacentEdgeID : currentTargetAdjacentEdgeSet) {
@@ -270,7 +237,7 @@ public class PathsUtils {
                             currentCand.add(currentTargetAdjacentNodeID.intValue());
 
                             Int2ObjectOpenHashMap<IntArraySet> newAdjacentMap = getAdiacsByDirection(currentTargetAdjacentNodeID, queryEdge.getEdge_label(),graphPaths, directionToConsider);
-                            explorePaths(startQueryNodeID, endQueryNodeID, startTargetNodeID, endTargetNodeID, currentTargetAdjacentNodeID.intValue(), directionToConsider, depth + 1, minLength, maxLength, queryEdge, queryEdgeID, matchingData, queryStructure, states, nodesSymmetryConditions, edgesSymmetryConditions, listCandidates, newAdjacentMap, currentCand, setVisited, graphPaths, query);
+                            explorePaths(startQueryNodeID, endQueryNodeID, startTargetNodeID, endTargetNodeID, currentTargetAdjacentNodeID.intValue(), directionToConsider, depth + 1, minDepth, maxDepth, queryEdge, queryEdgeID, matchingData, queryStructure, states, nodesSymmetryConditions, edgesSymmetryConditions, listCandidates, newAdjacentMap, currentCand, setVisited, graphPaths, query);
 
                             currentCand.removeInt(currentCand.size()-1);
                             currentCand.removeInt(currentCand.size()-1);
