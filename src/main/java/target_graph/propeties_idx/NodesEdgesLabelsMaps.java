@@ -68,7 +68,7 @@ public class NodesEdgesLabelsMaps {
     }
 
     public int[] stringVectorToIntOne(String labels){
-        return Arrays.stream(labels.split("[:|]"))
+        return Arrays.stream(labels.split("[:|~]"))
            .mapToInt(label -> add_property_if_not_exists(label, this.idxToLabelNode, this.labelToIdxNode, 0))
            .toArray();
     }

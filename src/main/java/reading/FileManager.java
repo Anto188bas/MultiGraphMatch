@@ -87,13 +87,16 @@ public class FileManager {
                 CSVReader reader = new CSVReaderBuilder(new FileReader(file_name)).withCSVParser(parser).build();
                 ColumnType[] table_columns = TableTypes.header_table_creation(reader.readNext());
                 reader.close();
+                System.out.println(file_name.getName());
                 Table table = Table.read().usingOptions(CsvReadOptions
                    .builder(file_name)
                    .separator(sep)
+                   .maxCharsPerColumn(100000)
                    .columnTypes(table_columns)
                 );
                 TableTypes.column_rename(table);
                 // SET NEW COLUMNS TYPE
+                /*
                 table.columnNames().forEach(column_name -> {
                     if (column_name.equals("source") || column_name.equals("dest")) return;
                     if (table.column(column_name).type() instanceof StringColumnType){
@@ -102,12 +105,13 @@ public class FileManager {
                         // SELECTED RECORD
                         String last   = tmp.get(tmp.size() - 1);
                         String first  = tmp.get(0);
-                        String med    = tmp.get(tmp.size() % 2);
+                        String med    = tmp.get(tmp.size() / 2);
                         // INFERED TYPE
                         String ntype  =  type_extraction(first, last, med);
                         add_new_column_creation(table, tmp, ntype, column_name);
                     }
                 });
+                */
                 tables[count++] = table;
             } catch (CsvValidationException | IOException e) {e.printStackTrace();}
         }

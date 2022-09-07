@@ -1,16 +1,22 @@
 package target_graph.edges;
-
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import org.opencypher.v9_0.expressions.In;
 import target_graph.graph.GraphPaths;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import tech.tablesaw.api.IntColumn;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
+import tech.tablesaw.index.StringIndex;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static tech.tablesaw.aggregate.AggregateFunctions.count;
+import static tech.tablesaw.aggregate.AggregateFunctions.mean;
+
 
 public class EdgeHandler {
     // ADD EDGE WITHOUT TYPE
@@ -24,8 +30,11 @@ public class EdgeHandler {
     }
 
     // CHECK IF TYPE IS SPECIFIED
-    private static boolean isTypeSpecified(String col_name){
-        return col_name.toLowerCase().contains("type");
+    private static int isTypeSpecified(List<String> col_names){
+        for(int i=0; i<col_names.size(); i++)
+            if(col_names.get(i).toLowerCase().contains("type"))
+                return i;
+        return -1;
     }
 
     // STR 2 INT
@@ -59,8 +68,7 @@ public class EdgeHandler {
         if(src_dst_aggregation.containsKey(dst) && src_dst_aggregation.get(dst).containsKey(src)){
             IntOpenHashSet[] dir_colors = src_dst_aggregation.get(dst).get(src);
             if (dir_colors[1] == null) dir_colors[1] = new IntOpenHashSet();
-            if(type != -1)
-               dir_colors[1].add(type);
+            if(type != -1) dir_colors[1].add(type);
         }
         else {
             if (!src_dst_aggregation.containsKey(src))
@@ -111,12 +119,9 @@ public class EdgeHandler {
         int edge_key = count.getAndIncrement();
         edgeId.append(edge_key);
         add_color_for_aggregation(src, dst, type, src_dst_aggregation);
-
         int key;
-
-        if(!map_pair_to_key.containsKey(src)) {
+        if(!map_pair_to_key.containsKey(src))
             map_pair_to_key.put(src, new Int2IntOpenHashMap());
-        }
 
         //node-color-degrees configuration
         node_color_degrees_init(map_node_color_degrees, src);
@@ -131,46 +136,12 @@ public class EdgeHandler {
         }
 
         Int2ObjectOpenHashMap<IntArrayList> map_color_to_edge_list = map_key_to_edge_list.get(key);
-
-        if(!map_color_to_edge_list.containsKey(type)) {
+        if(!map_color_to_edge_list.containsKey(type))
             map_color_to_edge_list.put(type, new IntArrayList());
-        }
-
         map_color_to_edge_list.get(type).add(edge_key);
+
         node_color_degrees_increase(map_node_color_degrees, src, type);
         node_color_degrees_increase(map_node_color_degrees, dst, type);
-    }
-
-    public static void createGraphEdge(
-            Table[] tables,
-            NodesEdgesLabelsMaps idx_label,
-            ParentAggregation src_dst_edges
-    ){
-        if(tables == null) return;
-        AtomicInteger pCount      = new AtomicInteger(0);
-        for(Table table: tables){
-            List<String>  header  = table.columnNames();
-            IntColumn     edgeId  = IntColumn.create("edge_id");
-            // TYPE SPECIFIED
-            if (isTypeSpecified(header.get(2))){
-                table.forEach(row ->
-                        add_edge_in_list(
-                                row, header, row.getString(header.get(2)),
-                                src_dst_edges, idx_label, pCount, edgeId)
-                );
-                table.removeColumns(header.get(0), header.get(1), header.get(2));
-            }
-            // MISSING TYPE
-            else {
-                table.forEach(row ->
-                        add_edge_in_list(
-                                row, header, "none",
-                                src_dst_edges, idx_label, pCount, edgeId)
-                );
-                table.removeColumns(header.get(0), header.get(1));
-            }
-            table.addColumns(edgeId);
-        }
     }
 
     public static GraphPaths createGraphPaths(
@@ -179,21 +150,27 @@ public class EdgeHandler {
             Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntOpenHashSet[]>> src_dst_aggregation
     ){
         if(tables == null) return null;
+        int num_of_source = Arrays
+            .stream(tables)
+            .map(table -> table.column(0).unique().size())
+            .reduce(0, Integer::sum);
         Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> tmp_map_key_to_edge_list = new Int2ObjectOpenHashMap<>();
-        Int2ObjectOpenHashMap<Int2IntOpenHashMap> tmp_map_pair_to_key = new Int2ObjectOpenHashMap<>();
+        Int2ObjectOpenHashMap<Int2IntOpenHashMap> tmp_map_pair_to_key = new Int2ObjectOpenHashMap<>(num_of_source);
 
         AtomicInteger edge_id_count   = new AtomicInteger(0);
         AtomicInteger pair_key_count  = new AtomicInteger(0);
         Int2ObjectOpenHashMap<Int2IntOpenHashMap> map_node_color_degrees = new Int2ObjectOpenHashMap<>();
-
+        
         for(Table table: tables){
             List<String>  header  = table.columnNames();
             // TYPE SPECIFIED
             IntColumn     edgeId  = IntColumn.create("edge_id");
-            if (isTypeSpecified(header.get(2))){
+            int           idx     = isTypeSpecified(header);
+
+            if (idx != -1){
                 table.forEach(row ->
                     new_add_edge_in_list(
-                        row, header, row.getString(header.get(2)), idx_label,
+                        row, header, row.getString(header.get(idx)), idx_label,
                         edge_id_count, edgeId, tmp_map_pair_to_key, tmp_map_key_to_edge_list,
                         pair_key_count, src_dst_aggregation, map_node_color_degrees
                     )

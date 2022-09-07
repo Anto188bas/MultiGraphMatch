@@ -1,5 +1,4 @@
 package cypher.models;
-
 import cypher.controller.PropertiesUtility;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import org.opencypher.v9_0.expressions.Expression;
@@ -8,7 +7,6 @@ import org.opencypher.v9_0.expressions.Range;
 import org.opencypher.v9_0.expressions.RelationshipPattern;
 import scala.Option;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
-
 import java.util.HashMap;
 
 public class QueryEdge {
