@@ -3,6 +3,7 @@ import cypher.controller.WhereConditionExtraction;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import matching.controllers.MatchingPath;
 import matching.controllers.MatchingWhere;
 import matching.models.OutData;
 import reading.FileManager;
@@ -79,10 +80,9 @@ public class test_where {
         QueryStructure query = new QueryStructure();
         query.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.of(where_managing));
 
+        OutData outData = new OutData();
 
-        OutData outData = MatchingWhere.matching(
-                true, false, Long.MAX_VALUE, idx_label, target_bitmatrix,
-                query, graphPaths, macro_nodes, nodes_macro, Optional.of(where_managing)
-        );
+        MatchingWhere matchingMachine = new MatchingWhere(outData, query,true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, Optional.of(where_managing));
+        outData = matchingMachine.matching();
     }
 }

@@ -50,7 +50,6 @@ public class MatchingPath extends MatchingBase {
         // EDGE ORDERING AND STATE OBJECT CREATION
         outData.ordering_time = System.currentTimeMillis();
         edgeOrdering = new EdgeOrdering(query);
-        states = new StateStructures();
         states.map_state_to_edge = edgeOrdering.getMap_state_to_edge();
         states.map_edge_to_state = edgeOrdering.getMap_edge_to_state();
         states.map_state_to_first_endpoint = edgeOrdering.getMap_state_to_first_endpoint();

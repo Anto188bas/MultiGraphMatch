@@ -59,6 +59,8 @@ public abstract class MatchingBase {
         this.macro_nodes = macro_nodes;
         this.nodes_macro = nodes_macro;
         this.where_managing = where_managing;
+        this.numTotalOccs = 0;
+        this.states = new StateStructures();
     }
 
     protected boolean check_nodes_labels(){
