@@ -1,7 +1,5 @@
 package matching.controllers;
 
-import bitmatrix.controller.BitmatrixManager;
-import bitmatrix.models.QueryBitmatrix;
 import bitmatrix.models.TargetBitmatrix;
 import cypher.controller.PropositionStatus;
 import cypher.controller.WhereConditionExtraction;
@@ -11,9 +9,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import matching.models.MatchingData;
 import matching.models.OutData;
-import ordering.EdgeOrdering;
 import ordering.NodesPair;
-import simmetry_condition.SymmetryCondition;
 import target_graph.graph.GraphPaths;
 import target_graph.nodes.GraphMacroNode;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
@@ -35,42 +31,22 @@ public class MatchingWhere extends MatchingBase {
     }
 
     public OutData matching() {
-        outData = new OutData();
-
         if (check_nodes_labels()) {
             report();
             return outData;
         }
 
-        // DOMAIN COMPUTING
-        // QUERY BITMATRIX COMPUTING
-        outData.domain_time = System.currentTimeMillis();
-        QueryBitmatrix query_bitmatrix = new QueryBitmatrix();
-        query_bitmatrix.create_bitset(query, labels_types_idx);
-        Int2ObjectOpenHashMap<IntArrayList> compatibility = BitmatrixManager.bitmatrix_manager(query_bitmatrix, target_bitmatrix);
-        query.domains_elaboration(query_bitmatrix.getTable(), target_bitmatrix.getTable(), compatibility, graphPaths.getMap_node_color_degrees());
-        outData.domain_time = (System.currentTimeMillis() - outData.domain_time) / 1000;
+        // DOMAINS
+        computeCompatibilityDomains();
 
-        // EDGE ORDERING AND STATE OBJECT CREATION
-        outData.ordering_time = System.currentTimeMillis();
-        edgeOrdering = new EdgeOrdering(query);
-        states.map_state_to_edge = edgeOrdering.getMap_state_to_edge();
-        states.map_edge_to_state = edgeOrdering.getMap_edge_to_state();
-        states.map_state_to_first_endpoint = edgeOrdering.getMap_state_to_first_endpoint();
-        states.map_state_to_second_endpoint = edgeOrdering.getMap_state_to_second_endpoint();
-        states.map_state_to_unmatched_node = edgeOrdering.getMap_state_to_unmapped_nodes();
-        states.map_edge_to_direction = edgeOrdering.getMap_edge_to_direction();
-        outData.ordering_time = (System.currentTimeMillis() - outData.ordering_time) / 1000;
+        // ORDERING
+        computeOrdering();
 
         // WHERE CONDITIONS ORDERING
         where_managing.get().assignConditionsToNodesAndEdges(query, edgeOrdering.getNodes_ordering(), edgeOrdering.getEdges_ordering());
 
-        // SYMMETRY CONDITIONS COMPUTING
-        outData.symmetry_time = System.currentTimeMillis();
-        nodes_symmetry = SymmetryCondition.getNodeSymmetryConditions(query);
-        edges_symmetry = SymmetryCondition.getEdgeSymmetryConditions(query);
-
-        outData.symmetry_time = (System.currentTimeMillis() - outData.symmetry_time) / 1000;
+        // SYMMETRY CONDITIONS
+        computeSymmetryConditions();
 
         // QUERY INFORMATION
         numQueryEdges = query.getQuery_edges().size();
@@ -104,16 +80,16 @@ public class MatchingWhere extends MatchingBase {
             initializeConditions();
         }
 
-        for (int f_node: firstPair.getFirst_second().keySet()) {
-            for (int s_node: firstPair.getFirst_second().get(f_node)) {
+        for (int f_node : firstPair.getFirst_second().keySet()) {
+            for (int s_node : firstPair.getFirst_second().get(f_node)) {
                 updateCandidatesForStateZero(q_src, q_dst, f_node, s_node);
 
-                while (matchingData.candidatesIT[0] < matchingData.setCandidates[0].size() -1) {
+                while (matchingData.candidatesIT[0] < matchingData.setCandidates[0].size() - 1) {
                     // STATE ZERO
                     startFromStateZero();
                     updateSolutionNodesAndEdgeForStateZero();
 
-                    if(areWhereConditionsVerified()) {
+                    if (areWhereConditionsVerified()) {
                         updateMatchingInfoForStateZero();
                         goAhead();
                         updateCandidatesForStateGraterThanZero();
@@ -124,7 +100,7 @@ public class MatchingWhere extends MatchingBase {
                                 removeMatchingInfoForStateGraterThanZero();
 
                                 // RESET CONDITIONS FOR THE PREVIOUS MATCHED STATE
-                                if(areThereConditions) {
+                                if (areThereConditions) {
                                     resetConditionsForState(psi); // N.B. we reset the conditions for the previous state
                                 }
                             }
@@ -138,7 +114,7 @@ public class MatchingWhere extends MatchingBase {
                                 // SET NODE AND EDGE TO MATCH
                                 updateSolutionNodesAndEdgeForStateGreaterThanZero();
 
-                                if(areWhereConditionsVerified()) {
+                                if (areWhereConditionsVerified()) {
                                     updateMatchingInfoForStateGreaterThanZero();
                                     if (lastStateReached()) { // INCREASE OCCURRENCES
                                         // New occurrence found
@@ -154,7 +130,7 @@ public class MatchingWhere extends MatchingBase {
                         }
                     }
                     //WHERE CHECK FAILED OR NO MORE CANDIDATES
-                    if(areThereConditions) {
+                    if (areThereConditions) {
                         initializeConditions();
                     }
                     // CLEANING OF STRUCTURES
@@ -232,82 +208,20 @@ public class MatchingWhere extends MatchingBase {
         //WHERE check
         return evaluateAllConditions();
     }
-    public void removeMatchingInfoForStateGraterThanZero() {
-        matchingData.matchedEdges.remove(matchingData.solution_edges[si]);
-        matchingData.solution_edges[si] = -1;
-        // REMOVE THE NODE IF EXIST
-        int selected_candidate = states.map_state_to_unmatched_node[si];
-        if (selected_candidate != -1) {
-            matchingData.matchedNodes.remove(matchingData.solution_nodes[selected_candidate]);
-            matchingData.solution_nodes[selected_candidate] = -1;
-        }
-    }
-
-    public void removeMatchingInfoForStateZero() {
-        matchingData.matchedEdges.remove(matchingData.solution_edges[0]);
-        matchingData.solution_edges[0] = -1;
-        matchingData.matchedNodes.remove(matchingData.solution_nodes[0]);
-        matchingData.matchedNodes.remove(matchingData.solution_nodes[1]);
-        matchingData.solution_nodes[0] = -1;
-        matchingData.solution_nodes[1] = -1;
-    }
-    public void updateSolutionNodesAndEdgeForStateZero() {
-        matchingData.solution_edges[0] = matchingData.setCandidates[0].getInt(++matchingData.candidatesIT[0]);
-        matchingData.solution_nodes[states.map_state_to_first_endpoint[0]] = matchingData.setCandidates[0].getInt(++matchingData.candidatesIT[0]);
-        matchingData.solution_nodes[states.map_state_to_second_endpoint[0]] = matchingData.setCandidates[0].getInt(++matchingData.candidatesIT[0]);
-    }
-    public void updateMatchingInfoForStateZero() {
-        matchingData.matchedEdges.add(matchingData.solution_edges[0]);
-        matchingData.matchedNodes.add(matchingData.solution_nodes[0]);
-        matchingData.matchedNodes.add(matchingData.solution_nodes[1]);
-    }
-
-    public void updateMatchingInfoForStateGreaterThanZero() {
-        matchingData.matchedEdges.add(matchingData.solution_edges[si]);
-        int node_to_match = states.map_state_to_unmatched_node[si];
-        if (node_to_match != -1) {
-            matchingData.matchedNodes.add(matchingData.solution_nodes[node_to_match]);
-        }
-    }
-
-    public void updateSolutionNodesAndEdgeForStateGreaterThanZero() {
-        matchingData.solution_edges[si] = matchingData.setCandidates[si].getInt(matchingData.candidatesIT[si]);
-        int node_to_match = states.map_state_to_unmatched_node[si];
-        if (node_to_match != -1)
-            matchingData.solution_nodes[node_to_match] =
-                    matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
-    }
-
-
-    public void updateCandidatesForStateZero(int q_src, int q_dst, int f_node, int s_node) {
-        matchingData.setCandidates[0] = NewFindCandidates.find_first_candidates(
-                q_src, q_dst, f_node, s_node, states.map_state_to_edge[0],
-                query, graphPaths, matchingData, nodes_symmetry, states
-        );
-        matchingData.candidatesIT[0] = -1;
-    }
-
-    public void updateCandidatesForStateGraterThanZero() {
-        matchingData.setCandidates[si] = NewFindCandidates.find_candidates(
-                graphPaths, query, si, nodes_symmetry, edges_symmetry, states, matchingData
-        );
-        matchingData.candidatesIT[si] = -1;
-    }
-
 
     public boolean evaluateAllConditions() {
         atLeastOnePropositionVerified = false;
         allPropositionsFailed = true;
 
         // for each or proposition
-        for(int i = 0; i < whereHandler.getSetWhereConditions().size(); i++) {
+        for (int i = 0; i < whereHandler.getSetWhereConditions().size(); i++) {
             // for each condition in the current or proposition
             Int2ObjectOpenHashMap<QueryCondition> conditionSet = whereHandler.getMapOrPropositionToConditionSet().get(i);
 
             boolean allConditionsVerified = true;
             boolean canBeTrue = true;
 
-            for(QueryCondition condition: conditionSet.values()) {
+            for (QueryCondition condition : conditionSet.values()) {
                 switch (condition.getStatus()) {
                     case NOT_EVALUATED -> {
                         allConditionsVerified = false;
@@ -322,11 +236,11 @@ public class MatchingWhere extends MatchingBase {
                 }
             }
 
-            if(allConditionsVerified) { // COMPLETELY EVALUATED
+            if (allConditionsVerified) { // COMPLETELY EVALUATED
                 whereHandler.getMapOrPropositionToStatus().put(i, PropositionStatus.EVALUATED);
                 atLeastOnePropositionVerified = true;
                 allPropositionsFailed = false;
-            } else if(canBeTrue) { // NOT COMPLETELY EVALUATED (other conditions must be checked)
+            } else if (canBeTrue) { // NOT COMPLETELY EVALUATED (other conditions must be checked)
                 whereHandler.getMapOrPropositionToStatus().put(i, PropositionStatus.NOT_EVALUATED);
                 allPropositionsFailed = false;
             } else { // FAILED
@@ -334,10 +248,10 @@ public class MatchingWhere extends MatchingBase {
             }
         }
 
-        if(atLeastOnePropositionVerified) { // One OR proposition is verified, we don't need other controls
+        if (atLeastOnePropositionVerified) { // One OR proposition is verified, we don't need other controls
             doWhereCheck = false;
             return true;
-        } else if(!allPropositionsFailed) { // No OR proposition is verified, we need other controls
+        } else if (!allPropositionsFailed) { // No OR proposition is verified, we need other controls
             return true;
         }
         // All OR propositions are FALSE, we must backtrack
@@ -349,11 +263,11 @@ public class MatchingWhere extends MatchingBase {
         allPropositionsFailed = false;
 
         // for each or proposition
-        for(int i = 0; i < whereHandler.getSetWhereConditions().size(); i++) {
+        for (int i = 0; i < whereHandler.getSetWhereConditions().size(); i++) {
             // for each condition in the current or proposition
             Int2ObjectOpenHashMap<QueryCondition> conditionSet = whereHandler.getMapOrPropositionToConditionSet().get(i);
 
-            for(QueryCondition condition: conditionSet.values()) {
+            for (QueryCondition condition : conditionSet.values()) {
                 condition.setStatus(PropositionStatus.NOT_EVALUATED);
             }
         }
@@ -394,7 +308,7 @@ public class MatchingWhere extends MatchingBase {
 
         boolean res;
 
-        if(expressionValue instanceof NameValue) { // COMPLEX CONDITION
+        if (expressionValue instanceof NameValue) { // COMPLEX CONDITION
             String secondElementName = ((NameValue) expressionValue).getElementName();
             String secondPropertyName = ((NameValue) expressionValue).getElementKey();
 
@@ -434,16 +348,10 @@ public class MatchingWhere extends MatchingBase {
         return res;
     }
 
-    public  boolean areWhereConditionsVerified() {
+    public boolean areWhereConditionsVerified() {
         if (doWhereCheck) {
             return checkWhereCond();
         }
         return true;
     }
-
-
-
-
-
-
 }

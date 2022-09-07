@@ -12,13 +12,11 @@ import matching.models.PathsMatchingData;
 import ordering.EdgeOrdering;
 import ordering.NodesPair;
 import simmetry_condition.SymmetryCondition;
-import state_machine.StateStructures;
 import target_graph.graph.GraphPaths;
 import target_graph.nodes.GraphMacroNode;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import utility.Utils;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Optional;
 
@@ -31,39 +29,19 @@ public class MatchingPath extends MatchingBase {
     }
 
     public OutData matching() {
-        outData = new OutData();
-
         if (check_nodes_labels()) {
             report();
             return outData;
         }
 
-        // DOMAIN COMPUTING
-        // QUERY BITMATRIX COMPUTING
-        outData.domain_time = System.currentTimeMillis();
-        QueryBitmatrix query_bitmatrix = new QueryBitmatrix();
-        query_bitmatrix.create_bitset(query, labels_types_idx);
-        Int2ObjectOpenHashMap<IntArrayList> compatibility = BitmatrixManager.bitmatrix_manager(query_bitmatrix, target_bitmatrix);
-        query.domains_elaboration(query_bitmatrix.getTable(), target_bitmatrix.getTable(), compatibility, graphPaths.getMap_node_color_degrees());
-        outData.domain_time = (System.currentTimeMillis() - outData.domain_time) / 1000;
+        // DOMAINS
+        computeCompatibilityDomains();
 
         // EDGE ORDERING AND STATE OBJECT CREATION
-        outData.ordering_time = System.currentTimeMillis();
-        edgeOrdering = new EdgeOrdering(query);
-        states.map_state_to_edge = edgeOrdering.getMap_state_to_edge();
-        states.map_edge_to_state = edgeOrdering.getMap_edge_to_state();
-        states.map_state_to_first_endpoint = edgeOrdering.getMap_state_to_first_endpoint();
-        states.map_state_to_second_endpoint = edgeOrdering.getMap_state_to_second_endpoint();
-        states.map_state_to_unmatched_node = edgeOrdering.getMap_state_to_unmapped_nodes();
-        states.map_edge_to_direction = edgeOrdering.getMap_edge_to_direction();
-        outData.ordering_time = (System.currentTimeMillis() - outData.ordering_time) / 1000;
+        computeOrdering();
 
-        // SYMMETRY CONDITION COMPUTING
-        outData.symmetry_time = System.currentTimeMillis();
-        nodes_symmetry = SymmetryCondition.getNodeSymmetryConditions(query);
-        edges_symmetry = SymmetryCondition.getEdgeSymmetryConditions(query);
-
-        outData.symmetry_time = (System.currentTimeMillis() - outData.symmetry_time) / 1000;
+        // SYMMETRY CONDITIONS
+        computeSymmetryConditions();
 
         // QUERY INFORMATION
         numQueryEdges = query.getQuery_edges().size();
@@ -192,6 +170,7 @@ public class MatchingPath extends MatchingBase {
         matchingData.solution_nodes[states.map_state_to_first_endpoint[0]] = -1;
         matchingData.solution_nodes[states.map_state_to_second_endpoint[0]] = -1;
     }
+
     public void updateCandidatesForStateGraterThanZero() {
         matchingData.setCandidatesPaths[si] = PathsUtils.findPaths(si, query, graphPaths, matchingData, nodes_symmetry, edges_symmetry, states);
         matchingData.candidatesIT[si] = -1;
@@ -212,7 +191,7 @@ public class MatchingPath extends MatchingBase {
         IntArrayList candidatesPaths = matchingData.setCandidatesPaths[si].get(matchingData.candidatesIT[si]);
         int listSize = candidatesPaths.size();
 
-        matchingData.solutionPaths[si] = new IntArrayList(candidatesPaths.subList(0, listSize -1));
+        matchingData.solutionPaths[si] = new IntArrayList(candidatesPaths.subList(0, listSize - 1));
         int node_to_match = states.map_state_to_unmatched_node[si];
         if (node_to_match != -1)
             matchingData.solution_nodes[node_to_match] = candidatesPaths.getInt(listSize - 1);
