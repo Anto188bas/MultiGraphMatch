@@ -116,10 +116,10 @@ public abstract class MatchingBase {
     public void removeMatchingInfoForStateZero() {
         matchingData.matchedEdges.remove(matchingData.solution_edges[0]);
         matchingData.solution_edges[0] = -1;
-        matchingData.matchedNodes.remove(matchingData.solution_nodes[0]);
-        matchingData.matchedNodes.remove(matchingData.solution_nodes[1]);
-        matchingData.solution_nodes[0] = -1;
-        matchingData.solution_nodes[1] = -1;
+        matchingData.matchedNodes.remove(matchingData.solution_nodes[states.map_state_to_first_endpoint[0]]);
+        matchingData.matchedNodes.remove(matchingData.solution_nodes[states.map_state_to_second_endpoint[0]]);
+        matchingData.solution_nodes[states.map_state_to_first_endpoint[0]] = -1;
+        matchingData.solution_nodes[states.map_state_to_second_endpoint[0]] = -1;
     }
     public void updateSolutionNodesAndEdgeForStateZero() {
         matchingData.solution_edges[0] = matchingData.setCandidates[0].getInt(++matchingData.candidatesIT[0]);
@@ -128,8 +128,8 @@ public abstract class MatchingBase {
     }
     public void updateMatchingInfoForStateZero() {
         matchingData.matchedEdges.add(matchingData.solution_edges[0]);
-        matchingData.matchedNodes.add(matchingData.solution_nodes[0]);
-        matchingData.matchedNodes.add(matchingData.solution_nodes[1]);
+        matchingData.matchedNodes.add(matchingData.solution_nodes[states.map_state_to_first_endpoint[0]]);
+        matchingData.matchedNodes.add(matchingData.solution_nodes[states.map_state_to_second_endpoint[0]]);
     }
 
     public void updateMatchingInfoForStateGreaterThanZero() {

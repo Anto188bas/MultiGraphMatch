@@ -96,7 +96,7 @@ public class FileManager {
                 );
                 TableTypes.column_rename(table);
                 // SET NEW COLUMNS TYPE
-                /*
+
                 table.columnNames().forEach(column_name -> {
                     if (column_name.equals("source") || column_name.equals("dest")) return;
                     if (table.column(column_name).type() instanceof StringColumnType){
@@ -111,7 +111,7 @@ public class FileManager {
                         add_new_column_creation(table, tmp, ntype, column_name);
                     }
                 });
-                */
+
                 tables[count++] = table;
             } catch (CsvValidationException | IOException e) {e.printStackTrace();}
         }

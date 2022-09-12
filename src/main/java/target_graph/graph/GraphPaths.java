@@ -17,6 +17,13 @@ public class GraphPaths {
     private final int num_edge_colors;
     private final Int2ObjectOpenHashMap<Int2IntOpenHashMap> map_node_color_degrees;
 
+    public GraphPaths() {
+        this.map_pair_to_key = new Int2ObjectOpenHashMap<>();
+        this.map_key_to_edge_list = new IntArrayList[0][0];
+        this.num_pairs = 0;
+        this.num_edge_colors = 0;
+        this.map_node_color_degrees = new Int2ObjectOpenHashMap<>();
+    }
 
     public GraphPaths(
         Int2ObjectOpenHashMap<Int2IntOpenHashMap> map_pair_to_key,

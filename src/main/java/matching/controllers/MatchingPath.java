@@ -1,7 +1,5 @@
 package matching.controllers;
 
-import bitmatrix.controller.BitmatrixManager;
-import bitmatrix.models.QueryBitmatrix;
 import bitmatrix.models.TargetBitmatrix;
 import cypher.controller.WhereConditionExtraction;
 import cypher.models.QueryStructure;
@@ -9,9 +7,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import matching.models.OutData;
 import matching.models.PathsMatchingData;
-import ordering.EdgeOrdering;
 import ordering.NodesPair;
-import simmetry_condition.SymmetryCondition;
 import target_graph.graph.GraphPaths;
 import target_graph.nodes.GraphMacroNode;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;

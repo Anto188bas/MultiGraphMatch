@@ -163,8 +163,8 @@ public class QueryCondition {
                 int firstId = mapNodeNameToID.getInt(firstName);
                 int secondId = mapNodeNameToID.getInt(secondName);
 
-                // Here we assign the condition to the node that comes first in the ordering
-                if(nodesOrdering.indexOf(firstId) < nodesOrdering.indexOf(secondId)) {
+                // Here we assign the condition to the node that comes after in the ordering
+                if(nodesOrdering.indexOf(firstId) > nodesOrdering.indexOf(secondId)) {
                     queryStructure.getQuery_nodes().get(firstId).addCondition(this, this.conditionKey);
                 } else {
                     queryStructure.getQuery_nodes().get(secondId).addCondition(this, this.conditionKey);
