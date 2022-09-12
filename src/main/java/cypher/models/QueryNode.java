@@ -73,9 +73,8 @@ public class QueryNode {
     }
 
     // GETTER METHOD
-    public String                  getNode_name()  {return node_name; }
-    public IntArrayList            getLabels()     {return labels;    }
-    public HashMap<String, Object> getProperties() {return properties;}
+    public IntArrayList                    getLabels()     {return labels;    }
+    public HashMap<String, Object>         getProperties() {return properties;}
     public HashMap<String, QueryCondition> getConditions() {return conditions;}
 
     // TO STRING

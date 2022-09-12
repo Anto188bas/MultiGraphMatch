@@ -19,7 +19,6 @@ import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.index.IntIndex;
-
 import java.util.LinkedList;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -40,9 +39,9 @@ public class QueryStructure {
     private final Int2ObjectOpenHashMap<IntArraySet>                map_node_to_domain;
     public QueryStructure(){
         query_nodes                 = new Int2ObjectOpenHashMap<>();
-        map_node_name_to_idx = new Object2IntOpenHashMap<>();
+        map_node_name_to_idx        = new Object2IntOpenHashMap<>();
         query_edges                 = new Int2ObjectOpenHashMap<>();
-        map_edge_name_to_idx = new Object2IntOpenHashMap<>();
+        map_edge_name_to_idx        = new Object2IntOpenHashMap<>();
         query_pattern               = new QueryEdgeAggregation();
         pairs                       = new ObjectArraySet<>();
         map_id_to_pair              = new Int2ObjectOpenHashMap<>();
@@ -69,19 +68,16 @@ public class QueryStructure {
                 match_handler(clause, label_type_map);
                 Option<Where> where_conditions = ((Match) clause).where();
                 if(!where_conditions.isDefined()) continue;
-                Object conditions = WhereConditionHandler.where_condition_handler(
-                   where_conditions.get().expression(), nodes, edges,
-                        map_node_name_to_idx, map_edge_name_to_idx, query_nodes, query_edges, where_managing
+                WhereConditionHandler.where_condition_handler(
+                   where_conditions.get().expression(), nodes, edges, map_node_name_to_idx,
+                   map_edge_name_to_idx, query_nodes, query_edges, where_managing, label_type_map
                 );
-
-                // TODO complete conditions
             }
             else if(clause instanceof Return){
                 QueryReturn query_return = new QueryReturn();
                 query_return.return_elaboration((Return) clause);
                 // TODO implement me
             }
-
         }
     }
 
@@ -145,6 +141,7 @@ public class QueryStructure {
     private int edge_manager(RelationshipPattern relationship, NodesEdgesLabelsMaps label_type_map){
         int id = query_edges.size();
         query_edges.put(id, new QueryEdge(relationship, label_type_map));
+        if(query_edges.get(id).getEdge_name() == null) query_edges.get(id).setEdge_name(id);
         map_edge_name_to_idx.put(query_edges.get(id).getEdge_name(), id);
         return id;
     }
