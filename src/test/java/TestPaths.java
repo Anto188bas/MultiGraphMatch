@@ -3,7 +3,6 @@ import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import matching.controllers.MatchingPath;
-import matching.controllers.MatchingWhere;
 import matching.models.OutData;
 import reading.FileManager;
 import target_graph.edges.EdgeHandler;

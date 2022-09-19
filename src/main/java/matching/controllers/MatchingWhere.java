@@ -58,6 +58,7 @@ public class MatchingWhere extends MatchingBase {
 //        Utils.printDebugInfo(graphPaths, query, states, edgeOrdering);
 
         // MATCHING
+        outData.matching_time = System.currentTimeMillis();
         outData.num_occurrences = matching_procedure();
         report();
         return outData;
