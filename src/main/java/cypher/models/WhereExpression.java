@@ -20,15 +20,16 @@ public class WhereExpression {
     // CONSTRUCTOR
     public WhereExpression(
         Expression lft, String cj_op, Expression rft, Table[] nodes, Table[] edges,
-        Object2IntOpenHashMap<String> node_name,
-        Object2IntOpenHashMap<String> edge_name,
-        Int2ObjectOpenHashMap<QueryNode> query_nodes,
-        Int2ObjectOpenHashMap<QueryEdge> query_edges,
-        Optional<WhereConditionExtraction> where_managing
+        Object2IntOpenHashMap<String>      node_name,
+        Object2IntOpenHashMap<String>      edge_name,
+        Int2ObjectOpenHashMap<QueryNode>   query_nodes,
+        Int2ObjectOpenHashMap<QueryEdge>   query_edges,
+        Optional<WhereConditionExtraction> where_managing,
+        NodesEdgesLabelsMaps               label_type_map
         ){
-        left_expression  = WhereConditionHandler.where_condition_handler(lft, nodes, edges, node_name, edge_name, query_nodes, query_edges, where_managing);
+        left_expression  = WhereConditionHandler.where_condition_handler(lft, nodes, edges, node_name, edge_name, query_nodes, query_edges, where_managing, label_type_map);
         conj_operator    = cj_op;
-        right_expression = WhereConditionHandler.where_condition_handler(rft, nodes, edges, node_name, edge_name, query_nodes, query_edges, where_managing);
+        right_expression = WhereConditionHandler.where_condition_handler(rft, nodes, edges, node_name, edge_name, query_nodes, query_edges, where_managing, label_type_map);
     }
 
     // GETTER

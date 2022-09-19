@@ -31,7 +31,7 @@ public class QueryEdge {
         edge_label    = new IntArrayList();
         type_directed = new IntArrayList();
         type_reverse  = new IntArrayList();
-        conditions = new HashMap<>();
+        conditions    = new HashMap<>();
         configure_edge_name(edgePattern);
         configure_edge_type(edgePattern, label_type_map);
         configure_path_length(edgePattern);
@@ -102,17 +102,16 @@ public class QueryEdge {
         this.conditions.put(condKey, condition);
     }
 
+    // SETTER
+    public void                    setEdge_name(int id)     {edge_name = "r" + id;}
 
     // GETTER
     public String                  getEdge_name()            {return edge_name;    }
     public IntArrayList            getEdge_label()           {return edge_label;   }
     public String                  getDirection()            {return direction;    }
-    public int                     getCodificate_direction() {return codificate_direction;}
     public long                    getMin_deep()             {return min_deep;     }
     public long                    getMax_deep()             {return max_deep;     }
     public HashMap<String, Object> getProperties()           {return properties;   }
-    public IntArrayList            getType_directed()        {return type_directed;}
-    public IntArrayList            getType_reverse()         {return type_reverse; }
 
     public HashMap<String, QueryCondition> getConditions() {return conditions;}
 

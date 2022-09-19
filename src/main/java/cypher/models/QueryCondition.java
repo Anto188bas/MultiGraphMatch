@@ -16,19 +16,17 @@ import java.util.Optional;
 
 
 // TODO HAVE TO BE MORE GENERIC (NODE/EDGE)
-public class QueryCondition {
-    private NameValue node_param;
-    private String    operation;
-    private boolean   negation;
-    private Object    expr_value;
-    private TypeConditionSelection conditionCheck;
+public class QueryCondition{
+    private NameValue                     node_param;
+    private String                        operation;
+    private boolean                       negation;
+    private Object                        expr_value;
+    private TypeConditionSelection        conditionCheck;
     private final HashMap<String, String> associations;
-    private int orPropositionPos;
-    private int andChainPos;
-
-    private String conditionKey;
-
-    private PropositionStatus status;
+    private int                           orPropositionPos;
+    private int                           andChainPos;
+    private String                        conditionKey;
+    private PropositionStatus             status;
 
     // CONSTRUCTOR
     public QueryCondition(
@@ -53,18 +51,21 @@ public class QueryCondition {
     // CONDITIONS INITIALIZATION
     private void conditions_init(
         Expression expression, Table[] nodes, Table[] edges,
-        Object2IntOpenHashMap<String> node_name,
-        Object2IntOpenHashMap<String> edge_name,
-        Int2ObjectOpenHashMap<QueryNode> query_nodes,
-        Int2ObjectOpenHashMap<QueryEdge> query_edges,
+        Object2IntOpenHashMap<String>      node_name,
+        Object2IntOpenHashMap<String>      edge_name,
+        Int2ObjectOpenHashMap<QueryNode>   query_nodes,
+        Int2ObjectOpenHashMap<QueryEdge>   query_edges,
         Optional<WhereConditionExtraction> where_managing
         ){
+
         if (expression instanceof Not || expression instanceof NotEquals || expression instanceof IsNotNull) {
             negation = true;
             if (expression instanceof Not)
                 expression = ((Not) expression).rhs();
         }
         this.operation                 = operator_updating(expression.getClass().getSimpleName());
+
+
         var lh_rh       = expression.arguments().toList();
         Expression lh                  = lh_rh.head();
         Expression rh                  = lh_rh.last();
@@ -90,14 +91,14 @@ public class QueryCondition {
             Variable nodeName = (Variable) property.map();
             this.node_param   = new NameValue(nodeName.name(), property.propertyKey().name());
         }
-        conditionCheck = new TypeConditionSelection();
-        expr_value     = conditionCheck.inferTypeCondition(nodes, edges, node_name, edge_name, this.node_param, expr_value);
+        conditionCheck    = new TypeConditionSelection();
+        expr_value        = conditionCheck.inferTypeCondition(nodes, edges, node_name, edge_name, this.node_param, expr_value);
         this.conditionKey = generate_condition_key();
 
 
         this.orPropositionPos = where_managing.get().getMap_condition_to_orPropositionPos().getInt(this.conditionKey);
-        this.andChainPos = where_managing.get().getMapConditionToAndChainPos().getInt(this.conditionKey);
-        this.status = PropositionStatus.NOT_EVALUATED;
+        this.andChainPos      = where_managing.get().getMapConditionToAndChainPos().getInt(this.conditionKey);
+        this.status           = PropositionStatus.NOT_EVALUATED;
 
         where_managing.get().getMapOrPropositionToConditionSet().get(this.orPropositionPos).put(this.andChainPos, this);
         where_managing.get().getMapOrPropositionToConditionSet().get(this.orPropositionPos).put(this.andChainPos, this);

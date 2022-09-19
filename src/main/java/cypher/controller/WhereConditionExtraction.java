@@ -1,5 +1,6 @@
 package cypher.controller;
 import cypher.models.QueryCondition;
+import cypher.models.QueryConditionPattern;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -17,22 +18,23 @@ import java.util.regex.Pattern;
 
 public class WhereConditionExtraction {
     // ATTRIBUTES
-    private String          where_string;
-    private String          disj_where_cond;
-    private HashSet<String> conditions;
-    private final String[]  origin;
-    private final String[]  replacement;
-    private final String[]  new_origin;
-    protected IntArrayList setWhereConditions;
-    protected Object2IntOpenHashMap<String> map_condition_to_orPropositionPos;
-    protected Int2IntOpenHashMap mapPropositionToNumConditions;
+    private String                                                         where_string;
+    private String                                                         disj_where_cond;
+    private HashSet<String>                                                conditions;
+    private final String[]                                                 origin;
+    private final String[]                                                 replacement;
+    private final String[]                                                 new_origin;
+    protected IntArrayList                                                 setWhereConditions;
+    protected Object2IntOpenHashMap<String>                                map_condition_to_orPropositionPos;
+    protected Int2IntOpenHashMap                                           mapPropositionToNumConditions;
     protected Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<QueryCondition>> mapOrPropositionToConditionSet;
-    protected Int2ObjectOpenHashMap<PropositionStatus> mapOrPropositionToStatus;
-    protected Int2ObjectOpenHashMap<PropositionStatus> mapConditionToStatus;
-    protected Object2IntOpenHashMap<String> mapConditionToAndChainPos;
-    protected ObjectArrayList<QueryCondition> queryConditions;
-
+    protected Int2ObjectOpenHashMap<PropositionStatus>                     mapOrPropositionToStatus;
+    protected Int2ObjectOpenHashMap<PropositionStatus>                     mapConditionToStatus;
+    protected Object2IntOpenHashMap<String>                                mapConditionToAndChainPos;
+    protected ObjectArrayList<QueryCondition>                              queryConditions;
+    protected ObjectArrayList<QueryConditionPattern>                       queryPatternCondition;
     public int conditionIndex = 0;
+
     // WHERE CONDITION
     public WhereConditionExtraction(){
         this.origin      = new String[] {
@@ -48,7 +50,8 @@ public class WhereConditionExtraction {
           "|", "!=", "<=", ">=", ">", "<", "=~", "=", "=NULL", "!=NULL", "NOT ", " StartsWith ", " EndsWith ",
           " Contains ", " In "
         };
-        this.queryConditions = new ObjectArrayList<>();
+        this.queryConditions       = new ObjectArrayList<>();
+        this.queryPatternCondition = new ObjectArrayList<>();
     }
 
     // METHODS
@@ -56,8 +59,7 @@ public class WhereConditionExtraction {
         String regex = "WHERE (.*) RETURN";
         Pattern pat  = Pattern.compile(regex);
         Matcher mat  = pat.matcher(query);
-        while (mat.find())
-            where_string = mat.group(1);
+        while (mat.find()) where_string = mat.group(1);
     }
 
     private String origin2custom_characters(String[] orig, String[] rep, String new_where) {
@@ -154,6 +156,10 @@ public class WhereConditionExtraction {
         }));
     }
 
+    // TODO implement me
+    public void assignPatternConditionToQuery(){}
+
+
     // GET
     public IntArrayList getSetWhereConditions() {
         return setWhereConditions;
@@ -185,5 +191,9 @@ public class WhereConditionExtraction {
 
     public ObjectArrayList<QueryCondition> getQueryConditions() {
         return queryConditions;
+    }
+
+    public ObjectArrayList<QueryConditionPattern> getQueryPatternCondition(){
+        return queryPatternCondition;
     }
 }
