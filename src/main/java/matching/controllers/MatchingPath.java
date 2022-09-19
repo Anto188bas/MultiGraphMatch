@@ -13,6 +13,7 @@ import target_graph.nodes.GraphMacroNode;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import utility.Utils;
 
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Optional;
 
@@ -24,7 +25,7 @@ public class MatchingPath extends MatchingBase {
         super(outData, query, justCount, distinct, numMaxOccs, labels_types_idx, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, where_managing);
     }
 
-    public OutData matching() {
+    public OutData matching() throws FileNotFoundException {
         if (check_nodes_labels()) {
             report();
             return outData;

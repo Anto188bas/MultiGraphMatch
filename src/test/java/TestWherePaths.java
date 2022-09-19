@@ -14,12 +14,13 @@ import target_graph.nodes.MacroNodeHandler;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import tech.tablesaw.api.Table;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
 
 public class TestWherePaths {
-    public static void main(String[] args){
+    public static void main(String[] args) throws FileNotFoundException {
         // CONFIGURATION
         NodesEdgesLabelsMaps idx_label  = new NodesEdgesLabelsMaps();
 

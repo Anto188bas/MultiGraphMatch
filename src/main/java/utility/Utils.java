@@ -7,29 +7,33 @@ import ordering.EdgeOrdering;
 import state_machine.StateStructures;
 import target_graph.graph.GraphPaths;
 
+import java.io.BufferedOutputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.function.IntConsumer;
 
 public class Utils {
-    public static void printDebugInfo(GraphPaths graphPaths, QueryStructure query_obj, StateStructures states, EdgeOrdering edgeOrdering) {
+    public static void printDebugInfo(GraphPaths graphPaths, QueryStructure query_obj, StateStructures states, EdgeOrdering edgeOrdering) throws FileNotFoundException {
         /**
          * LOG
          */
-
-        System.out.println("TARGET GRAPH");
-        graphPaths.getMap_pair_to_key().forEach((src, map) -> {
-            map.forEach((dst, key) -> {
-                System.out.print("(SRC: " + src +", DST: " + dst + ") -> {");
-                IntArrayList[] edgeList = graphPaths.getMap_key_to_edge_list()[key];
-                for(int color = 0; color < edgeList.length; color++) {
-                    int finalColor = color;
-                    edgeList[color].forEach((IntConsumer) (edge) -> {
-                        System.out.print("( " + edge + ":C" + finalColor + "), " );
-                    });
-                }
-                System.out.print("}\n");
-            });
-        });
+//        System.setOut(new PrintStream(new BufferedOutputStream(new FileOutputStream("output.txt")), true));
+//        System.out.println("TARGET GRAPH");
+//        graphPaths.getMap_pair_to_key().forEach((src, map) -> {
+//            map.forEach((dst, key) -> {
+//                System.out.print("(SRC: " + src +", DST: " + dst + ") -> {");
+//                IntArrayList[] edgeList = graphPaths.getMap_key_to_edge_list()[key];
+//                for(int color = 0; color < edgeList.length; color++) {
+//                    int finalColor = color;
+//                    edgeList[color].forEach((IntConsumer) (edge) -> {
+//                        System.out.print("( " + edge + ":C" + finalColor + "), " );
+//                    });
+//                }
+//                System.out.print("}\n");
+//            });
+//        });
 
         System.out.println("QUERY NODES");
         query_obj.getQuery_nodes().forEach((id, node) -> {
@@ -41,30 +45,30 @@ public class Utils {
             System.out.println(key + "->" + list);
         });
 
-        System.out.println("PAIRS DOMAINS");
-        query_obj.getPairs().forEach((pair) -> {
-            System.out.print("P: " + pair + "\tDOMAIN (FS): ");
-            pair.getFirst_second().forEach((key, list) -> {
-                for (int dst : list) {
-                    System.out.print("[" + key + ", " + dst + "], ");
-                }
-
-            });
-
-            System.out.print("\tDOMAIN (SF): ");
-
-            pair.getSecond_first().forEach((key, list) -> {
-                for (int dst : list) {
-                    System.out.print("[" + key + ", " + dst + "], ");
-                }
-            });
-            System.out.print("\n");
-        });
-
-        System.out.println("NODES DOMAINS");
-        query_obj.getMap_node_to_domain().forEach((node, domain) -> {
-            System.out.println("NODE: " + node + " -> " + domain);
-        });
+//        System.out.println("PAIRS DOMAINS");
+//        query_obj.getPairs().forEach((pair) -> {
+//            System.out.print("P: " + pair + "\tDOMAIN (FS): ");
+//            pair.getFirst_second().forEach((key, list) -> {
+//                for (int dst : list) {
+//                    System.out.print("[" + key + ", " + dst + "], ");
+//                }
+//
+//            });
+//
+//            System.out.print("\tDOMAIN (SF): ");
+//
+//            pair.getSecond_first().forEach((key, list) -> {
+//                for (int dst : list) {
+//                    System.out.print("[" + key + ", " + dst + "], ");
+//                }
+//            });
+//            System.out.print("\n");
+//        });
+//
+//        System.out.println("NODES DOMAINS");
+//        query_obj.getMap_node_to_domain().forEach((node, domain) -> {
+//            System.out.println("NODE: " + node + " -> " + domain);
+//        });
 
         System.out.println("PARIS ORDERING");
         System.out.println(edgeOrdering.getPairs_ordering());

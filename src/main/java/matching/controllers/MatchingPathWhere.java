@@ -17,6 +17,7 @@ import target_graph.nodes.GraphMacroNode;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import utility.Utils;
 
+import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Optional;
@@ -35,7 +36,7 @@ public class MatchingPathWhere extends MatchingPath {
         whereHandler = where_managing.get();
     }
 
-    public OutData matching() {
+    public OutData matching() throws FileNotFoundException {
         if (check_nodes_labels()) {
             report();
             return outData;
@@ -109,7 +110,7 @@ public class MatchingPathWhere extends MatchingPath {
 
                             // RESET CONDITIONS FOR THE PREVIOUS MATCHED STATE
                             if (areThereConditions) {
-                                resetConditionsForState(psi); // N.B. we reset the conditions for the previous state
+                                resetConditionsForState(si); // N.B. we reset the conditions for the previous state
                             }
                         }
 
@@ -127,9 +128,6 @@ public class MatchingPathWhere extends MatchingPath {
                                 if (lastStateReached()) { // INCREASE OCCURRENCES
                                     // New occurrence found
                                     newOccurrenceFound();
-                                    System.out.println("New occurrence found");
-                                    System.out.println("Solution Nodes: " + Arrays.toString(matchingData.solution_nodes));
-                                    System.out.println("Solution Paths: " + Arrays.toString(matchingData.solutionPaths));
                                 } else { // GO AHEAD
                                     goAhead();
                                     updateCandidatesForStateGraterThanZero();
@@ -282,6 +280,7 @@ public class MatchingPathWhere extends MatchingPath {
             doWhereCheck = false;
             return true;
         } else if (!allPropositionsFailed) { // No OR proposition is verified, we need other controls
+            doWhereCheck = true;
             return true;
         }
         // All OR propositions are FALSE, we must backtrack

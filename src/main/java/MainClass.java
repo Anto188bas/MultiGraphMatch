@@ -15,7 +15,10 @@ import target_graph.nodes.MacroNodeHandler;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import tech.tablesaw.api.Table;
 
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,6 +31,9 @@ public class MainClass {
         // CONFIGURATION
         NodesEdgesLabelsMaps idx_label  = new NodesEdgesLabelsMaps();
         Configuration configuration     = new Configuration(args);
+
+//        System.setOut(new PrintStream(new BufferedOutputStream(new FileOutputStream("output.txt")), true));
+
 
         // PATH
         System.out.println("Reading target graph...");

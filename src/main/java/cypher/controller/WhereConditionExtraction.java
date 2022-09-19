@@ -63,13 +63,20 @@ public class WhereConditionExtraction {
     }
 
     private String origin2custom_characters(String[] orig, String[] rep, String new_where) {
-        for(int i=0; i<orig.length; i++)
+        for(int i=0; i<orig.length; i++) {
+//            System.out.println("orig["+i+"] = "+orig[i]);
+//            System.out.println("rep["+i+"] = "+rep[i]);
+//            System.out.println("new_where (prima) = "+new_where);
             new_where = new_where.replaceAll(orig[i], rep[i]);
+//            System.out.println("new_where (dopo) = "+new_where);
+
+        }
         return new_where;
     }
 
     public void normal_form_computing() {
         PlParser normal_parser = new PlParser();
+        System.out.println("WHERE STRING: " + where_string);
         String   new_where = origin2custom_characters(origin, replacement, this.where_string);
         new_where = new_where
                 .replace("AND", "&&")

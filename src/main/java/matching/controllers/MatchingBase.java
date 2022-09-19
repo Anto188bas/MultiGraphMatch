@@ -17,6 +17,7 @@ import target_graph.graph.GraphPaths;
 import target_graph.nodes.GraphMacroNode;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Optional;
 
@@ -65,7 +66,7 @@ public abstract class MatchingBase {
         this.numTotalOccs = 0;
         this.states = new StateStructures();
     }
-    public abstract OutData matching ();
+    public abstract OutData matching () throws FileNotFoundException;
 
     protected boolean check_nodes_labels(){
         for (QueryNode node: query.getQuery_nodes().values()) {

@@ -13,6 +13,9 @@ import target_graph.nodes.GraphMacroNode;
 import target_graph.nodes.MacroNodeHandler;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import tech.tablesaw.api.Table;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
@@ -25,7 +28,7 @@ public class test_where {
     }
 
 
-    public static void main(String[] args){
+    public static void main(String[] args) throws FileNotFoundException {
         // CONFIGURATION
         NodesEdgesLabelsMaps idx_label  = new NodesEdgesLabelsMaps();
 
@@ -33,6 +36,8 @@ public class test_where {
         String root_dir  = System.getProperty("user.dir");
 //        String netw_path = root_dir + "/Networks/Person";
         String netw_path = root_dir + "/Networks/Test";
+
+//        System.setOut(new PrintStream(new BufferedOutputStream(new FileOutputStream("output.txt")), true));
 
 
         // TARGET READING
@@ -70,7 +75,9 @@ public class test_where {
 //        String query_test           = "MATCH (n1:P)<-[r0:F]-(n0:P), (n0:P) -[r1:F]-> (n2:P), (n0:P) -[r2:F]-> (n3:P) WHERE (n0.name = \"PIPPO\" AND n1.age = 250) RETURN n0,n1,n2,n3";
 //        String query_test           = "MATCH (n1:P)<-[r0:F]-(n0:P), (n0:P) -[r1:F]-> (n2:P), (n0:P) -[r2:F]-> (n3:P) WHERE (n0.name <> \"Franco\" AND n1.age > 18 AND n3.age >= 25) RETURN n0,n1,n2,n3";
 
-        String query_test           = "MATCH (n1:P)<-[r0:F]-(n0:P), (n0:P) -[r1:F]-> (n2:P), (n0:P) -[r2:F]-> (n3:P) WHERE (n0.age > n1.age AND n1.age > 18 AND n3.age >= 25) OR (n0.name = \"Leonardo\" AND n0.age =30) RETURN n0,n1,n2,n3";
+//        String query_test           = "MATCH (n1:P)<-[r0:F]-(n0:P), (n0:P) -[r1:F]-> (n2:P), (n0:P) -[r2:F]-> (n3:P) WHERE (n0.age > n1.age AND n1.age > 18 AND n3.age >= 25) OR (n0.name = \"Leonardo\" AND n0.age =30) RETURN n0,n1,n2,n3";
+        String query_test           = "MATCH (n0:P)-[r0:F]->(n1:P), (n0:P)-[r1:C]->(n2:P), (n1:P)-[r2:F]->(n2:C) WHERE n1.name = \"FILIPPO\" RETURN n0, n1, n2";
+
 
         WhereConditionExtraction where_managing = new WhereConditionExtraction();
         where_managing.where_condition_extraction(query_test);
