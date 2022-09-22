@@ -3,7 +3,7 @@ import configuration.Configuration;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import matching.controllers.MatchingSimple;
+import matching.controllers.MatchingSimpleOLD;
 import matching.models.OutData;
 import reading.FileManager;
 import target_graph.edges.EdgeHandler;
@@ -63,7 +63,7 @@ public class test_on_syntetic_net {
                     System.out.println(query_obj.getMap_node_color_degrees().get(0));
 
                     // MATCHING
-                    OutData outData = MatchingSimple.matching(
+                    OutData outData = MatchingSimpleOLD.matching(
                         true, false, Long.MAX_VALUE, idx_label, target_bitmatrix,
                         query_obj, graphPaths, macro_nodes, nodes_macro, Optional.empty()
                     );

@@ -33,7 +33,7 @@ public class WhereConditionExtraction {
     protected Object2IntOpenHashMap<String>                                mapConditionToAndChainPos;
     protected ObjectArrayList<QueryCondition>                              queryConditions;
     protected ObjectArrayList<QueryConditionPattern>                       queryPatternCondition;
-    public int conditionIndex = 0;
+    protected int numOrProposition;
 
     // WHERE CONDITION
     public WhereConditionExtraction(){
@@ -64,19 +64,13 @@ public class WhereConditionExtraction {
 
     private String origin2custom_characters(String[] orig, String[] rep, String new_where) {
         for(int i=0; i<orig.length; i++) {
-//            System.out.println("orig["+i+"] = "+orig[i]);
-//            System.out.println("rep["+i+"] = "+rep[i]);
-//            System.out.println("new_where (prima) = "+new_where);
             new_where = new_where.replaceAll(orig[i], rep[i]);
-//            System.out.println("new_where (dopo) = "+new_where);
-
         }
         return new_where;
     }
 
     public void normal_form_computing() {
         PlParser normal_parser = new PlParser();
-        System.out.println("WHERE STRING: " + where_string);
         String   new_where = origin2custom_characters(origin, replacement, this.where_string);
         new_where = new_where
                 .replace("AND", "&&")
@@ -91,7 +85,6 @@ public class WhereConditionExtraction {
         );
         this.conditions = new HashSet<>();
         this.conditions.addAll(List.of(condvals));
-        System.out.println(conditions);
         new_where = origin2custom_characters(replacement, new_origin, formula.toString());
         this.disj_where_cond  = new_where;
     }
@@ -110,7 +103,6 @@ public class WhereConditionExtraction {
     public HashSet<String> getConditions() {return conditions;}
     public void setConditions(HashSet<String> conditions) {this.conditions = conditions;}
 
-
     public void buildSetWhereConditions(){
         this.setWhereConditions = new IntArrayList();
         this.map_condition_to_orPropositionPos = new Object2IntOpenHashMap();
@@ -120,23 +112,24 @@ public class WhereConditionExtraction {
         this.mapConditionToAndChainPos = new Object2IntOpenHashMap<>();
         this.mapConditionToStatus = new Int2ObjectOpenHashMap<>();
 
-        System.out.println("********************************************************************************");
-        System.out.println("ORIGINAL WHERE: " + this.where_string);
-        System.out.println("DNF: " + this.disj_where_cond);
-        System.out.println();
+//        System.out.println("********************************************************************************");
+//        System.out.println("ORIGINAL WHERE: " + this.where_string);
+//        System.out.println("DNF: " + this.disj_where_cond);
+//        System.out.println();
 
         String[] splitOR = this.disj_where_cond.split("\\|\\|");
+        this.numOrProposition = splitOR.length;
 
         for(int i = 0; i < splitOR.length; i++) {
             this.mapOrPropositionToConditionSet.put(i, new Int2ObjectOpenHashMap<>());
             this.mapOrPropositionToStatus.put(i, PropositionStatus.NOT_EVALUATED);
 
-            System.out.println("SPLIT OR " + i + ": " + splitOR[i]);
+//            System.out.println("SPLIT OR " + i + ": " + splitOR[i]);
 
             String[] splitAND = splitOR[i].split("&&");
             for(int j = 0; j < splitAND.length; j++) {
                 splitAND[j] = splitAND[j].replace("(", "").replace(")", "").replace("\"", "");
-                System.out.println("\tSPLIT AND " + j + ": " + splitAND[j] + "\t\torPropositionPos: " + i);
+//                System.out.println("\tSPLIT AND " + j + ": " + splitAND[j] + "\t\torPropositionPos: " + i);
 
                 this.map_condition_to_orPropositionPos.put(splitAND[j], i);
                 this.mapConditionToAndChainPos.put(splitAND[j], j);
@@ -146,16 +139,16 @@ public class WhereConditionExtraction {
             setWhereConditions.add(splitAND.length); // numAndConditions
         }
 
-        System.out.println("setWhereConditions: " + this.setWhereConditions);
-        System.out.println("map_condition_to_orPropositionPos: " + this.map_condition_to_orPropositionPos);
-
-        System.out.println("********************************************************************************");
+//        System.out.println("setWhereConditions: " + this.setWhereConditions);
+//        System.out.println("map_condition_to_orPropositionPos: " + this.map_condition_to_orPropositionPos);
+//
+//        System.out.println("********************************************************************************");
     }
 
     /**
-     * Here we assign symmetry conditions to nodes and edges.
+     * Here we assign where conditions to nodes and edges.
      * Suppose we have the following condition: n1.name = n2.name.
-     * The idea is simple. If n1 precedes n2 in the ordering, then we assign the condition to n1. Otherwise, we assign the condition to n2.
+     * The idea is simple. If n1 precedes n2 in the ordering, then we assign the condition to n2. Otherwise, we assign the condition to n1.
      */
     public void assignConditionsToNodesAndEdges(QueryStructure queryStructure, IntArrayList nodesOrdering, IntArrayList edgesOrdering) {
         this.queryConditions.forEach((condition -> {
@@ -163,9 +156,14 @@ public class WhereConditionExtraction {
         }));
     }
 
+    public void assignConConditionsToNodesAndEdges(QueryStructure queryStructure) {
+        this.queryConditions.forEach((condition -> {
+            condition.assign(queryStructure);
+        }));
+    }
+
     // TODO implement me
     public void assignPatternConditionToQuery(){}
-
 
     // GET
     public IntArrayList getSetWhereConditions() {
@@ -203,4 +201,6 @@ public class WhereConditionExtraction {
     public ObjectArrayList<QueryConditionPattern> getQueryPatternCondition(){
         return queryPatternCondition;
     }
+
+    public int getNumOrProposition() { return numOrProposition; }
 }

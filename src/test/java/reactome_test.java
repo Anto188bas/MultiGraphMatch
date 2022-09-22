@@ -4,7 +4,6 @@ import cypher.controller.WhereConditionExtraction;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import matching.controllers.MatchingSimple;
 import matching.controllers.MatchingWhere;
 import matching.models.OutData;
 import reading.FileManager;

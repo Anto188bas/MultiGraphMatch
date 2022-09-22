@@ -6,17 +6,14 @@ import cypher.controller.WhereConditionExtraction;
 import cypher.models.*;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import matching.models.MatchingData;
 import matching.models.OutData;
 import ordering.NodesPair;
 import target_graph.graph.GraphPaths;
 import target_graph.nodes.GraphMacroNode;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
-import utility.Utils;
 
 import java.io.FileNotFoundException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Optional;
 
@@ -58,7 +55,7 @@ public class MatchingWhere extends MatchingBase {
         matchingData = new MatchingData(query);
 
         //DEBUG INFO
-        Utils.printDebugInfo(graphPaths, query, states, edgeOrdering);
+//        Utils.printDebugInfo(graphPaths, query, states, edgeOrdering);
 
         // MATCHING
         outData.matching_time = System.currentTimeMillis();

@@ -15,10 +15,7 @@ import target_graph.nodes.MacroNodeHandler;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import tech.tablesaw.api.Table;
 
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -76,15 +73,24 @@ public class MainClass {
                 public Double call() throws Exception {
                     WhereConditionExtraction where_managing = new WhereConditionExtraction();
                     where_managing.where_condition_extraction(query_test);
-                    where_managing.normal_form_computing();
-                    where_managing.buildSetWhereConditions();
+
+                    Optional<WhereConditionExtraction> optionalWhereConditionExtraction;
+
+                    if(where_managing.getWhere_string() != null) {
+                        where_managing.normal_form_computing();
+                        where_managing.buildSetWhereConditions();
+
+                        optionalWhereConditionExtraction = Optional.of(where_managing);
+                    } else {
+                        optionalWhereConditionExtraction = Optional.empty();
+                    }
 
                     QueryStructure query = new QueryStructure();
-                    query.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.of(where_managing));
+                    query.parser(query_test, idx_label, nodes_tables, edges_tables_properties, optionalWhereConditionExtraction);
 
                     OutData outData = new OutData();
 
-                    MatchingWhere matchingMachine = new MatchingWhere(outData, query,true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, Optional.of(where_managing));
+                    MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, optionalWhereConditionExtraction);
                     outData = matchingMachine.matching();
 
                     // SAVING

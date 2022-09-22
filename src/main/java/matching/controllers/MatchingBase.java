@@ -85,6 +85,15 @@ public abstract class MatchingBase {
         outData.domain_time = (System.currentTimeMillis() - outData.domain_time) / 1000;
     }
 
+    protected void computeFilteredCompatibilityDomains() {
+        outData.domain_time = System.currentTimeMillis();
+        QueryBitmatrix query_bitmatrix = new QueryBitmatrix();
+        query_bitmatrix.create_bitset(query, labels_types_idx);
+        Int2ObjectOpenHashMap<IntArrayList> compatibility = BitmatrixManager.bitmatrix_manager(query_bitmatrix, target_bitmatrix);
+        query.filtered_domains_elaboration(query_bitmatrix.getTable(), target_bitmatrix.getTable(), compatibility, graphPaths.getMap_node_color_degrees());
+        outData.domain_time = (System.currentTimeMillis() - outData.domain_time) / 1000;
+    }
+
     protected void computeOrdering() {
         outData.ordering_time = System.currentTimeMillis();
         edgeOrdering = new EdgeOrdering(query);

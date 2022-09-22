@@ -1,4 +1,5 @@
 package cypher.models;
+import condition.QueryConditionType;
 import cypher.controller.PropositionStatus;
 import cypher.controller.PropertiesUtility;
 import cypher.controller.TypeConditionSelection;
@@ -14,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
-
 // TODO HAVE TO BE MORE GENERIC (NODE/EDGE)
 public class QueryCondition{
     private NameValue                     node_param;
@@ -27,6 +27,7 @@ public class QueryCondition{
     private int                           andChainPos;
     private String                        conditionKey;
     private PropositionStatus             status;
+    private QueryConditionType            type;
 
     // CONSTRUCTOR
     public QueryCondition(
@@ -158,6 +159,8 @@ public class QueryCondition{
         Object2IntOpenHashMap<String> mapEdgeNameToID = queryStructure.getMap_edge_name_to_idx();
 
         if(this.expr_value instanceof NameValue) { // COMPLEX QUERY CONDITION
+            this.type = QueryConditionType.COMPLEX;
+
             String firstName = this.node_param.getElementName();
             String secondName = ((NameValue) this.expr_value).getElementName();
             if (mapNodeNameToID.containsKey(firstName) && mapNodeNameToID.containsKey(secondName)) { // CONDITION ON NODES
@@ -175,7 +178,7 @@ public class QueryCondition{
                 int secondId = mapEdgeNameToID.getInt(secondName);
 
                 // Here we assign the condition to the edge that comes first in the ordering
-                if(edgesOrdering.indexOf(firstId) < edgesOrdering.indexOf(secondId)) {
+                if(edgesOrdering.indexOf(firstId) > edgesOrdering.indexOf(secondId)) {
                     queryStructure.getQuery_edges().get(firstId).addCondition(this, this.conditionKey);
                 } else {
                     queryStructure.getQuery_edges().get(secondId).addCondition(this, this.conditionKey);
@@ -185,6 +188,8 @@ public class QueryCondition{
                 System.exit(-1);
             }
         } else { // SIMPLE QUERY CONDITION
+            this.type = QueryConditionType.SIMPLE;
+
             if (mapNodeNameToID.containsKey(this.node_param.getElementName())) { // CONDITION ON NODE
                 queryStructure.getQuery_nodes().get(mapNodeNameToID.getInt(node_param.getElementName())).addCondition(this, this.conditionKey);
             } else { // CONDITION ON EDGE
@@ -193,6 +198,28 @@ public class QueryCondition{
         }
     }
 
+    /**
+     * Assign the condition to a node or to an edge.
+     * N.B.
+     * Here we consider only simple where conditions (i.e. n1.name = "Pippo").
+     */
+    public void assign(QueryStructure queryStructure) {
+        Object2IntOpenHashMap<String> mapNodeNameToID = queryStructure.getMap_node_name_to_idx();
+        Object2IntOpenHashMap<String> mapEdgeNameToID = queryStructure.getMap_edge_name_to_idx();
+
+        if(this.expr_value instanceof NameValue) { // COMPLEX QUERY CONDITION
+            System.err.println("Complex condition found! This query must be handled with another version of the matcher.");
+            System.exit(-1);
+        } else { // SIMPLE QUERY CONDITION
+            this.type = QueryConditionType.SIMPLE;
+
+            if (mapNodeNameToID.containsKey(this.node_param.getElementName())) { // CONDITION ON NODE
+                queryStructure.getQuery_nodes().get(mapNodeNameToID.getInt(node_param.getElementName())).addCondition(this, this.conditionKey);
+            } else { // CONDITION ON EDGE
+                queryStructure.getQuery_edges().get(mapEdgeNameToID.getInt(node_param.getElementName())).addCondition(this, this.conditionKey);
+            }
+        }
+    }
 
     // GETTER
     public NameValue getNode_param()   {return node_param;}
@@ -212,7 +239,14 @@ public class QueryCondition{
         this.status = status;
     }
 
+    public QueryConditionType getType() {
+        return type;
+    }
 
+    // SETTER
+    public void setType(QueryConditionType type) {
+        this.type = type;
+    }
 
     // TO STRING
 

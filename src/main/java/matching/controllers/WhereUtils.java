@@ -5,6 +5,23 @@ import cypher.models.QueryCondition;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 public class WhereUtils {
+    public static boolean quickCheckNodeCondition(int targetID, int sourceID, QueryCondition condition, QueryStructure queryStructure) {
+        String operator = condition.getOperation();
+        String elementName = condition.getNode_param().getElementName();
+        String propertyName = condition.getNode_param().getElementKey();
+        Object expressionValue = condition.getExpr_value();
+        Object candidateValue = condition.getConditionCheck().getProperty(targetID, propertyName);
+        boolean res = condition.getConditionCheck().getComparison().comparison(candidateValue, expressionValue, operator);
+
+        boolean negate = condition.isNegation();
+
+        if (negate) {
+            return !res;
+        }
+
+        return res;
+    }
+
     public static boolean checkQueryCondition(int targetElementID, QueryCondition condition, QueryStructure queryStructure, int[] solution_nodes, int[] solution_edges) {
         //TODO: rewrite without if
         String operator = condition.getOperation();

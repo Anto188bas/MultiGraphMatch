@@ -8,6 +8,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import matching.controllers.WhereUtils;
 import ordering.EdgeDirection;
 import ordering.NodesPair;
 import org.opencypher.v9_0.ast.*;
@@ -393,13 +394,68 @@ public class QueryStructure {
         }
     }
 
+    private void filtered_domain_population(
+            Table query_bitmatrix_table, Table target_bitmatrix_table,
+            Int2ObjectOpenHashMap<IntArrayList> compatibility,
+            IntIndex query_src_index, IntIndex query_dst_index, IntIndex target_id_index,
+            Int2ObjectOpenHashMap<IntArrayList> first_second,
+            Int2ObjectOpenHashMap<IntArrayList> second_first,
+            int c1, int c2, String c1_name, String c2_name,
+            Int2ObjectOpenHashMap<Int2IntOpenHashMap> target_map_node_color_degrees
+    ) {
+        for(Row query_row: query_bitmatrix_table.where(query_src_index.get(c1).and(query_dst_index.get(c2)))) {
+            for (int target_id : compatibility.get(query_row.getInt("btx_id"))) {
+                for (Row target_row : target_bitmatrix_table.where(target_id_index.get(target_id))) {
+                    int t_src = target_row.getInt(c1_name);
+                    int t_dst = target_row.getInt(c2_name);
+
+                    // DEGREE CHECK
+                    int t_src_act = t_src;
+                    int t_dst_act = t_dst;
+                    if(c1_name.equals("dst")){
+                        t_src_act = t_dst;
+                        t_dst_act = t_src;
+                    }
+
+                    // DEGREE CHECK
+                    if (!degree_comparison(t_src_act, c1, t_dst_act, c2, target_map_node_color_degrees)) continue;
+
+                    // WHERE CONDITIONS CHECK
+                    boolean whereCheckOk = true;
+
+                    for (QueryCondition condition : this.query_nodes.get(c1).getConditions().values()) {
+                        if (!WhereUtils.quickCheckNodeCondition(t_src_act, c1, condition, this)) {
+                            whereCheckOk = false;
+                            break;
+                        }
+                    }
+
+                    if(!whereCheckOk) continue;
+
+                    for (QueryCondition condition : this.query_nodes.get(c2).getConditions().values()) {
+                        if (!WhereUtils.quickCheckNodeCondition(t_dst_act, c2, condition, this)) {
+                            whereCheckOk = false;
+                            break;
+                        }
+                    }
+
+                    if(!whereCheckOk) continue;
+
+                    if (!first_second.containsKey(t_src)) first_second.put(t_src, new IntArrayList());
+                    if (!second_first.containsKey(t_dst)) second_first.put(t_dst, new IntArrayList());
+                    first_second.get(t_src).add(t_dst);
+                    second_first.get(t_dst).add(t_src);
+                }
+            }
+        }
+    }
+
 
     public void domains_elaboration(Table query_bitmatrix_table, Table target_bitmatrix_table, Int2ObjectOpenHashMap<IntArrayList> compatibility, Int2ObjectOpenHashMap<Int2IntOpenHashMap> target_map_node_color_degrees) {
         IntIndex query_src_index = new IntIndex(query_bitmatrix_table.intColumn("src"));
         IntIndex query_dst_index = new IntIndex(query_bitmatrix_table.intColumn("dst"));
         IntIndex target_id_index = new IntIndex(target_bitmatrix_table.intColumn("btx_id"));
 
-        Int2ObjectOpenHashMap<IntArrayList> mapNodeToDomain = new Int2ObjectOpenHashMap<>();
 
         for(NodesPair pair: pairs) {
             int src = pair.getFirstEndpoint();
@@ -422,6 +478,40 @@ public class QueryStructure {
                 query_src_index, query_dst_index, target_id_index, first_second,
                 second_first, dst, src, "dst", "src",
                 target_map_node_color_degrees
+            );
+            pair.setCompatibilityDomain(first_second, second_first);
+        }
+        //TODO: compute nodes domains only if there are paths
+        computeNodesDomains();
+    }
+
+    public void filtered_domains_elaboration(Table query_bitmatrix_table, Table target_bitmatrix_table, Int2ObjectOpenHashMap<IntArrayList> compatibility, Int2ObjectOpenHashMap<Int2IntOpenHashMap> target_map_node_color_degrees) {
+        IntIndex query_src_index = new IntIndex(query_bitmatrix_table.intColumn("src"));
+        IntIndex query_dst_index = new IntIndex(query_bitmatrix_table.intColumn("dst"));
+        IntIndex target_id_index = new IntIndex(target_bitmatrix_table.intColumn("btx_id"));
+
+
+        for(NodesPair pair: pairs) {
+            int src = pair.getFirstEndpoint();
+            int dst = pair.getSecondEndpoint();
+
+            Int2ObjectOpenHashMap<IntArrayList> first_second = new Int2ObjectOpenHashMap<>();
+            Int2ObjectOpenHashMap<IntArrayList> second_first = new Int2ObjectOpenHashMap<>();
+
+            // DIRECTED POPULATION
+            filtered_domain_population(
+                    query_bitmatrix_table, target_bitmatrix_table, compatibility,
+                    query_src_index, query_dst_index, target_id_index, first_second,
+                    second_first, src, dst, "src", "dst",
+                    target_map_node_color_degrees
+            );
+
+            // REVERSE POPULATION
+            filtered_domain_population(
+                    query_bitmatrix_table, target_bitmatrix_table, compatibility,
+                    query_src_index, query_dst_index, target_id_index, first_second,
+                    second_first, dst, src, "dst", "src",
+                    target_map_node_color_degrees
             );
             pair.setCompatibilityDomain(first_second, second_first);
         }
