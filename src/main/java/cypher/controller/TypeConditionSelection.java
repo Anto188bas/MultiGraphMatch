@@ -4,7 +4,10 @@ import cypher.models.NameValue;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import tech.tablesaw.api.Table;
+import tech.tablesaw.index.DoubleIndex;
+import tech.tablesaw.index.FloatIndex;
 import tech.tablesaw.index.IntIndex;
+import tech.tablesaw.index.StringIndex;
 
 import java.util.ArrayList;
 
@@ -13,7 +16,7 @@ public class TypeConditionSelection {
     private Table      selectedTable;
     private Comparison comparison;
 
-    private Object2ObjectOpenHashMap<String, Object> map_property_name_to_index;
+    private Object2ObjectOpenHashMap<String, Object> mapPropertyNameToIndex;
 
     private IntIndex idIndex;
 
@@ -36,7 +39,6 @@ public class TypeConditionSelection {
         else {
             tableSelection = tableSelection(leftElement.getElementKey(), edges, rightElement);
         }
-
         return tableSelection;
     }
 
@@ -53,7 +55,7 @@ public class TypeConditionSelection {
             break;
         }
 
-
+        this.mapPropertyNameToIndex = new Object2ObjectOpenHashMap<>();
 
         // COLUMN TYPE SELECTION
         // System.out.println(selectedTable.column(property_name));
@@ -61,6 +63,8 @@ public class TypeConditionSelection {
         switch (columnType) {
             // INTEGER ELABORATION
             case "INTEGER":
+                this.mapPropertyNameToIndex.put(property_name, new IntIndex(this.selectedTable.intColumn(property_name)));
+
                 if (rightElement instanceof ArrayList) {
                     comparison = new ArrayIntCheck();
                     ArrayList<Integer> element = new ArrayList<>();
@@ -73,6 +77,8 @@ public class TypeConditionSelection {
                }
             // FLOAT ELABORATION
             case "FLOAT":
+                this.mapPropertyNameToIndex.put(property_name, new FloatIndex(this.selectedTable.floatColumn(property_name)));
+
                 if (rightElement instanceof ArrayList) {
                     comparison = new ArrayFloatCheck();
                     ArrayList<Float> element = new ArrayList<>();
@@ -85,6 +91,8 @@ public class TypeConditionSelection {
                 }
             // DOUBLE ELABORATION
             case "DOUBLE":
+                this.mapPropertyNameToIndex.put(property_name, new DoubleIndex(this.selectedTable.doubleColumn(property_name)));
+
                 if (rightElement instanceof ArrayList) {
                     comparison = new ArrayDoubleCheck();
                     ArrayList<Double> element = new ArrayList<>();
@@ -97,6 +105,8 @@ public class TypeConditionSelection {
                 }
             // STRING ELABORATION
             default:
+                this.mapPropertyNameToIndex.put(property_name, new StringIndex(this.selectedTable.stringColumn(property_name)));
+
                 if (rightElement instanceof ArrayList) {
                     comparison = new ArrayStringCheck();
                     return rightElement;
@@ -125,4 +135,8 @@ public class TypeConditionSelection {
 
     public Table getSelectedTable()   {return selectedTable;}
     public Comparison getComparison() {return comparison;}
+
+    public Object2ObjectOpenHashMap<String, Object> getMapPropertyNameToIndex() {
+        return mapPropertyNameToIndex;
+    }
 }

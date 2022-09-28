@@ -2,9 +2,12 @@ package cypher.models;
 
 import cypher.controller.PropertiesUtility;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntArraySet;
 import org.opencypher.v9_0.expressions.*;
 import scala.Option;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
+import utility.Utils;
+
 import java.util.HashMap;
 
 
@@ -13,6 +16,7 @@ public class QueryNode {
     private final IntArrayList              labels;
     private final HashMap<String, Object>   properties;
     private HashMap<String, QueryCondition> conditions;
+    private IntArraySet whereConditionsCompatibilityDomain;
 
     public QueryNode(NodePattern node_pattern, String name, NodesEdgesLabelsMaps label_type_map){
         labels     = new IntArrayList();
@@ -76,6 +80,19 @@ public class QueryNode {
     public IntArrayList                    getLabels()     {return labels;    }
     public HashMap<String, Object>         getProperties() {return properties;}
     public HashMap<String, QueryCondition> getConditions() {return conditions;}
+
+    public IntArraySet getWhereConditionsCompatibilityDomain() {
+        return whereConditionsCompatibilityDomain;
+    }
+
+    // SETTER
+    public void setWhereConditionsCompatibilityDomain(IntArraySet whereConditionsCompatibilityDomain) {
+        if(this.whereConditionsCompatibilityDomain == null || this.whereConditionsCompatibilityDomain.size() == 0)
+            this.whereConditionsCompatibilityDomain = whereConditionsCompatibilityDomain;
+        else {
+            this.whereConditionsCompatibilityDomain = Utils.intArraySetIntersection(this.whereConditionsCompatibilityDomain, whereConditionsCompatibilityDomain);
+        }
+    }
 
     // TO STRING
     @Override

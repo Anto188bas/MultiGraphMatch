@@ -1,12 +1,15 @@
 package cypher.models;
 import cypher.controller.PropertiesUtility;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntArraySet;
 import org.opencypher.v9_0.expressions.Expression;
 import org.opencypher.v9_0.expressions.LogicalVariable;
 import org.opencypher.v9_0.expressions.Range;
 import org.opencypher.v9_0.expressions.RelationshipPattern;
 import scala.Option;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
+import utility.Utils;
+
 import java.util.HashMap;
 
 public class QueryEdge {
@@ -22,6 +25,8 @@ public class QueryEdge {
     private long                          max_deep;
     private final HashMap<String, Object> properties;
     private HashMap<String, QueryCondition> conditions;
+
+    private IntArraySet whereConditionsCompatibilityDomain;
 
     public QueryEdge(RelationshipPattern edgePattern, NodesEdgesLabelsMaps label_type_map){
         properties = new HashMap<>();
@@ -104,6 +109,13 @@ public class QueryEdge {
 
     // SETTER
     public void                    setEdge_name(int id)     {edge_name = "r" + id;}
+    public void setWhereConditionsCompatibilityDomain(IntArraySet whereConditionsCompatibilityDomain) {
+        if(this.whereConditionsCompatibilityDomain == null || this.whereConditionsCompatibilityDomain.size() == 0)
+            this.whereConditionsCompatibilityDomain = whereConditionsCompatibilityDomain;
+        else {
+            this.whereConditionsCompatibilityDomain = Utils.intArraySetIntersection(this.whereConditionsCompatibilityDomain, whereConditionsCompatibilityDomain);
+        }
+    }
 
     // GETTER
     public String                  getEdge_name()            {return edge_name;    }
@@ -112,6 +124,9 @@ public class QueryEdge {
     public long                    getMin_deep()             {return min_deep;     }
     public long                    getMax_deep()             {return max_deep;     }
     public HashMap<String, Object> getProperties()           {return properties;   }
+    public IntArraySet getWhereConditionsCompatibilityDomain() {
+        return whereConditionsCompatibilityDomain;
+    }
 
     public HashMap<String, QueryCondition> getConditions() {return conditions;}
 

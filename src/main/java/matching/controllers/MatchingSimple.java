@@ -2,6 +2,7 @@ package matching.controllers;
 
 import bitmatrix.models.TargetBitmatrix;
 import cypher.controller.WhereConditionExtraction;
+import cypher.models.QueryCondition;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;

@@ -156,6 +156,11 @@ public class WhereConditionExtraction {
         }));
     }
 
+    /**
+     * Here we assign where conditions to nodes and edges.
+     * Use this method only if you don't have complex conditions (i.e. n1.name = n2.name) and OR propositions.
+     * In this case, we can filter the compatibility domains and use the standard algorithm.
+     */
     public void assignConConditionsToNodesAndEdges(QueryStructure queryStructure) {
         this.queryConditions.forEach((condition -> {
             condition.assign(queryStructure);

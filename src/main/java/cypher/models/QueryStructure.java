@@ -20,7 +20,10 @@ import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.index.IntIndex;
+import tech.tablesaw.selection.Selection;
+
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -405,7 +408,9 @@ public class QueryStructure {
     ) {
         for(Row query_row: query_bitmatrix_table.where(query_src_index.get(c1).and(query_dst_index.get(c2)))) {
             for (int target_id : compatibility.get(query_row.getInt("btx_id"))) {
-                for (Row target_row : target_bitmatrix_table.where(target_id_index.get(target_id))) {
+                Table tableSelection = target_bitmatrix_table.where(target_id_index.get(target_id));
+
+                for (Row target_row : tableSelection) {
                     int t_src = target_row.getInt(c1_name);
                     int t_dst = target_row.getInt(c2_name);
 
@@ -417,29 +422,19 @@ public class QueryStructure {
                         t_dst_act = t_src;
                     }
 
+                    // WHERE CONDITIONS CHECK
+                    if(this.query_nodes.get(c1).getConditions().size() > 0 ) {
+                        if(!this.query_nodes.get(c1).getWhereConditionsCompatibilityDomain().contains(t_src_act)) continue;
+                    }
+
+                    if(this.query_nodes.get(c2).getConditions().size() > 0 ) {
+                        if(!this.query_nodes.get(c2).getWhereConditionsCompatibilityDomain().contains(t_dst_act)) continue;
+                    }
+
                     // DEGREE CHECK
                     if (!degree_comparison(t_src_act, c1, t_dst_act, c2, target_map_node_color_degrees)) continue;
 
-                    // WHERE CONDITIONS CHECK
-                    boolean whereCheckOk = true;
 
-                    for (QueryCondition condition : this.query_nodes.get(c1).getConditions().values()) {
-                        if (!WhereUtils.quickCheckNodeCondition(t_src_act, c1, condition, this)) {
-                            whereCheckOk = false;
-                            break;
-                        }
-                    }
-
-                    if(!whereCheckOk) continue;
-
-                    for (QueryCondition condition : this.query_nodes.get(c2).getConditions().values()) {
-                        if (!WhereUtils.quickCheckNodeCondition(t_dst_act, c2, condition, this)) {
-                            whereCheckOk = false;
-                            break;
-                        }
-                    }
-
-                    if(!whereCheckOk) continue;
 
                     if (!first_second.containsKey(t_src)) first_second.put(t_src, new IntArrayList());
                     if (!second_first.containsKey(t_dst)) second_first.put(t_dst, new IntArrayList());
@@ -455,7 +450,6 @@ public class QueryStructure {
         IntIndex query_src_index = new IntIndex(query_bitmatrix_table.intColumn("src"));
         IntIndex query_dst_index = new IntIndex(query_bitmatrix_table.intColumn("dst"));
         IntIndex target_id_index = new IntIndex(target_bitmatrix_table.intColumn("btx_id"));
-
 
         for(NodesPair pair: pairs) {
             int src = pair.getFirstEndpoint();

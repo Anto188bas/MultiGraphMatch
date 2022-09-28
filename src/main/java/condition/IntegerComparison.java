@@ -17,8 +17,8 @@ public class IntegerComparison extends Comparison {
         this.functions.put("GreaterThan" , (Integer x, Integer y) -> x >  y);
         this.functions.put("GreaterThanOrEqual", (Integer x, Integer y) -> x >= y);
         this.functions.put("Equals" , Objects::equals);
-        this.functions.put("LowerThan" , (Integer x, Integer y) -> x <  y);
-        this.functions.put("LowerThanOrEqual", (Integer x, Integer y) -> x <= y);
+        this.functions.put("LessThan" , (Integer x, Integer y) -> x <  y);
+        this.functions.put("LessThanOrEqual", (Integer x, Integer y) -> x <= y);
     }
 
     public boolean comparison(Object x, Object y, String operator){

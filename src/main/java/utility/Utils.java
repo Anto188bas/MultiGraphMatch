@@ -2,6 +2,7 @@ package utility;
 
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntArraySet;
 import ordering.EdgeDirection;
 import ordering.EdgeOrdering;
 import state_machine.StateStructures;
@@ -15,6 +16,26 @@ import java.util.Arrays;
 import java.util.function.IntConsumer;
 
 public class Utils {
+    public static IntArraySet intArraySetUnion(IntArraySet a, IntArraySet b) {
+        IntArraySet result = a.clone();
+        result.addAll(b);
+
+        return result;
+    }
+
+    public static IntArraySet intArraySetDifference(IntArraySet a, IntArraySet b) {
+        IntArraySet result = a.clone();
+        result.removeAll(b);
+
+        return result;
+    }
+
+    public static IntArraySet intArraySetIntersection(IntArraySet a, IntArraySet b) {
+        IntArraySet result = a.clone();
+        result.retainAll(b);
+
+        return result;
+    }
     public static void printDebugInfo(GraphPaths graphPaths, QueryStructure query_obj, StateStructures states, EdgeOrdering edgeOrdering) throws FileNotFoundException {
         /**
          * LOG
