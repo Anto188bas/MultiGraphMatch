@@ -2,6 +2,7 @@ import bitmatrix.models.TargetBitmatrix;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import matching.controllers.MatchingPath;
 import matching.models.OutData;
 import reading.FileManager;
@@ -61,7 +62,7 @@ public class TestPaths {
 
         OutData outData = new OutData();
 
-        MatchingPath matchingMachine = new MatchingPath(outData, query_obj,true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, Optional.empty());
+        MatchingPath matchingMachine = new MatchingPath(outData, query_obj,true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, new ObjectArrayList<>());
         outData = matchingMachine.matching();
     }
 }

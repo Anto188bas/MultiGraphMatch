@@ -1,7 +1,7 @@
 package cypher.controller;
 
 public enum PropositionStatus {
-    EVALUATED,
+    SUCCEEDED,
     NOT_EVALUATED,
     FAILED
 }

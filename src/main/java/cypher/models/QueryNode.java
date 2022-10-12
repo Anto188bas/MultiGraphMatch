@@ -15,13 +15,16 @@ public class QueryNode {
     private String                          node_name;
     private final IntArrayList              labels;
     private final HashMap<String, Object>   properties;
-    private HashMap<String, QueryCondition> conditions;
+
+    private HashMap<String, QueryCondition> simpleConditions;
+    private HashMap<String, QueryCondition> complexConditions;
     private IntArraySet whereConditionsCompatibilityDomain;
 
     public QueryNode(NodePattern node_pattern, String name, NodesEdgesLabelsMaps label_type_map){
         labels     = new IntArrayList();
         properties = new HashMap<>();
-        conditions = new HashMap<>();
+        simpleConditions = new HashMap<>();
+        complexConditions = new HashMap<>();
         node_name  = name;
         configure_node_labels(node_pattern, label_type_map);
         configure_node_properties(node_pattern);
@@ -72,14 +75,20 @@ public class QueryNode {
         return true;
     }
 
-    public void addCondition(QueryCondition condition, String condition_key) {
-        this.conditions.put(condition_key, condition);
+
+    public void addSimpleCondition(QueryCondition condition, String condition_key) {
+        this.simpleConditions.put(condition_key, condition);
+    }
+
+    public void addComplexCondition(QueryCondition condition, String condition_key) {
+        this.complexConditions.put(condition_key, condition);
     }
 
     // GETTER METHOD
     public IntArrayList                    getLabels()     {return labels;    }
     public HashMap<String, Object>         getProperties() {return properties;}
-    public HashMap<String, QueryCondition> getConditions() {return conditions;}
+    public HashMap<String, QueryCondition> getSimpleConditions() {return simpleConditions;}
+    public HashMap<String, QueryCondition> getComplexConditions() {return complexConditions;}
 
     public IntArraySet getWhereConditionsCompatibilityDomain() {
         return whereConditionsCompatibilityDomain;
@@ -101,7 +110,8 @@ public class QueryNode {
                 "node_name='" + node_name + '\'' +
                 ", labels=" + labels +
                 ", properties=" + properties +
-                ", conditions=" + conditions +
+                ", simpleConditions=" + simpleConditions +
+                ", complexConditions=" + complexConditions +
                 '}';
     }
 }

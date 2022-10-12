@@ -2,9 +2,11 @@ package matching.controllers;
 
 import bitmatrix.models.TargetBitmatrix;
 import cypher.controller.WhereConditionExtraction;
+import cypher.models.QueryCondition;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import matching.models.OutData;
 import matching.models.PathsMatchingData;
 import ordering.NodesPair;
@@ -20,9 +22,11 @@ import java.util.Optional;
 public class MatchingPath extends MatchingBase {
 
     public PathsMatchingData matchingData;
+    ObjectArrayList<QueryCondition> simpleConditions;
 
-    public MatchingPath(OutData outData, QueryStructure query, boolean justCount, boolean distinct, long numMaxOccs, NodesEdgesLabelsMaps labels_types_idx, TargetBitmatrix target_bitmatrix, GraphPaths graphPaths, HashMap<String, GraphMacroNode> macro_nodes, Int2ObjectOpenHashMap<String> nodes_macro, Optional<WhereConditionExtraction> where_managing) {
-        super(outData, query, justCount, distinct, numMaxOccs, labels_types_idx, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, where_managing);
+    public MatchingPath(OutData outData, QueryStructure query, boolean justCount, boolean distinct, long numMaxOccs, NodesEdgesLabelsMaps labels_types_idx, TargetBitmatrix target_bitmatrix, GraphPaths graphPaths, HashMap<String, GraphMacroNode> macro_nodes, Int2ObjectOpenHashMap<String> nodes_macro, ObjectArrayList<QueryCondition> simpleConditions) {
+        super(outData, query, justCount, distinct, numMaxOccs, labels_types_idx, target_bitmatrix, graphPaths, macro_nodes, nodes_macro);
+        this.simpleConditions = simpleConditions;
     }
 
     public OutData matching() throws FileNotFoundException {
@@ -31,8 +35,19 @@ public class MatchingPath extends MatchingBase {
             return outData;
         }
 
-        // DOMAINS
-        computeCompatibilityDomains();
+        // SIMPLE WHERE CONDITIONS
+        if(simpleConditions.size() > 0) {
+            WhereUtils.assignSimpleConditionsToNodesAndEdges(simpleConditions, query);
+
+            // DOMAINS
+            computeFilteredCompatibilityDomains();
+        } else {
+            // DOMAINS
+            computeCompatibilityDomains();
+        }
+        query.getQuery_nodes().forEach((index, node) -> {
+            System.out.println(index + "-> \t" + node.getWhereConditionsCompatibilityDomain());
+        });
 
         // EDGE ORDERING AND STATE OBJECT CREATION
         computeOrdering();

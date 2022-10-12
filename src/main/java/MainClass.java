@@ -90,8 +90,9 @@ public class MainClass {
 
                     OutData outData = new OutData();
 
-                    MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, optionalWhereConditionExtraction);
-                    outData = matchingMachine.matching();
+                    //TODO: adapt to new strategy
+//                    MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, optionalWhereConditionExtraction);
+//                    outData = matchingMachine.matching();
 
                     // SAVING
                     if(configuration.out_file != null) {

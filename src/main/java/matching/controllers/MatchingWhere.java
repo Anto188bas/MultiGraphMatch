@@ -6,6 +6,7 @@ import cypher.controller.WhereConditionExtraction;
 import cypher.models.*;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import matching.models.MatchingData;
 import matching.models.OutData;
 import ordering.NodesPair;
@@ -19,15 +20,14 @@ import java.util.Optional;
 
 public class MatchingWhere extends MatchingBase {
     public boolean doWhereCheck;
-    public boolean atLeastOnePropositionVerified;
-    public boolean allPropositionsFailed;
-    public boolean areThereConditions;
-    public WhereConditionExtraction whereHandler;
-    public IntArrayList setWhereConditions;
+    public ObjectArrayList<QueryCondition> simpleConditions;
+    public ObjectArrayList<QueryCondition> complexConditions;
 
-    public MatchingWhere(OutData outData, QueryStructure query, boolean justCount, boolean distinct, long numMaxOccs, NodesEdgesLabelsMaps labels_types_idx, TargetBitmatrix target_bitmatrix, GraphPaths graphPaths, HashMap<String, GraphMacroNode> macro_nodes, Int2ObjectOpenHashMap<String> nodes_macro, Optional<WhereConditionExtraction> where_managing) {
-        super(outData, query, justCount, distinct, numMaxOccs, labels_types_idx, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, where_managing);
-        whereHandler = where_managing.get();
+
+    public MatchingWhere(OutData outData, QueryStructure query, boolean justCount, boolean distinct, long numMaxOccs, NodesEdgesLabelsMaps labels_types_idx, TargetBitmatrix target_bitmatrix, GraphPaths graphPaths, HashMap<String, GraphMacroNode> macro_nodes, Int2ObjectOpenHashMap<String> nodes_macro, ObjectArrayList<QueryCondition> simpleConditions, ObjectArrayList<QueryCondition> complexConditions) {
+        super(outData, query, justCount, distinct, numMaxOccs, labels_types_idx, target_bitmatrix, graphPaths, macro_nodes, nodes_macro);
+        this.simpleConditions = simpleConditions;
+        this.complexConditions = complexConditions;
     }
 
     public OutData matching() throws FileNotFoundException {
@@ -36,14 +36,22 @@ public class MatchingWhere extends MatchingBase {
             return outData;
         }
 
-        // DOMAINS
-        computeCompatibilityDomains();
+        // SIMPLE WHERE CONDITIONS
+        if (simpleConditions.size() > 0) {
+            WhereUtils.assignSimpleConditionsToNodesAndEdges(simpleConditions, query);
+
+            // DOMAINS
+            computeFilteredCompatibilityDomains();
+        } else {
+            // DOMAINS
+            computeCompatibilityDomains();
+        }
 
         // ORDERING
         computeOrdering();
 
-        // WHERE CONDITIONS ORDERING
-        where_managing.get().assignConditionsToNodesAndEdges(query, edgeOrdering.getNodes_ordering(), edgeOrdering.getEdges_ordering());
+        // COMPLEX WHERE CONDITIONS ORDERING
+        WhereUtils.assignComplexConditionsToNodesAndEdges(complexConditions, query, edgeOrdering.getNodes_ordering(), edgeOrdering.getEdges_ordering());
 
         // SYMMETRY CONDITIONS
         computeSymmetryConditions();
@@ -71,15 +79,7 @@ public class MatchingWhere extends MatchingBase {
 
         // WHERE CONDITIONS
         doWhereCheck = true;
-        areThereConditions = true;
-        setWhereConditions = whereHandler.getSetWhereConditions();
-
-        if (setWhereConditions.isEmpty()) {
-            doWhereCheck = false;
-            areThereConditions = false;
-        } else {
-            initializeConditions();
-        }
+        initializeConditions();
 
         for (int f_node : firstPair.getFirst_second().keySet()) {
             for (int s_node : firstPair.getFirst_second().get(f_node)) {
@@ -101,9 +101,7 @@ public class MatchingWhere extends MatchingBase {
                                 removeMatchingInfoForStateGraterThanZero();
 
                                 // RESET CONDITIONS FOR THE PREVIOUS MATCHED STATE
-                                if (areThereConditions) {
-                                    resetConditionsForState(si); // N.B. we reset the conditions for the previous state
-                                }
+                                resetConditionsForState(si); // N.B. we reset the conditions for the previous state
                             }
 
                             // NEXT CANDIDATE
@@ -131,9 +129,8 @@ public class MatchingWhere extends MatchingBase {
                         }
                     }
                     //WHERE CHECK FAILED OR NO MORE CANDIDATES
-                    if (areThereConditions) {
-                        initializeConditions();
-                    }
+                    initializeConditions();
+
                     // CLEANING OF STRUCTURES
                     removeMatchingInfoForStateZero();
                 }
@@ -148,11 +145,12 @@ public class MatchingWhere extends MatchingBase {
         int queryEdgeId = states.map_state_to_edge[si];
         QueryEdge queryEdge = query.getQuery_edge(queryEdgeId);
 
-        for (QueryCondition condition : queryEdge.getConditions().values()) {
+        for (QueryCondition condition : queryEdge.getComplexConditions().values()) {
             if (WhereUtils.checkQueryCondition(edgeCand, condition, query, matchingData.solution_nodes, matchingData.solution_edges)) {
-                condition.setStatus(PropositionStatus.EVALUATED);
+                condition.setStatus(PropositionStatus.SUCCEEDED);
             } else {
                 condition.setStatus(PropositionStatus.FAILED);
+                return false;
             }
         }
 
@@ -171,20 +169,22 @@ public class MatchingWhere extends MatchingBase {
             dstCand = matchingData.solution_nodes[states.map_state_to_first_endpoint[0]];
 
             // SRC
-            for (QueryCondition condition : querySrc.getConditions().values()) {
+            for (QueryCondition condition : querySrc.getComplexConditions().values()) {
                 if (WhereUtils.checkQueryCondition(srcCand, condition, query, matchingData.solution_nodes, matchingData.solution_edges)) {
-                    condition.setStatus(PropositionStatus.EVALUATED);
+                    condition.setStatus(PropositionStatus.SUCCEEDED);
                 } else {
                     condition.setStatus(PropositionStatus.FAILED);
+                    return false;
                 }
             }
 
             // DST
-            for (QueryCondition condition : queryDst.getConditions().values()) {
+            for (QueryCondition condition : queryDst.getComplexConditions().values()) {
                 if (WhereUtils.checkQueryCondition(dstCand, condition, query, matchingData.solution_nodes, matchingData.solution_edges)) {
-                    condition.setStatus(PropositionStatus.EVALUATED);
+                    condition.setStatus(PropositionStatus.SUCCEEDED);
                 } else {
                     condition.setStatus(PropositionStatus.FAILED);
+                    return false;
                 }
             }
         } else { // STATE > 0, ONLY THE NEW MATCHED NODE MUST BE CHECKED
@@ -193,11 +193,12 @@ public class MatchingWhere extends MatchingBase {
             if (nodeToMatch != -1) {
                 QueryNode matchedNode = query.getQuery_node(nodeToMatch);
                 int nodeCand = matchingData.solution_nodes[nodeToMatch];
-                for (QueryCondition condition : matchedNode.getConditions().values()) {
+                for (QueryCondition condition : matchedNode.getComplexConditions().values()) {
                     if (WhereUtils.checkQueryCondition(nodeCand, condition, query, matchingData.solution_nodes, matchingData.solution_edges)) {
-                        condition.setStatus(PropositionStatus.EVALUATED);
+                        condition.setStatus(PropositionStatus.SUCCEEDED);
                     } else {
                         condition.setStatus(PropositionStatus.FAILED);
+                        return false;
                     }
                 }
             }
@@ -211,68 +212,36 @@ public class MatchingWhere extends MatchingBase {
     }
 
     public boolean evaluateAllConditions() {
-        atLeastOnePropositionVerified = false;
-        allPropositionsFailed = true;
+        boolean allConditionsVerified = true;
+        boolean canBeTrue = true;
 
-        // for each or proposition
-        for (int i = 0; i < whereHandler.getSetWhereConditions().size(); i++) {
-            // for each condition in the current or proposition
-            Int2ObjectOpenHashMap<QueryCondition> conditionSet = whereHandler.getMapOrPropositionToConditionSet().get(i);
-
-            boolean allConditionsVerified = true;
-            boolean canBeTrue = true;
-
-            for (QueryCondition condition : conditionSet.values()) {
-                switch (condition.getStatus()) {
-                    case NOT_EVALUATED -> {
-                        allConditionsVerified = false;
-                    }
-
-                    case FAILED -> {
-                        allConditionsVerified = false;
-                        canBeTrue = false;
-                    }
-
-                    // otherwise is evaluated
+        for (QueryCondition condition : this.complexConditions) {
+            switch (condition.getStatus()) {
+                case NOT_EVALUATED -> {
+                    allConditionsVerified = false;
                 }
-            }
 
-            if (allConditionsVerified) { // COMPLETELY EVALUATED
-                whereHandler.getMapOrPropositionToStatus().put(i, PropositionStatus.EVALUATED);
-                atLeastOnePropositionVerified = true;
-                allPropositionsFailed = false;
-            } else if (canBeTrue) { // NOT COMPLETELY EVALUATED (other conditions must be checked)
-                whereHandler.getMapOrPropositionToStatus().put(i, PropositionStatus.NOT_EVALUATED);
-                allPropositionsFailed = false;
-            } else { // FAILED
-                whereHandler.getMapOrPropositionToStatus().put(i, PropositionStatus.FAILED);
+                case FAILED -> {
+                    allConditionsVerified = false;
+                    canBeTrue = false;
+                }
+
+                // otherwise is SUCCEEDED
             }
         }
 
-        if (atLeastOnePropositionVerified) { // One OR proposition is verified, we don't need other controls
+        if (allConditionsVerified) {
             doWhereCheck = false;
-            return true;
-        } else if (!allPropositionsFailed) { // No OR proposition is verified, we need other controls
-            doWhereCheck = true;
-            return true;
         }
-        // All OR propositions are FALSE, we must backtrack
-        return false;
+
+        return canBeTrue;
     }
 
     public void initializeConditions() {
-        atLeastOnePropositionVerified = false;
-        allPropositionsFailed = false;
-
-        // for each or proposition
-        for (int i = 0; i < whereHandler.getSetWhereConditions().size(); i++) {
-            // for each condition in the current or proposition
-            Int2ObjectOpenHashMap<QueryCondition> conditionSet = whereHandler.getMapOrPropositionToConditionSet().get(i);
-
-            for (QueryCondition condition : conditionSet.values()) {
-                condition.setStatus(PropositionStatus.NOT_EVALUATED);
-            }
-        }
+        // for each condition
+        this.complexConditions.forEach(condition -> {
+            condition.setStatus(PropositionStatus.NOT_EVALUATED);
+        });
 
         doWhereCheck = true;
     }
@@ -284,7 +253,7 @@ public class MatchingWhere extends MatchingBase {
         int queryEdgeId = states.map_state_to_edge[state];
         QueryEdge queryEdge = query.getQuery_edge(queryEdgeId);
 
-        for (QueryCondition condition : queryEdge.getConditions().values()) {
+        for (QueryCondition condition : queryEdge.getComplexConditions().values()) {
             condition.setStatus(PropositionStatus.NOT_EVALUATED);
         }
 
@@ -293,7 +262,7 @@ public class MatchingWhere extends MatchingBase {
         if (nodeToMatch != -1) {
             QueryNode matchedNode = query.getQuery_node(nodeToMatch);
 
-            for (QueryCondition condition : matchedNode.getConditions().values()) {
+            for (QueryCondition condition : matchedNode.getComplexConditions().values()) {
                 condition.setStatus(PropositionStatus.NOT_EVALUATED);
             }
         }

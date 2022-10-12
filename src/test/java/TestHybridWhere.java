@@ -6,8 +6,6 @@ import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import matching.controllers.MatchingPath;
-import matching.controllers.MatchingPathWhere;
 import matching.controllers.MatchingSimple;
 import matching.controllers.MatchingWhere;
 import matching.models.OutData;
@@ -24,15 +22,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
 
-public class TestWherePaths {
+public class TestHybridWhere {
     public static void main(String[] args) throws FileNotFoundException {
         // CONFIGURATION
         NodesEdgesLabelsMaps idx_label  = new NodesEdgesLabelsMaps();
 
         // PATH
         String root_dir  = System.getProperty("user.dir");
-//        String netw_path = root_dir + "/Networks/Person";
-        String netw_path = root_dir + "/Networks/TestPaths";
+        String netw_path = root_dir + "/Networks/Test";
 
 
         // TARGET READING
@@ -60,17 +57,7 @@ public class TestWherePaths {
         System.out.println(idx_label.getLabelToIdxNode().keySet());
         System.out.println(idx_label.getLabelToIdxEdge().keySet());
 
-        // QUERY
-//        String query_test           = "MATCH (n1:Person)-[r1:college]->(n2:Person), (n3:Person) -[r2:college]-> (n2:Person) WHERE (n1.name <> n2.name AND NOT n1.name IN [\"Antonio\", \"Paolo\"]) OR (n2.name <> \"Franco\" AND n1.age > 18) RETURN n1,n2,n3";
-//        String query_test           = "MATCH (n1:Person)-[r1:college]->(n2:Person), (n3:Person) -[r2:college]-> (n2:Person) WHERE (n2.name <> \"Franco\" AND n1.age > 18) RETURN n1,n2,n3";
-
-//        String query_test           = "MATCH (n1:P)<-[r0:F]-(n0:P), (n0:P) -[r1:F]-> (n2:P), (n0:P) -[r2:F]-> (n3:P) WHERE (n0.name <> \"Franco\" AND n1.age > 18 AND n3.age >= 25) RETURN n0,n1,n2,n3";
-//        String query_test           = "MATCH (n1:P)<-[r0:F]-(n0:P), (n0:P) -[r1:F]-> (n2:P), (n0:P) -[r2:F]-> (n3:P) WHERE (n0.name <> \"Franco\" AND n1.age > 18) RETURN n0,n1,n2,n3";
-//        String query_test           = "MATCH (n1:P)<-[r0:F]-(n0:P), (n0:P) -[r1:F]-> (n2:P), (n0:P) -[r2:F]-> (n3:P) WHERE (n0.name = \"Leonardo\" AND n1.age = 25) RETURN n0,n1,n2,n3";
-//        String query_test           = "MATCH (n1:P)<-[r0:F]-(n0:P), (n0:P) -[r1:F]-> (n2:P), (n0:P) -[r2:F]-> (n3:P) WHERE (n0.name = \"PIPPO\" AND n1.age = 250) RETURN n0,n1,n2,n3";
-//        String query_test           = "MATCH (n1:P)<-[r0:F]-(n0:P), (n0:P) -[r1:F]-> (n2:P), (n0:P) -[r2:F]-> (n3:P) WHERE (n0.name <> \"Franco\" AND n1.age > 18 AND n3.age >= 25) RETURN n0,n1,n2,n3";
-
-        String query_test           = "MATCH (n1:P)<-[:F*2..2]-(n0:P), (n0:P) -[:C]-> (n2:P) WHERE (n0.name = \"Leonardo\" AND n0.age = 30 AND n1.name = \"Giuseppe\") RETURN n0,n1";
+        String query_test           = "MATCH (n0:P)-[r0:F]->(n1:P), (n0:P)-[r1:C]->(n2:P), (n0:P)-[r2:F]->(n2:P) WHERE n1.name = \"FILIPPO\" AND n0.age > n1.age RETURN n0, n1, n2";
 
         WhereConditionExtraction where_managing = new WhereConditionExtraction();
         where_managing.where_condition_extraction(query_test);
@@ -106,14 +93,14 @@ public class TestWherePaths {
 
                     OutData outData = new OutData();
 
-                    MatchingPath matchingMachine = new MatchingPath(outData, query, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, simpleConditions);
+                    MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, simpleConditions);
                     outData = matchingMachine.matching();
 
                 } else { // Complex conditions
                     System.out.println("Complex conditions");
 
                     OutData outData = new OutData();
-                    MatchingPathWhere matchingMachine = new MatchingPathWhere(outData, query, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, simpleConditions, complexConditions);
+                    MatchingWhere matchingMachine = new MatchingWhere(outData, query, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, simpleConditions, complexConditions);
                     outData = matchingMachine.matching();
                 }
             }
@@ -122,7 +109,7 @@ public class TestWherePaths {
             query.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.of(where_managing));
 
             OutData outData = new OutData();
-            MatchingPath matchingMachine = new MatchingPath(outData, query, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, new ObjectArrayList<>());
+            MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, new ObjectArrayList<>());
             outData = matchingMachine.matching();
         }
     }

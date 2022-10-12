@@ -3,8 +3,22 @@ package matching.controllers;
 import cypher.models.NameValue;
 import cypher.models.QueryCondition;
 import cypher.models.QueryStructure;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+
 public class WhereUtils {
+    public static void assignSimpleConditionsToNodesAndEdges(ObjectArrayList<QueryCondition> simpleConditions, QueryStructure queryStructure) {
+        simpleConditions.forEach((condition -> {
+            condition.assignSimpleCondition(queryStructure);
+        }));
+    }
+
+    public static void assignComplexConditionsToNodesAndEdges(ObjectArrayList<QueryCondition> complexConditions, QueryStructure queryStructure, IntArrayList nodesOrdering, IntArrayList edgesOrdering) {
+        complexConditions.forEach((condition -> {
+            condition.assignComplexCondition(queryStructure, nodesOrdering, edgesOrdering);
+        }));
+    }
     public static boolean quickCheckNodeCondition(int targetID, int sourceID, QueryCondition condition, QueryStructure queryStructure) {
         String operator = condition.getOperation();
         String elementName = condition.getNode_param().getElementName();

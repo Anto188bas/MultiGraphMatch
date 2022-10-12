@@ -29,7 +29,6 @@ public class QueryCondition {
     private TypeConditionSelection conditionCheck;
     private final HashMap<String, String> associations;
     private int orPropositionPos;
-    private int andChainPos;
     private String conditionKey;
     private PropositionStatus status;
     private QueryConditionType type;
@@ -88,13 +87,17 @@ public class QueryCondition {
 
 
         this.orPropositionPos = where_managing.get().getMap_condition_to_orPropositionPos().getInt(this.conditionKey);
-        this.andChainPos = where_managing.get().getMapConditionToAndChainPos().getInt(this.conditionKey);
         this.status = PropositionStatus.NOT_EVALUATED;
 
-        where_managing.get().getMapOrPropositionToConditionSet().get(this.orPropositionPos).put(this.andChainPos, this);
-        where_managing.get().getMapOrPropositionToConditionSet().get(this.orPropositionPos).put(this.andChainPos, this);
+        where_managing.get().getMapOrPropositionToConditionSet().get(this.orPropositionPos).add(this);
 
         where_managing.get().getQueryConditions().add(this);
+
+        if (this.expr_value instanceof NameValue) {
+            this.type = QueryConditionType.COMPLEX;
+        } else {
+            this.type = QueryConditionType.SIMPLE;
+        }
     }
 
 
@@ -140,14 +143,14 @@ public class QueryCondition {
 
     /**
      * Assign the condition to a node or to an edge depending on the ordering.
+     * N.B.
+     * Here we consider only complex where conditions (i.e. n1.name != n2.name).
      */
-    public void assign(QueryStructure queryStructure, IntArrayList nodesOrdering, IntArrayList edgesOrdering) {
+    public void assignComplexCondition(QueryStructure queryStructure, IntArrayList nodesOrdering, IntArrayList edgesOrdering) {
         Object2IntOpenHashMap<String> mapNodeNameToID = queryStructure.getMap_node_name_to_idx();
         Object2IntOpenHashMap<String> mapEdgeNameToID = queryStructure.getMap_edge_name_to_idx();
 
-        if (this.expr_value instanceof NameValue) { // COMPLEX QUERY CONDITION
-            this.type = QueryConditionType.COMPLEX;
-
+        if (this.type == QueryConditionType.COMPLEX) { // COMPLEX QUERY CONDITION
             String firstName = this.node_param.getElementName();
             String secondName = ((NameValue) this.expr_value).getElementName();
             if (mapNodeNameToID.containsKey(firstName) && mapNodeNameToID.containsKey(secondName)) { // CONDITION ON NODES
@@ -156,9 +159,9 @@ public class QueryCondition {
 
                 // Here we assign the condition to the node that comes after in the ordering
                 if (nodesOrdering.indexOf(firstId) > nodesOrdering.indexOf(secondId)) {
-                    queryStructure.getQuery_nodes().get(firstId).addCondition(this, this.conditionKey);
+                    queryStructure.getQuery_nodes().get(firstId).addComplexCondition(this, this.conditionKey);
                 } else {
-                    queryStructure.getQuery_nodes().get(secondId).addCondition(this, this.conditionKey);
+                    queryStructure.getQuery_nodes().get(secondId).addComplexCondition(this, this.conditionKey);
                 }
             } else if (mapEdgeNameToID.containsKey(firstName) && mapEdgeNameToID.containsKey(secondName)) { // CONDITION ON EDGES
                 int firstId = mapEdgeNameToID.getInt(firstName);
@@ -166,22 +169,17 @@ public class QueryCondition {
 
                 // Here we assign the condition to the edge that comes first in the ordering
                 if (edgesOrdering.indexOf(firstId) > edgesOrdering.indexOf(secondId)) {
-                    queryStructure.getQuery_edges().get(firstId).addCondition(this, this.conditionKey);
+                    queryStructure.getQuery_edges().get(firstId).addComplexCondition(this, this.conditionKey);
                 } else {
-                    queryStructure.getQuery_edges().get(secondId).addCondition(this, this.conditionKey);
+                    queryStructure.getQuery_edges().get(secondId).addComplexCondition(this, this.conditionKey);
                 }
             } else {
                 System.err.println("This kind of condition is not handled!");
                 System.exit(-1);
             }
         } else { // SIMPLE QUERY CONDITION
-            this.type = QueryConditionType.SIMPLE;
-
-            if (mapNodeNameToID.containsKey(this.node_param.getElementName())) { // CONDITION ON NODE
-                queryStructure.getQuery_nodes().get(mapNodeNameToID.getInt(node_param.getElementName())).addCondition(this, this.conditionKey);
-            } else { // CONDITION ON EDGE
-                queryStructure.getQuery_edges().get(mapEdgeNameToID.getInt(node_param.getElementName())).addCondition(this, this.conditionKey);
-            }
+            System.err.println("You shouldn't call this method with simple conditions!");
+            System.exit(-1);
         }
     }
 
@@ -189,25 +187,22 @@ public class QueryCondition {
      * Assign the condition to a node or to an edge.
      * N.B.
      * Here we consider only simple where conditions (i.e. n1.name = "Pippo").
-     * We use this method only if there aren't OR propositions.
      */
-    public void assign(QueryStructure queryStructure) {
+    public void assignSimpleCondition(QueryStructure queryStructure) {
         Object2IntOpenHashMap<String> mapNodeNameToID = queryStructure.getMap_node_name_to_idx();
         Object2IntOpenHashMap<String> mapEdgeNameToID = queryStructure.getMap_edge_name_to_idx();
 
-        if (this.expr_value instanceof NameValue) { // COMPLEX QUERY CONDITION
-            System.err.println("Complex condition found! This query must be handled with another version of the matcher.");
+        if (this.type == QueryConditionType.COMPLEX) { // COMPLEX QUERY CONDITION
+            System.err.println("You shouldn't call this method with complex conditions!");
             System.exit(-1);
         } else { // SIMPLE QUERY CONDITION
-            this.type = QueryConditionType.SIMPLE;
-
             if (mapNodeNameToID.containsKey(this.node_param.getElementName())) { // CONDITION ON NODE
                 QueryNode node = queryStructure.getQuery_nodes().get(mapNodeNameToID.getInt(node_param.getElementName()));
-                node.addCondition(this, this.conditionKey);
+                node.addSimpleCondition(this, this.conditionKey);
                 node.setWhereConditionsCompatibilityDomain(this.getDomain());
             } else { // CONDITION ON EDGE
                 QueryEdge edge = queryStructure.getQuery_edges().get(mapEdgeNameToID.getInt(node_param.getElementName()));
-                edge.addCondition(this, this.conditionKey);
+                edge.addSimpleCondition(this, this.conditionKey);
                 edge.setWhereConditionsCompatibilityDomain(this.getDomain());
             }
         }
@@ -559,9 +554,6 @@ public class QueryCondition {
         return orPropositionPos;
     }
 
-    public int getAndChainPos() {
-        return andChainPos;
-    }
 
     public PropositionStatus getStatus() {
         return status;

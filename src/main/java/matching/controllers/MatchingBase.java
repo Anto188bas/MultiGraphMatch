@@ -32,7 +32,6 @@ public abstract class MatchingBase {
     public GraphPaths graphPaths;
     public HashMap<String, GraphMacroNode> macro_nodes;
     public Int2ObjectOpenHashMap<String> nodes_macro;
-    public Optional<WhereConditionExtraction> where_managing;
 
     public EdgeOrdering edgeOrdering;
     public StateStructures states;
@@ -50,8 +49,7 @@ public abstract class MatchingBase {
 
     public MatchingBase(OutData outData, QueryStructure query, boolean justCount, boolean distinct, long numMaxOccs,
                         NodesEdgesLabelsMaps labels_types_idx, TargetBitmatrix target_bitmatrix, GraphPaths graphPaths,
-                        HashMap<String, GraphMacroNode> macro_nodes, Int2ObjectOpenHashMap<String> nodes_macro,
-                        Optional<WhereConditionExtraction> where_managing) {
+                        HashMap<String, GraphMacroNode> macro_nodes, Int2ObjectOpenHashMap<String> nodes_macro) {
         this.outData = outData;
         this.query = query;
         this.justCount = justCount;
@@ -62,7 +60,6 @@ public abstract class MatchingBase {
         this.graphPaths = graphPaths;
         this.macro_nodes = macro_nodes;
         this.nodes_macro = nodes_macro;
-        this.where_managing = where_managing;
         this.numTotalOccs = 0;
         this.states = new StateStructures();
     }

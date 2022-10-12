@@ -423,11 +423,11 @@ public class QueryStructure {
                     }
 
                     // WHERE CONDITIONS CHECK
-                    if(this.query_nodes.get(c1).getConditions().size() > 0 ) {
+                    if(this.query_nodes.get(c1).getSimpleConditions().size() > 0 ) {
                         if(!this.query_nodes.get(c1).getWhereConditionsCompatibilityDomain().contains(t_src_act)) continue;
                     }
 
-                    if(this.query_nodes.get(c2).getConditions().size() > 0 ) {
+                    if(this.query_nodes.get(c2).getSimpleConditions().size() > 0 ) {
                         if(!this.query_nodes.get(c2).getWhereConditionsCompatibilityDomain().contains(t_dst_act)) continue;
                     }
 
@@ -516,11 +516,18 @@ public class QueryStructure {
     protected void computeNodesDomains() {
         for(int nodeID: query_nodes.keySet()) {
             IntArraySet domain = new IntArraySet();
-            for(NodesPair pair: pairs) {
-                if(pair.getFirstEndpoint() == nodeID) {
-                    domain.addAll(pair.getFirst_second().keySet());
-                } else if(pair.getSecondEndpoint() == nodeID) {
-                    domain.addAll(pair.getSecond_first().keySet());
+
+            QueryNode node = this.getQuery_nodes().get(nodeID);
+            // If there are simple conditions, we use the compatibility domains filtered with the conditions
+            if (node.getSimpleConditions().size() > 0) {
+                domain = node.getWhereConditionsCompatibilityDomain();
+            } else {
+                for(NodesPair pair: pairs) {
+                    if(pair.getFirstEndpoint() == nodeID) {
+                        domain.addAll(pair.getFirst_second().keySet());
+                    } else if(pair.getSecondEndpoint() == nodeID) {
+                        domain.addAll(pair.getSecond_first().keySet());
+                    }
                 }
             }
             map_node_to_domain.put(nodeID, domain);

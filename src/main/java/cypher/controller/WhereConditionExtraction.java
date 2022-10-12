@@ -27,8 +27,7 @@ public class WhereConditionExtraction {
     protected IntArrayList                                                 setWhereConditions;
     protected Object2IntOpenHashMap<String>                                map_condition_to_orPropositionPos;
     protected Int2IntOpenHashMap                                           mapPropositionToNumConditions;
-    protected Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<QueryCondition>> mapOrPropositionToConditionSet;
-    protected Int2ObjectOpenHashMap<PropositionStatus>                     mapOrPropositionToStatus;
+    protected Int2ObjectOpenHashMap<ObjectArrayList<QueryCondition>> mapOrPropositionToConditionSet;
     protected Int2ObjectOpenHashMap<PropositionStatus>                     mapConditionToStatus;
     protected Object2IntOpenHashMap<String>                                mapConditionToAndChainPos;
     protected ObjectArrayList<QueryCondition>                              queryConditions;
@@ -108,21 +107,19 @@ public class WhereConditionExtraction {
         this.map_condition_to_orPropositionPos = new Object2IntOpenHashMap();
         this.mapPropositionToNumConditions = new Int2IntOpenHashMap();
         this.mapOrPropositionToConditionSet = new Int2ObjectOpenHashMap<>();
-        this.mapOrPropositionToStatus = new Int2ObjectOpenHashMap<>();
         this.mapConditionToAndChainPos = new Object2IntOpenHashMap<>();
         this.mapConditionToStatus = new Int2ObjectOpenHashMap<>();
 
 //        System.out.println("********************************************************************************");
 //        System.out.println("ORIGINAL WHERE: " + this.where_string);
 //        System.out.println("DNF: " + this.disj_where_cond);
-//        System.out.println();
+        System.out.println();
 
         String[] splitOR = this.disj_where_cond.split("\\|\\|");
         this.numOrProposition = splitOR.length;
 
         for(int i = 0; i < splitOR.length; i++) {
-            this.mapOrPropositionToConditionSet.put(i, new Int2ObjectOpenHashMap<>());
-            this.mapOrPropositionToStatus.put(i, PropositionStatus.NOT_EVALUATED);
+            this.mapOrPropositionToConditionSet.put(i, new ObjectArrayList<>());
 
 //            System.out.println("SPLIT OR " + i + ": " + splitOR[i]);
 
@@ -141,6 +138,7 @@ public class WhereConditionExtraction {
 
 //        System.out.println("setWhereConditions: " + this.setWhereConditions);
 //        System.out.println("map_condition_to_orPropositionPos: " + this.map_condition_to_orPropositionPos);
+//        System.out.println("mapOrPropositionToConditionSet: " + this.mapOrPropositionToConditionSet);
 //
 //        System.out.println("********************************************************************************");
     }
@@ -152,7 +150,7 @@ public class WhereConditionExtraction {
      */
     public void assignConditionsToNodesAndEdges(QueryStructure queryStructure, IntArrayList nodesOrdering, IntArrayList edgesOrdering) {
         this.queryConditions.forEach((condition -> {
-            condition.assign(queryStructure, nodesOrdering, edgesOrdering);
+            condition.assignComplexCondition(queryStructure, nodesOrdering, edgesOrdering);
         }));
     }
 
@@ -163,7 +161,7 @@ public class WhereConditionExtraction {
      */
     public void assignConConditionsToNodesAndEdges(QueryStructure queryStructure) {
         this.queryConditions.forEach((condition -> {
-            condition.assign(queryStructure);
+            condition.assignSimpleCondition(queryStructure);
         }));
     }
 
@@ -183,12 +181,8 @@ public class WhereConditionExtraction {
         return mapPropositionToNumConditions;
     }
 
-    public Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<QueryCondition>> getMapOrPropositionToConditionSet() {
+    public Int2ObjectOpenHashMap<ObjectArrayList<QueryCondition>> getMapOrPropositionToConditionSet() {
         return mapOrPropositionToConditionSet;
-    }
-
-    public Int2ObjectOpenHashMap<PropositionStatus> getMapOrPropositionToStatus() {
-        return mapOrPropositionToStatus;
     }
 
     public Object2IntOpenHashMap<String> getMapConditionToAndChainPos() {

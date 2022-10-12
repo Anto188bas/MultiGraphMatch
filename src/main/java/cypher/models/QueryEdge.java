@@ -24,7 +24,9 @@ public class QueryEdge {
     private long                          min_deep;
     private long                          max_deep;
     private final HashMap<String, Object> properties;
-    private HashMap<String, QueryCondition> conditions;
+
+    private HashMap<String, QueryCondition> simpleConditions;
+    private HashMap<String, QueryCondition> complexConditions;
 
     private IntArraySet whereConditionsCompatibilityDomain;
 
@@ -36,7 +38,8 @@ public class QueryEdge {
         edge_label    = new IntArrayList();
         type_directed = new IntArrayList();
         type_reverse  = new IntArrayList();
-        conditions    = new HashMap<>();
+        simpleConditions    = new HashMap<>();
+        complexConditions    = new HashMap<>();
         configure_edge_name(edgePattern);
         configure_edge_type(edgePattern, label_type_map);
         configure_path_length(edgePattern);
@@ -103,8 +106,12 @@ public class QueryEdge {
     }
 
     // ADD CONDITION
-    public void addCondition(QueryCondition condition, String condKey) {
-        this.conditions.put(condKey, condition);
+    public void addSimpleCondition(QueryCondition condition, String condKey) {
+        this.simpleConditions.put(condKey, condition);
+    }
+
+    public void addComplexCondition(QueryCondition condition, String condKey) {
+        this.complexConditions.put(condKey, condition);
     }
 
     // SETTER
@@ -128,7 +135,8 @@ public class QueryEdge {
         return whereConditionsCompatibilityDomain;
     }
 
-    public HashMap<String, QueryCondition> getConditions() {return conditions;}
+    public HashMap<String, QueryCondition> getSimpleConditions() {return simpleConditions;}
+    public HashMap<String, QueryCondition> getComplexConditions() {return complexConditions;}
 
     // EQUIVALENT TO
     public boolean equivalent_to(QueryEdge other_edge) {
@@ -163,7 +171,8 @@ public class QueryEdge {
                 ", min_deep=" + min_deep +
                 ", max_deep=" + max_deep +
                 ", properties=" + properties +
-                ", conditions=" + conditions +
+                ", simpleConditions=" + simpleConditions +
+                ", complexConditions=" + complexConditions +
                 '}';
     }
 }
