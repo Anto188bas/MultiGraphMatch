@@ -45,9 +45,6 @@ public class MatchingPath extends MatchingBase {
             // DOMAINS
             computeCompatibilityDomains();
         }
-        query.getQuery_nodes().forEach((index, node) -> {
-            System.out.println(index + "-> \t" + node.getWhereConditionsCompatibilityDomain());
-        });
 
         // EDGE ORDERING AND STATE OBJECT CREATION
         computeOrdering();

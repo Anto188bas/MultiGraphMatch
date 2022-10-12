@@ -59,9 +59,6 @@ public class MainClass {
         TargetBitmatrix target_bitmatrix = new TargetBitmatrix();
         target_bitmatrix.create_bitset(src_dst_aggregation, idx_label, macro_nodes, nodes_macro);
 
-        System.out.println(idx_label.getLabelToIdxNode().keySet());
-        System.out.println(idx_label.getLabelToIdxEdge().keySet());
-
         // QUERIES READING
         List<String> queries = FileManager.query_reading(configuration);
         final Duration tout  = Duration.ofSeconds(configuration.timeout);

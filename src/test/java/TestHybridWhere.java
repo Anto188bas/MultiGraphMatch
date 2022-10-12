@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import matching.controllers.MatchingBaseTask;
 import matching.controllers.MatchingSimple;
 import matching.controllers.MatchingWhere;
@@ -59,9 +60,6 @@ public class TestHybridWhere {
         TargetBitmatrix target_bitmatrix = new TargetBitmatrix();
         target_bitmatrix.create_bitset(src_dst_aggregation, idx_label, macro_nodes, nodes_macro);
 
-        System.out.println(idx_label.getLabelToIdxNode().keySet());
-        System.out.println(idx_label.getLabelToIdxEdge().keySet());
-
         String query_test           = "MATCH (n0:P)-[r0:F]->(n1:P), (n0:P)-[r1:C]->(n2:P), (n0:P)-[r2:F]->(n2:P) WHERE (n1.name = \"FILIPPO\" AND n0.age > n1.age) OR (n0.name = \"Luca\" AND n1.name = \"Alessia\") RETURN n0, n1, n2";
 //        String query_test           = "MATCH (n0:P)-[r0:F]->(n1:P), (n0:P)-[r1:C]->(n2:P), (n0:P)-[r2:F]->(n2:P) WHERE n1.name = \"FILIPPO\" AND n0.age > n1.age RETURN n0, n1, n2";
 //        String query_test           = "MATCH (n0:P)-[r0:F]->(n1:P), (n0:P)-[r1:C]->(n2:P), (n0:P)-[r2:F]->(n2:P) WHERE (n1.name = \"FILIPPO\" AND n0.age > n1.age) OR (n1.name = \"CIAO\") RETURN n0, n1, n2";
@@ -77,6 +75,8 @@ public class TestHybridWhere {
             Int2ObjectOpenHashMap<ObjectArrayList<QueryCondition>> mapOrPropositionToConditionSet = where_managing.getMapOrPropositionToConditionSet();
 
             if(mapOrPropositionToConditionSet.size() > 1) { // Multi-Thread (at least one OR)
+//                double time = System.currentTimeMillis();
+
                 System.out.println("MultiThread");
 
                 QueryStructure query = new QueryStructure();
@@ -84,11 +84,10 @@ public class TestHybridWhere {
 
                 ExecutorService pool = Executors.newCachedThreadPool();
                 ArrayList<Runnable> runnableArrayList = new ArrayList<>();
-                ObjectArrayList<Object2IntOpenHashMap<String>> sharedMemory = new ObjectArrayList<>();
+                ObjectArrayList<ObjectArraySet<String>> sharedMemory = new ObjectArrayList<>();
 
 
                 for(int orIndex: mapOrPropositionToConditionSet.keySet()) {
-                    System.out.println("OR: " + orIndex);
                     ObjectArrayList<QueryCondition> simpleConditions = new ObjectArrayList<>();
                     ObjectArrayList<QueryCondition> complexConditions = new ObjectArrayList<>();
 
@@ -99,9 +98,6 @@ public class TestHybridWhere {
                             complexConditions.add(condition);
                         }
                     }
-
-                    System.out.println("Simple: " + simpleConditions);
-                    System.out.println("Complex: " + complexConditions);
 
                     if(complexConditions.size() == 0) { // No complex conditions
                         System.out.println("No complex conditions");
@@ -116,7 +112,6 @@ public class TestHybridWhere {
                         runnableArrayList.add(matchingTask);
 
                     } else { // Complex conditions
-                        System.out.println("....");
                         System.out.println("Complex conditions");
 
                         QueryStructure query_t = new QueryStructure();
@@ -129,13 +124,21 @@ public class TestHybridWhere {
                         runnableArrayList.add(matchingTask);
                     }
                 }
-
+                double time = System.currentTimeMillis();
                 for(Runnable runnable: runnableArrayList) {
                     pool.execute(runnable);
                 }
 
                 pool.shutdown();
                 pool.awaitTermination(1800, TimeUnit.SECONDS);
+
+                ObjectArraySet<String> finalOccurrences = new ObjectArraySet<>();
+                for(ObjectArraySet<String> occurrences: sharedMemory) {
+                    finalOccurrences.addAll(occurrences);
+                }
+
+                time = (System.currentTimeMillis() - time) / 1000;
+                System.out.println("FINAL NUMBER OF OCCURRENCES: " + finalOccurrences.size() +"\tTIME: " + time);
 
             } else { // Single-Thread (only AND)
                 System.out.println("SingleThread");

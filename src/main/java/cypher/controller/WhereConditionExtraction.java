@@ -113,7 +113,7 @@ public class WhereConditionExtraction {
 //        System.out.println("********************************************************************************");
 //        System.out.println("ORIGINAL WHERE: " + this.where_string);
 //        System.out.println("DNF: " + this.disj_where_cond);
-        System.out.println();
+//        System.out.println();
 
         String[] splitOR = this.disj_where_cond.split("\\|\\|");
         this.numOrProposition = splitOR.length;

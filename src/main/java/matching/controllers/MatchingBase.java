@@ -18,6 +18,7 @@ import target_graph.nodes.GraphMacroNode;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 
 import java.io.FileNotFoundException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Optional;
 
@@ -199,7 +200,7 @@ public abstract class MatchingBase {
     public  void newOccurrenceFound() {
         numTotalOccs++;
         if (!justCount || distinct) {
-            // TODO implement me
+            outData.occurrences.add(Arrays.toString(matchingData.solution_edges));
         }
         if (numTotalOccs == numMaxOccs) {
             report();

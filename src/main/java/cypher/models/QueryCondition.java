@@ -246,7 +246,6 @@ public class QueryCondition {
                                 idList = Utils.intArraySetDifference(fullIdList, idList);
                             }
 
-                            System.out.println(idList);
                             break;
 
 
@@ -260,7 +259,6 @@ public class QueryCondition {
                                 idList = Utils.intArraySetDifference(fullIdList, idList);
                             }
 
-                            System.out.println(idList);
                             break;
 
                         case "Equals":
@@ -269,8 +267,6 @@ public class QueryCondition {
                             if (this.isNegation()) {
                                 idList = Utils.intArraySetDifference(fullIdList, idList);
                             }
-
-                            System.out.println(idList);
 
                             break;
 
@@ -281,7 +277,6 @@ public class QueryCondition {
                                 idList = Utils.intArraySetDifference(fullIdList, idList);
                             }
 
-                            System.out.println(idList);
                             break;
 
                         case "LessThanOrEqual":
@@ -294,7 +289,6 @@ public class QueryCondition {
                                 idList = Utils.intArraySetDifference(fullIdList, idList);
                             }
 
-                            System.out.println(idList);
                             break;
 
                         default:
@@ -324,7 +318,6 @@ public class QueryCondition {
                                 idList = Utils.intArraySetDifference(fullIdList, idList);
                             }
 
-                            System.out.println(idList);
                             break;
 
                         case "GreaterThanOrEqual":
@@ -337,7 +330,6 @@ public class QueryCondition {
                                 idList = Utils.intArraySetDifference(fullIdList, idList);
                             }
 
-                            System.out.println(idList);
                             break;
 
                         case "Equals":
@@ -346,8 +338,6 @@ public class QueryCondition {
                             if (this.isNegation()) {
                                 idList = Utils.intArraySetDifference(fullIdList, idList);
                             }
-
-                            System.out.println(idList);
 
                             break;
 
@@ -358,7 +348,6 @@ public class QueryCondition {
                                 idList = Utils.intArraySetDifference(fullIdList, idList);
                             }
 
-                            System.out.println(idList);
                             break;
 
                         case "LessThanOrEqual":
@@ -371,7 +360,6 @@ public class QueryCondition {
                                 idList = Utils.intArraySetDifference(fullIdList, idList);
                             }
 
-                            System.out.println(idList);
                             break;
 
                         default:
@@ -402,7 +390,6 @@ public class QueryCondition {
                                 idList = Utils.intArraySetDifference(fullIdList, idList);
                             }
 
-                            System.out.println(idList);
                             break;
 
                         case "GreaterThanOrEqual":
@@ -415,7 +402,6 @@ public class QueryCondition {
                                 idList = Utils.intArraySetDifference(fullIdList, idList);
                             }
 
-                            System.out.println(idList);
                             break;
 
                         case "Equals":
@@ -425,7 +411,6 @@ public class QueryCondition {
                                 idList = Utils.intArraySetDifference(fullIdList, idList);
                             }
 
-                            System.out.println(idList);
 
                             break;
 
@@ -436,7 +421,6 @@ public class QueryCondition {
                                 idList = Utils.intArraySetDifference(fullIdList, idList);
                             }
 
-                            System.out.println(idList);
                             break;
 
                         case "LessThanOrEqual":
@@ -449,7 +433,6 @@ public class QueryCondition {
                                 idList = Utils.intArraySetDifference(fullIdList, idList);
                             }
 
-                            System.out.println(idList);
                             break;
 
                         default:
@@ -478,8 +461,7 @@ public class QueryCondition {
                             if (this.isNegation()) {
                                 idList = Utils.intArraySetDifference(fullIdList, idList);
                             }
-
-                            System.out.println(idList);
+                            
                             break;
 
                         case "StartsWith":
@@ -488,8 +470,7 @@ public class QueryCondition {
                             if (this.isNegation()) {
                                 idList = Utils.intArraySetDifference(fullIdList, idList);
                             }
-
-                            System.out.println(idList);
+                            
                             break;
 
                         case "EndsWith":
@@ -498,8 +479,7 @@ public class QueryCondition {
                             if (this.isNegation()) {
                                 idList = Utils.intArraySetDifference(fullIdList, idList);
                             }
-
-                            System.out.println(idList);
+                            
 
                             break;
 
@@ -509,8 +489,7 @@ public class QueryCondition {
                             if (this.isNegation()) {
                                 idList = Utils.intArraySetDifference(fullIdList, idList);
                             }
-
-                            System.out.println(idList);
+                            
                             break;
 
                         default:
