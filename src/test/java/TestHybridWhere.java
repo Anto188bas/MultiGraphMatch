@@ -5,7 +5,9 @@ import cypher.models.QueryCondition;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import matching.controllers.MatchingBaseTask;
 import matching.controllers.MatchingSimple;
 import matching.controllers.MatchingWhere;
 import matching.models.OutData;
@@ -21,9 +23,12 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class TestHybridWhere {
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) throws FileNotFoundException, InterruptedException {
         // CONFIGURATION
         NodesEdgesLabelsMaps idx_label  = new NodesEdgesLabelsMaps();
 
@@ -57,7 +62,10 @@ public class TestHybridWhere {
         System.out.println(idx_label.getLabelToIdxNode().keySet());
         System.out.println(idx_label.getLabelToIdxEdge().keySet());
 
-        String query_test           = "MATCH (n0:P)-[r0:F]->(n1:P), (n0:P)-[r1:C]->(n2:P), (n0:P)-[r2:F]->(n2:P) WHERE n1.name = \"FILIPPO\" AND n0.age > n1.age RETURN n0, n1, n2";
+        String query_test           = "MATCH (n0:P)-[r0:F]->(n1:P), (n0:P)-[r1:C]->(n2:P), (n0:P)-[r2:F]->(n2:P) WHERE (n1.name = \"FILIPPO\" AND n0.age > n1.age) OR (n0.name = \"Luca\" AND n1.name = \"Alessia\") RETURN n0, n1, n2";
+//        String query_test           = "MATCH (n0:P)-[r0:F]->(n1:P), (n0:P)-[r1:C]->(n2:P), (n0:P)-[r2:F]->(n2:P) WHERE n1.name = \"FILIPPO\" AND n0.age > n1.age RETURN n0, n1, n2";
+//        String query_test           = "MATCH (n0:P)-[r0:F]->(n1:P), (n0:P)-[r1:C]->(n2:P), (n0:P)-[r2:F]->(n2:P) WHERE (n1.name = \"FILIPPO\" AND n0.age > n1.age) OR (n1.name = \"CIAO\") RETURN n0, n1, n2";
+
 
         WhereConditionExtraction where_managing = new WhereConditionExtraction();
         where_managing.where_condition_extraction(query_test);
@@ -70,12 +78,70 @@ public class TestHybridWhere {
 
             if(mapOrPropositionToConditionSet.size() > 1) { // Multi-Thread (at least one OR)
                 System.out.println("MultiThread");
-                //TODO: implement!
-            } else { // Single-Thread (only AND)
+
                 QueryStructure query = new QueryStructure();
                 query.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.of(where_managing));
 
+                ExecutorService pool = Executors.newCachedThreadPool();
+                ArrayList<Runnable> runnableArrayList = new ArrayList<>();
+                ObjectArrayList<Object2IntOpenHashMap<String>> sharedMemory = new ObjectArrayList<>();
+
+
+                for(int orIndex: mapOrPropositionToConditionSet.keySet()) {
+                    System.out.println("OR: " + orIndex);
+                    ObjectArrayList<QueryCondition> simpleConditions = new ObjectArrayList<>();
+                    ObjectArrayList<QueryCondition> complexConditions = new ObjectArrayList<>();
+
+                    for(QueryCondition condition: mapOrPropositionToConditionSet.get(orIndex)) {
+                        if(condition.getType() == QueryConditionType.SIMPLE) {
+                            simpleConditions.add(condition);
+                        } else {
+                            complexConditions.add(condition);
+                        }
+                    }
+
+                    System.out.println("Simple: " + simpleConditions);
+                    System.out.println("Complex: " + complexConditions);
+
+                    if(complexConditions.size() == 0) { // No complex conditions
+                        System.out.println("No complex conditions");
+
+                        QueryStructure query_t = new QueryStructure();
+                        query_t.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.of(where_managing));
+
+                        OutData outData = new OutData();
+
+                        MatchingSimple matchingMachine = new MatchingSimple(outData, query_t, false, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, simpleConditions);
+                        MatchingBaseTask matchingTask = new MatchingBaseTask(orIndex, sharedMemory, matchingMachine);
+                        runnableArrayList.add(matchingTask);
+
+                    } else { // Complex conditions
+                        System.out.println("....");
+                        System.out.println("Complex conditions");
+
+                        QueryStructure query_t = new QueryStructure();
+                        query_t.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.of(where_managing));
+
+                        OutData outData = new OutData();
+
+                        MatchingWhere matchingMachine = new MatchingWhere(outData, query_t, false, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, simpleConditions, complexConditions);
+                        MatchingBaseTask matchingTask = new MatchingBaseTask(orIndex, sharedMemory, matchingMachine);
+                        runnableArrayList.add(matchingTask);
+                    }
+                }
+
+                for(Runnable runnable: runnableArrayList) {
+                    pool.execute(runnable);
+                }
+
+                pool.shutdown();
+                pool.awaitTermination(1800, TimeUnit.SECONDS);
+
+            } else { // Single-Thread (only AND)
                 System.out.println("SingleThread");
+
+                QueryStructure query = new QueryStructure();
+                query.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.of(where_managing));
 
                 ObjectArrayList<QueryCondition> simpleConditions = new ObjectArrayList<>();
                 ObjectArrayList<QueryCondition> complexConditions = new ObjectArrayList<>();
@@ -106,7 +172,7 @@ public class TestHybridWhere {
             }
         } else { // No WHERE CONDITIONS
             QueryStructure query = new QueryStructure();
-            query.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.of(where_managing));
+            query.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.empty());
 
             OutData outData = new OutData();
             MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, new ObjectArrayList<>());
