@@ -19,4 +19,13 @@ public class OutData {
         this.num_occurrences = 0l;
         this.occurrences = new ObjectArraySet<>();
     }
+
+    public double getTotalTime() {
+        double time = this.domain_time;
+        time += this.ordering_time;
+        time += this.symmetry_time;
+        time += this.matching_time;
+
+        return time;
+    }
 }

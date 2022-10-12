@@ -5,7 +5,6 @@ import cypher.models.QueryCondition;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import matching.controllers.MatchingBaseTask;
@@ -75,7 +74,7 @@ public class TestHybridWhere {
             Int2ObjectOpenHashMap<ObjectArrayList<QueryCondition>> mapOrPropositionToConditionSet = where_managing.getMapOrPropositionToConditionSet();
 
             if(mapOrPropositionToConditionSet.size() > 1) { // Multi-Thread (at least one OR)
-//                double time = System.currentTimeMillis();
+                double time = System.currentTimeMillis();
 
                 System.out.println("MultiThread");
 
@@ -124,7 +123,7 @@ public class TestHybridWhere {
                         runnableArrayList.add(matchingTask);
                     }
                 }
-                double time = System.currentTimeMillis();
+
                 for(Runnable runnable: runnableArrayList) {
                     pool.execute(runnable);
                 }
@@ -165,12 +164,16 @@ public class TestHybridWhere {
                     MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, simpleConditions);
                     outData = matchingMachine.matching();
 
+                    System.out.println("FINAL NUMBER OF OCCURRENCES: " + outData.num_occurrences +"\tTIME: " + outData.getTotalTime());
+
                 } else { // Complex conditions
                     System.out.println("Complex conditions");
 
                     OutData outData = new OutData();
                     MatchingWhere matchingMachine = new MatchingWhere(outData, query, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, simpleConditions, complexConditions);
                     outData = matchingMachine.matching();
+
+                    System.out.println("FINAL NUMBER OF OCCURRENCES: " + outData.num_occurrences +"\tTIME: " + outData.getTotalTime());
                 }
             }
         } else { // No WHERE CONDITIONS
@@ -180,6 +183,8 @@ public class TestHybridWhere {
             OutData outData = new OutData();
             MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, new ObjectArrayList<>());
             outData = matchingMachine.matching();
+
+            System.out.println("FINAL NUMBER OF OCCURRENCES: " + outData.num_occurrences +"\tTIME: " + outData.getTotalTime());
         }
     }
 }
