@@ -211,11 +211,11 @@ public abstract class MatchingBase {
 
     public void report() {
         outData.matching_time = (System.currentTimeMillis() - outData.matching_time) / 1000;
-        System.out.println("MATCHING REPORT:");
-        System.out.println("\t-domain computing time: " + outData.domain_time);
-        System.out.println("\t-ordering computing time: " + outData.ordering_time);
-        System.out.println("\t-symmetry computing time: " + outData.symmetry_time);
-        System.out.println("\t-matching computing time: " + outData.matching_time);
-        System.out.println("\t-occurrences: " + outData.num_occurrences);
+//        System.out.println("MATCHING REPORT:");
+//        System.out.println("\t-domain computing time: " + outData.domain_time);
+//        System.out.println("\t-ordering computing time: " + outData.ordering_time);
+//        System.out.println("\t-symmetry computing time: " + outData.symmetry_time);
+//        System.out.println("\t-matching computing time: " + outData.matching_time);
+//        System.out.println("\t-occurrences: " + outData.num_occurrences);
     }
 }

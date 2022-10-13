@@ -130,4 +130,11 @@ public class FileManager {
         writer.write(result + "\n");
         writer.close();
     }
+
+    public static void saveIntoCSV_NEW(String query, String path, double time, long num_occurrences) throws IOException {
+        final BufferedWriter writer = new BufferedWriter(new FileWriter(path, true));
+        String result = query + "\t" +num_occurrences+ "\t" + time;
+        writer.write(result + "\n");
+        writer.close();
+    }
 }

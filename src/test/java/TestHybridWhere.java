@@ -59,10 +59,12 @@ public class TestHybridWhere {
         TargetBitmatrix target_bitmatrix = new TargetBitmatrix();
         target_bitmatrix.create_bitset(src_dst_aggregation, idx_label, macro_nodes, nodes_macro);
 
-        String query_test           = "MATCH (n0:P)-[r0:F]->(n1:P), (n0:P)-[r1:C]->(n2:P), (n0:P)-[r2:F]->(n2:P) WHERE (n1.name = \"FILIPPO\" AND n0.age > n1.age) OR (n0.name = \"Luca\" AND n1.name = \"Alessia\") RETURN n0, n1, n2";
-//        String query_test           = "MATCH (n0:P)-[r0:F]->(n1:P), (n0:P)-[r1:C]->(n2:P), (n0:P)-[r2:F]->(n2:P) WHERE n1.name = \"FILIPPO\" AND n0.age > n1.age RETURN n0, n1, n2";
+//        String query_test           = "MATCH (n0:P)-[r0:F]->(n1:P), (n0:P)-[r1:C]->(n2:P), (n0:P)-[r2:F]->(n2:P) WHERE (n1.name = \"FILIPPO\" AND n0.age > n1.age) OR (n0.name = \"Luca\" AND n1.name = \"Alessia\") RETURN n0, n1, n2";
+        String query_test           = "MATCH (n0:P)-[r0:F]->(n1:P), (n0:P)-[r1:C]->(n2:P), (n0:P)-[r2:F]->(n2:P) WHERE n1.name = \"FILIPPO\" AND n0.age > n1.age RETURN n0, n1, n2";
 //        String query_test           = "MATCH (n0:P)-[r0:F]->(n1:P), (n0:P)-[r1:C]->(n2:P), (n0:P)-[r2:F]->(n2:P) WHERE (n1.name = \"FILIPPO\" AND n0.age > n1.age) OR (n1.name = \"CIAO\") RETURN n0, n1, n2";
 
+        double totalTime;
+        long numOccurrences;
 
         WhereConditionExtraction where_managing = new WhereConditionExtraction();
         where_managing.where_condition_extraction(query_test);
@@ -137,7 +139,9 @@ public class TestHybridWhere {
                 }
 
                 time = (System.currentTimeMillis() - time) / 1000;
-                System.out.println("FINAL NUMBER OF OCCURRENCES: " + finalOccurrences.size() +"\tTIME: " + time);
+                totalTime = time;
+                numOccurrences = finalOccurrences.size();
+                System.out.println("FINAL NUMBER OF OCCURRENCES: " + numOccurrences +"\tTIME: " + totalTime);
 
             } else { // Single-Thread (only AND)
                 System.out.println("SingleThread");
@@ -164,7 +168,9 @@ public class TestHybridWhere {
                     MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, simpleConditions);
                     outData = matchingMachine.matching();
 
-                    System.out.println("FINAL NUMBER OF OCCURRENCES: " + outData.num_occurrences +"\tTIME: " + outData.getTotalTime());
+                    totalTime = outData.getTotalTime();
+                    numOccurrences = outData.num_occurrences;
+                    System.out.println("FINAL NUMBER OF OCCURRENCES: " + numOccurrences +"\tTIME: " + totalTime);
 
                 } else { // Complex conditions
                     System.out.println("Complex conditions");
@@ -173,7 +179,9 @@ public class TestHybridWhere {
                     MatchingWhere matchingMachine = new MatchingWhere(outData, query, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, simpleConditions, complexConditions);
                     outData = matchingMachine.matching();
 
-                    System.out.println("FINAL NUMBER OF OCCURRENCES: " + outData.num_occurrences +"\tTIME: " + outData.getTotalTime());
+                    totalTime = outData.getTotalTime();
+                    numOccurrences = outData.num_occurrences;
+                    System.out.println("FINAL NUMBER OF OCCURRENCES: " + numOccurrences +"\tTIME: " + totalTime);
                 }
             }
         } else { // No WHERE CONDITIONS
@@ -184,7 +192,9 @@ public class TestHybridWhere {
             MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, new ObjectArrayList<>());
             outData = matchingMachine.matching();
 
-            System.out.println("FINAL NUMBER OF OCCURRENCES: " + outData.num_occurrences +"\tTIME: " + outData.getTotalTime());
+            totalTime = outData.getTotalTime();
+            numOccurrences = outData.num_occurrences;
+            System.out.println("FINAL NUMBER OF OCCURRENCES: " + numOccurrences +"\tTIME: " + totalTime);
         }
     }
 }

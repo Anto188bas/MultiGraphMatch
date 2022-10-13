@@ -1,9 +1,14 @@
 import bitmatrix.models.TargetBitmatrix;
+import condition.QueryConditionType;
 import configuration.Configuration;
 import cypher.controller.WhereConditionExtraction;
+import cypher.models.QueryCondition;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import matching.controllers.MatchingBaseTask;
 import matching.controllers.MatchingSimple;
 import matching.controllers.MatchingWhere;
 import matching.models.OutData;
@@ -68,38 +73,149 @@ public class MainClass {
             final Future<Double> handler = exec.submit(new Callable<Double>() {
                 @Override
                 public Double call() throws Exception {
+                    double totalTime;
+                    long numOccurrences;
+
                     WhereConditionExtraction where_managing = new WhereConditionExtraction();
                     where_managing.where_condition_extraction(query_test);
 
-                    Optional<WhereConditionExtraction> optionalWhereConditionExtraction;
-
-                    if(where_managing.getWhere_string() != null) {
+                    if(where_managing.getWhere_string() != null) { // There are WHERE CONDITIONS
                         where_managing.normal_form_computing();
                         where_managing.buildSetWhereConditions();
 
-                        optionalWhereConditionExtraction = Optional.of(where_managing);
-                    } else {
-                        optionalWhereConditionExtraction = Optional.empty();
+                        Int2ObjectOpenHashMap<ObjectArrayList<QueryCondition>> mapOrPropositionToConditionSet = where_managing.getMapOrPropositionToConditionSet();
+
+                        if(mapOrPropositionToConditionSet.size() > 1) { // Multi-Thread (at least one OR)
+                            double time = System.currentTimeMillis();
+
+//                            System.out.println("MultiThread");
+
+                            QueryStructure query = new QueryStructure();
+                            query.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.of(where_managing));
+
+                            ExecutorService pool = Executors.newCachedThreadPool();
+                            ArrayList<Runnable> runnableArrayList = new ArrayList<>();
+                            ObjectArrayList<ObjectArraySet<String>> sharedMemory = new ObjectArrayList<>();
+
+
+                            for(int orIndex: mapOrPropositionToConditionSet.keySet()) {
+                                ObjectArrayList<QueryCondition> simpleConditions = new ObjectArrayList<>();
+                                ObjectArrayList<QueryCondition> complexConditions = new ObjectArrayList<>();
+
+                                for(QueryCondition condition: mapOrPropositionToConditionSet.get(orIndex)) {
+                                    if(condition.getType() == QueryConditionType.SIMPLE) {
+                                        simpleConditions.add(condition);
+                                    } else {
+                                        complexConditions.add(condition);
+                                    }
+                                }
+
+                                if(complexConditions.size() == 0) { // No complex conditions
+//                                    System.out.println("No complex conditions");
+
+                                    QueryStructure query_t = new QueryStructure();
+                                    query_t.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.of(where_managing));
+
+                                    OutData outData = new OutData();
+
+                                    MatchingSimple matchingMachine = new MatchingSimple(outData, query_t, false, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, simpleConditions);
+                                    MatchingBaseTask matchingTask = new MatchingBaseTask(orIndex, sharedMemory, matchingMachine);
+                                    runnableArrayList.add(matchingTask);
+
+                                } else { // Complex conditions
+//                                    System.out.println("Complex conditions");
+
+                                    QueryStructure query_t = new QueryStructure();
+                                    query_t.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.of(where_managing));
+
+                                    OutData outData = new OutData();
+
+                                    MatchingWhere matchingMachine = new MatchingWhere(outData, query_t, false, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, simpleConditions, complexConditions);
+                                    MatchingBaseTask matchingTask = new MatchingBaseTask(orIndex, sharedMemory, matchingMachine);
+                                    runnableArrayList.add(matchingTask);
+                                }
+                            }
+
+                            for(Runnable runnable: runnableArrayList) {
+                                pool.execute(runnable);
+                            }
+
+                            pool.shutdown();
+                            pool.awaitTermination(1800, TimeUnit.SECONDS);
+
+                            ObjectArraySet<String> finalOccurrences = new ObjectArraySet<>();
+                            for(ObjectArraySet<String> occurrences: sharedMemory) {
+                                finalOccurrences.addAll(occurrences);
+                            }
+
+                            time = (System.currentTimeMillis() - time) / 1000;
+                            totalTime = time;
+                            numOccurrences = finalOccurrences.size();
+                            System.out.println("FINAL NUMBER OF OCCURRENCES: " + numOccurrences +"\tTIME: " + totalTime);
+
+                        } else { // Single-Thread (only AND)
+//                            System.out.println("SingleThread");
+
+                            QueryStructure query = new QueryStructure();
+                            query.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.of(where_managing));
+
+                            ObjectArrayList<QueryCondition> simpleConditions = new ObjectArrayList<>();
+                            ObjectArrayList<QueryCondition> complexConditions = new ObjectArrayList<>();
+
+                            for(QueryCondition condition: mapOrPropositionToConditionSet.get(0)) {
+                                if(condition.getType() == QueryConditionType.SIMPLE) {
+                                    simpleConditions.add(condition);
+                                } else {
+                                    complexConditions.add(condition);
+                                }
+                            }
+
+                            if(complexConditions.size() == 0) { // No complex conditions
+//                                System.out.println("No complex conditions");
+
+                                OutData outData = new OutData();
+
+                                MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, simpleConditions);
+                                outData = matchingMachine.matching();
+
+                                totalTime = outData.getTotalTime();
+                                numOccurrences = outData.num_occurrences;
+                                System.out.println("FINAL NUMBER OF OCCURRENCES: " + numOccurrences +"\tTIME: " + totalTime);
+
+                            } else { // Complex conditions
+//                                System.out.println("Complex conditions");
+
+                                OutData outData = new OutData();
+                                MatchingWhere matchingMachine = new MatchingWhere(outData, query, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, simpleConditions, complexConditions);
+                                outData = matchingMachine.matching();
+
+                                totalTime = outData.getTotalTime();
+                                numOccurrences = outData.num_occurrences;
+                                System.out.println("FINAL NUMBER OF OCCURRENCES: " + numOccurrences +"\tTIME: " + totalTime);
+                            }
+                        }
+                    } else { // No WHERE CONDITIONS
+                        QueryStructure query = new QueryStructure();
+                        query.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.empty());
+
+                        OutData outData = new OutData();
+                        MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, new ObjectArrayList<>());
+                        outData = matchingMachine.matching();
+
+                        totalTime = outData.getTotalTime();
+                        numOccurrences = outData.num_occurrences;
+                        System.out.println("FINAL NUMBER OF OCCURRENCES: " + numOccurrences +"\tTIME: " + totalTime);
                     }
-
-                    QueryStructure query = new QueryStructure();
-                    query.parser(query_test, idx_label, nodes_tables, edges_tables_properties, optionalWhereConditionExtraction);
-
-                    OutData outData = new OutData();
-
-                    //TODO: adapt to new strategy
-//                    MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, optionalWhereConditionExtraction);
-//                    outData = matchingMachine.matching();
 
                     // SAVING
                     if(configuration.out_file != null) {
                         try {
-                            FileManager.saveIntoCSV(query_test, configuration.out_file, outData);
+                            FileManager.saveIntoCSV_NEW(query_test, configuration.out_file, totalTime, numOccurrences);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }
-                    return outData.domain_time + outData.matching_time + outData.ordering_time + outData.symmetry_time;
+                    return totalTime;
                 }
             });
             try {handler.get(tout.getSeconds(), TimeUnit.SECONDS);}
