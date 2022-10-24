@@ -30,7 +30,8 @@ public class MatchingWhere extends MatchingBase {
         this.complexConditions = complexConditions;
     }
 
-    public OutData matching() throws FileNotFoundException {
+    public OutData matching() {
+        System.out.println("MatchingWhere");
         if (check_nodes_labels()) {
             report();
             return outData;

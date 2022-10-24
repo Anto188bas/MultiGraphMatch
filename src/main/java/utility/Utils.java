@@ -36,7 +36,7 @@ public class Utils {
 
         return result;
     }
-    public static void printDebugInfo(GraphPaths graphPaths, QueryStructure query_obj, StateStructures states, EdgeOrdering edgeOrdering) throws FileNotFoundException {
+    public static void printDebugInfo(GraphPaths graphPaths, QueryStructure query_obj, StateStructures states, EdgeOrdering edgeOrdering)  {
         /**
          * LOG
          */
@@ -66,8 +66,9 @@ public class Utils {
             System.out.println(key + "->" + list);
         });
 
-//        System.out.println("PAIRS DOMAINS");
-//        query_obj.getPairs().forEach((pair) -> {
+        System.out.println("PAIRS DOMAINS");
+        query_obj.getPairs().forEach((pair) -> {
+            System.out.println("P: " + pair + "\tDOMAIN SIZE: " + pair.getFirst_second().size());
 //            System.out.print("P: " + pair + "\tDOMAIN (FS): ");
 //            pair.getFirst_second().forEach((key, list) -> {
 //                for (int dst : list) {
@@ -84,12 +85,14 @@ public class Utils {
 //                }
 //            });
 //            System.out.print("\n");
-//        });
+        });
 //
-//        System.out.println("NODES DOMAINS");
-//        query_obj.getMap_node_to_domain().forEach((node, domain) -> {
+        System.out.println("NODES DOMAINS");
+        query_obj.getMap_node_to_domain().forEach((node, domain) -> {
+            System.out.println("NODE: " + node + " -> " + domain.size());
+
 //            System.out.println("NODE: " + node + " -> " + domain);
-//        });
+        });
 
         System.out.println("PARIS ORDERING");
         System.out.println(edgeOrdering.getPairs_ordering());

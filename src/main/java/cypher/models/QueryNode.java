@@ -84,6 +84,12 @@ public class QueryNode {
         this.complexConditions.put(condition_key, condition);
     }
 
+    public void clean() {
+        this.simpleConditions = new HashMap<>();
+        this.complexConditions = new HashMap<>();
+        this.whereConditionsCompatibilityDomain = new IntArraySet();
+    }
+
     // GETTER METHOD
     public IntArrayList                    getLabels()     {return labels;    }
     public HashMap<String, Object>         getProperties() {return properties;}

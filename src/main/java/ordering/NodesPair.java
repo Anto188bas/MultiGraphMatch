@@ -39,6 +39,12 @@ public class NodesPair {
                 this.getSecondEndpoint().equals(a.getSecondEndpoint()));
     }
 
+    public void clean() {
+        this.first_second = new Int2ObjectOpenHashMap<>();
+        this.second_first = new Int2ObjectOpenHashMap<>();
+        this.domain_size = 0;
+    }
+
     @Override
     public String toString() {
         return "{" + this.firstEndpoint + ", " + this.secondEndpoint + '}';

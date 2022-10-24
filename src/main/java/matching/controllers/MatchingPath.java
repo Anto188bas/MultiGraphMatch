@@ -29,7 +29,7 @@ public class MatchingPath extends MatchingBase {
         this.simpleConditions = simpleConditions;
     }
 
-    public OutData matching() throws FileNotFoundException {
+    public OutData matching()  {
         if (check_nodes_labels()) {
             report();
             return outData;

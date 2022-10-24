@@ -26,7 +26,8 @@ public class MatchingSimple extends MatchingBase {
         this.simpleConditions = simpleConditions;
     }
 
-    public OutData matching() throws FileNotFoundException {
+    public OutData matching()  {
+        System.out.println("MatchingSimple");
         if (check_nodes_labels()) {
             report();
             return outData;
@@ -59,7 +60,7 @@ public class MatchingSimple extends MatchingBase {
         outData.matching_time = System.currentTimeMillis();
 
         //DEBUG INFO
-//        Utils.printDebugInfo(graphPaths, query, states, edgeOrdering);
+        Utils.printDebugInfo(graphPaths, query, states, edgeOrdering);
 
         // MATCHING
         outData.num_occurrences = matching_procedure();

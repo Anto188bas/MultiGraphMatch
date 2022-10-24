@@ -108,6 +108,20 @@ public class QueryStructure {
         neighborhoods_elaboration();
     }
 
+    public void clean() {
+        this.query_nodes.forEach((index, node) -> {
+            node.clean();
+        });
+
+        this.query_edges.forEach((index, edge) -> {
+            edge.clean();
+        });
+
+        this.pairs.forEach((pair) -> {
+            pair.clean();
+        });
+    }
+
     // GET PATTERN NAME IN EXISTS
     private String get_pattern_name(PatternPart pattern_part) {
         if (!(pattern_part instanceof NamedPatternPart)) return null;

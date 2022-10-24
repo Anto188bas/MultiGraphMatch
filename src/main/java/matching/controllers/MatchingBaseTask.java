@@ -20,11 +20,7 @@ public class MatchingBaseTask implements Runnable {
     }
 
     public void run() {
-        try {
-            outData = matchingMachine.matching();
-            sharedMemory.add(outData.occurrences);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        outData = matchingMachine.matching();
+        sharedMemory.add(outData.occurrences);
     }
 }

@@ -105,6 +105,12 @@ public class QueryEdge {
         }
     }
 
+    public void clean() {
+        this.simpleConditions = new HashMap<>();
+        this.complexConditions = new HashMap<>();
+        this.whereConditionsCompatibilityDomain = new IntArraySet();
+    }
+
     // ADD CONDITION
     public void addSimpleCondition(QueryCondition condition, String condKey) {
         this.simpleConditions.put(condKey, condition);

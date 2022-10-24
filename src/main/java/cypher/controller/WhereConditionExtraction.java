@@ -125,7 +125,7 @@ public class WhereConditionExtraction {
 
             String[] splitAND = splitOR[i].split("&&");
             for(int j = 0; j < splitAND.length; j++) {
-                splitAND[j] = splitAND[j].replace("(", "").replace(")", "").replace("\"", "");
+                splitAND[j] = splitAND[j].replace("(", "").replace(")", "").replace("\"", "").replace("'", "");
 //                System.out.println("\tSPLIT AND " + j + ": " + splitAND[j] + "\t\torPropositionPos: " + i);
 
                 this.map_condition_to_orPropositionPos.put(splitAND[j], i);
