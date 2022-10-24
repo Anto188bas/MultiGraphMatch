@@ -66,116 +66,131 @@ public class MainClass {
         List<String> queries = FileManager.query_reading(configuration);
         final Duration tout = Duration.ofSeconds(configuration.timeout);
         queries.forEach(query_test -> {
+
             System.out.println(query_test);
 
-            double totalTime;
-            long numOccurrences;
+            ExecutorService exec = Executors.newSingleThreadExecutor();
+            final Future<Double> handler = exec.submit(new Callable<Double>() {
+                @Override
+                public Double call() throws Exception {
+                    double totalTime;
+                    long numOccurrences;
 
-            WhereConditionExtraction where_managing = new WhereConditionExtraction();
-            where_managing.where_condition_extraction(query_test);
+                    WhereConditionExtraction where_managing = new WhereConditionExtraction();
+                    where_managing.where_condition_extraction(query_test);
 
-            if (where_managing.getWhere_string() != null) { // There are WHERE CONDITIONS
-                where_managing.normal_form_computing();
-                where_managing.buildSetWhereConditions();
+                    if (where_managing.getWhere_string() != null) { // There are WHERE CONDITIONS
+                        where_managing.normal_form_computing();
+                        where_managing.buildSetWhereConditions();
 
-                Int2ObjectOpenHashMap<ObjectArrayList<QueryCondition>> mapOrPropositionToConditionSet = where_managing.getMapOrPropositionToConditionSet();
+                        Int2ObjectOpenHashMap<ObjectArrayList<QueryCondition>> mapOrPropositionToConditionSet = where_managing.getMapOrPropositionToConditionSet();
 
-                if (mapOrPropositionToConditionSet.size() > 0) { // Multi-Thread (at least one OR)
-                    ObjectArrayList<ObjectArraySet<String>> sharedMemory = new ObjectArrayList<>();
-                    double time = System.currentTimeMillis();
+                        if (mapOrPropositionToConditionSet.size() > 0) { // Multi-Thread (at least one OR)
+                            ObjectArrayList<ObjectArraySet<String>> sharedMemory = new ObjectArrayList<>();
+                            double time = System.currentTimeMillis();
 
-                    QueryStructure query_t = new QueryStructure();
-                    query_t.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.of(where_managing));
+                            QueryStructure query_t = new QueryStructure();
+                            query_t.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.of(where_managing));
 
-                    for (int orIndex = 0; orIndex < mapOrPropositionToConditionSet.size(); orIndex++) {
-                        query_t.clean();
+                            for (int orIndex = 0; orIndex < mapOrPropositionToConditionSet.size(); orIndex++) {
+                                query_t.clean();
 
-                        ObjectArrayList<QueryCondition> simpleConditions = new ObjectArrayList<>();
-                        ObjectArrayList<QueryCondition> complexConditions = new ObjectArrayList<>();
+                                ObjectArrayList<QueryCondition> simpleConditions = new ObjectArrayList<>();
+                                ObjectArrayList<QueryCondition> complexConditions = new ObjectArrayList<>();
 
-                        for (QueryCondition condition : mapOrPropositionToConditionSet.get(orIndex)) {
-                            if (condition.getType() == QueryConditionType.SIMPLE) {
-                                simpleConditions.add(condition);
-                            } else {
-                                complexConditions.add(condition);
+                                for (QueryCondition condition : mapOrPropositionToConditionSet.get(orIndex)) {
+                                    if (condition.getType() == QueryConditionType.SIMPLE) {
+                                        simpleConditions.add(condition);
+                                    } else {
+                                        complexConditions.add(condition);
+                                    }
+                                }
+
+                                OutData outData = new OutData();
+                                MatchingBase matchingMachine;
+                                if (complexConditions.size() == 0) { // No complex conditions
+                                    matchingMachine = new MatchingSimple(outData, query_t, false, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, simpleConditions);
+                                } else { // Complex conditions
+                                    matchingMachine = new MatchingWhere(outData, query_t, false, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, simpleConditions, complexConditions);
+                                }
+                                matchingMachine.matching();
+                                sharedMemory.add(outData.occurrences);
                             }
+
+                            // Union of the occurrences sets
+                            ObjectArraySet<String> finalOccurrences = new ObjectArraySet<>();
+                            for (ObjectArraySet<String> occurrences : sharedMemory) {
+                                finalOccurrences.addAll(occurrences);
+                            }
+
+                            time = (System.currentTimeMillis() - time) / 1000;
+                            totalTime = time;
+                            numOccurrences = finalOccurrences.size();
+                            System.out.println("FINAL NUMBER OF OCCURRENCES: " + numOccurrences + "\tTIME: " + totalTime);
+                        } else { // Single-Thread (only AND)
+                            QueryStructure query_t = new QueryStructure();
+                            query_t.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.of(where_managing));
+
+                            int orIndex = 0;
+
+                            ObjectArrayList<QueryCondition> simpleConditions = new ObjectArrayList<>();
+                            ObjectArrayList<QueryCondition> complexConditions = new ObjectArrayList<>();
+
+                            for (QueryCondition condition : mapOrPropositionToConditionSet.get(orIndex)) {
+                                if (condition.getType() == QueryConditionType.SIMPLE) {
+                                    simpleConditions.add(condition);
+                                } else {
+                                    complexConditions.add(condition);
+                                }
+                            }
+
+                            OutData outData = new OutData();
+                            MatchingBase matchingMachine;
+                            if (complexConditions.size() == 0) { // No complex conditions
+                                matchingMachine = new MatchingSimple(outData, query_t, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, simpleConditions);
+
+                            } else { // Complex conditions
+                                matchingMachine = new MatchingWhere(outData, query_t, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, simpleConditions, complexConditions);
+                            }
+
+                            outData = matchingMachine.matching();
+
+                            totalTime = outData.getTotalTime();
+                            numOccurrences = outData.num_occurrences;
+                            System.out.println("FINAL NUMBER OF OCCURRENCES: " + numOccurrences + "\tTIME: " + totalTime);
                         }
+                    } else { // No WHERE CONDITIONS
+                        QueryStructure query = new QueryStructure();
+                        query.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.empty());
 
                         OutData outData = new OutData();
-                        MatchingBase matchingMachine;
-                        if (complexConditions.size() == 0) { // No complex conditions
-                            matchingMachine = new MatchingSimple(outData, query_t, false, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, simpleConditions);
-                        } else { // Complex conditions
-                            matchingMachine = new MatchingWhere(outData, query_t, false, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, simpleConditions, complexConditions);
-                        }
-                        matchingMachine.matching();
-                        sharedMemory.add(outData.occurrences);
+                        MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, new ObjectArrayList<>());
+                        outData = matchingMachine.matching();
+
+                        totalTime = outData.getTotalTime();
+                        numOccurrences = outData.num_occurrences;
+                        System.out.println("FINAL NUMBER OF OCCURRENCES: " + numOccurrences + "\tTIME: " + totalTime);
                     }
 
-                    // Union of the occurrences sets
-                    ObjectArraySet<String> finalOccurrences = new ObjectArraySet<>();
-                    for(ObjectArraySet<String> occurrences: sharedMemory) {
-                        finalOccurrences.addAll(occurrences);
-                    }
-
-                    time = (System.currentTimeMillis() - time) / 1000;
-                    totalTime = time;
-                    numOccurrences = finalOccurrences.size();
-                    System.out.println("FINAL NUMBER OF OCCURRENCES: " + numOccurrences + "\tTIME: " + totalTime);
-                } else { // Single-Thread (only AND)
-                    QueryStructure query_t = new QueryStructure();
-                    query_t.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.of(where_managing));
-
-                    int orIndex = 0;
-
-                    ObjectArrayList<QueryCondition> simpleConditions = new ObjectArrayList<>();
-                    ObjectArrayList<QueryCondition> complexConditions = new ObjectArrayList<>();
-
-                    for (QueryCondition condition : mapOrPropositionToConditionSet.get(orIndex)) {
-                        if (condition.getType() == QueryConditionType.SIMPLE) {
-                            simpleConditions.add(condition);
-                        } else {
-                            complexConditions.add(condition);
+                    // SAVING
+                    if (configuration.out_file != null) {
+                        try {
+                            FileManager.saveIntoCSV_NEW(query_test, configuration.out_file, totalTime, numOccurrences);
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
                     }
-
-                    OutData outData = new OutData();
-                    MatchingBase matchingMachine;
-                    if (complexConditions.size() == 0) { // No complex conditions
-                        matchingMachine = new MatchingSimple(outData, query_t, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, simpleConditions);
-
-                    } else { // Complex conditions
-                        matchingMachine = new MatchingWhere(outData, query_t, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, simpleConditions, complexConditions);
-                    }
-
-                    outData = matchingMachine.matching();
-
-                    totalTime = outData.getTotalTime();
-                    numOccurrences = outData.num_occurrences;
-                    System.out.println("FINAL NUMBER OF OCCURRENCES: " + numOccurrences + "\tTIME: " + totalTime);
+                    return totalTime;
                 }
-            } else { // No WHERE CONDITIONS
-                QueryStructure query = new QueryStructure();
-                query.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.empty());
-
-                OutData outData = new OutData();
-                MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, new ObjectArrayList<>());
-                outData = matchingMachine.matching();
-
-                totalTime = outData.getTotalTime();
-                numOccurrences = outData.num_occurrences;
-                System.out.println("FINAL NUMBER OF OCCURRENCES: " + numOccurrences + "\tTIME: " + totalTime);
-            }
-
-            // SAVING
-            if (configuration.out_file != null) {
-                try {
-                    FileManager.saveIntoCSV_NEW(query_test, configuration.out_file, totalTime, numOccurrences);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            });
+            try {handler.get(tout.getSeconds(), TimeUnit.SECONDS);}
+            catch (Exception e) {
+                handler.cancel(true);
+                System.err.println("timeout");
+                System.exit(-1);
             }
         });
+
 
         System.exit(0);
     }
