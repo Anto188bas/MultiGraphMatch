@@ -31,7 +31,6 @@ public class MatchingWhere extends MatchingBase {
     }
 
     public OutData matching() {
-        System.out.println("MatchingWhere");
         if (check_nodes_labels()) {
             report();
             return outData;

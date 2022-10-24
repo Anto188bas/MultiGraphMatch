@@ -27,7 +27,6 @@ public class MatchingSimple extends MatchingBase {
     }
 
     public OutData matching()  {
-        System.out.println("MatchingSimple");
         if (check_nodes_labels()) {
             report();
             return outData;

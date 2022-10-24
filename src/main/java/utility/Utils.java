@@ -56,19 +56,18 @@ public class Utils {
 //            });
 //        });
 
-        System.out.println("QUERY NODES");
-        query_obj.getQuery_nodes().forEach((id, node) -> {
-            System.out.println("ID: " + id + "-> " + node);
-        });
-
-        System.out.println("QUERY EDGES");
-        query_obj.getQuery_pattern().getOut_edges().forEach((key, list) -> {
-            System.out.println(key + "->" + list);
-        });
-
-        System.out.println("PAIRS DOMAINS");
-        query_obj.getPairs().forEach((pair) -> {
-            System.out.println("P: " + pair + "\tDOMAIN SIZE: " + pair.getFirst_second().size());
+//        System.out.println("QUERY NODES");
+//        query_obj.getQuery_nodes().forEach((id, node) -> {
+//            System.out.println("ID: " + id + "-> " + node);
+//        });
+//
+//        System.out.println("QUERY EDGES");
+//        query_obj.getQuery_pattern().getOut_edges().forEach((key, list) -> {
+//            System.out.println(key + "->" + list);
+//        });
+//
+//        System.out.println("PAIRS DOMAINS");
+//        query_obj.getPairs().forEach((pair) -> {
 //            System.out.print("P: " + pair + "\tDOMAIN (FS): ");
 //            pair.getFirst_second().forEach((key, list) -> {
 //                for (int dst : list) {
@@ -85,31 +84,31 @@ public class Utils {
 //                }
 //            });
 //            System.out.print("\n");
-        });
+//        });
 //
-        System.out.println("NODES DOMAINS");
-        query_obj.getMap_node_to_domain().forEach((node, domain) -> {
-            System.out.println("NODE: " + node + " -> " + domain.size());
-
+//        System.out.println("NODES DOMAINS");
+//        query_obj.getMap_node_to_domain().forEach((node, domain) -> {
+//            System.out.println("NODE: " + node + " -> " + domain.size());
+//
 //            System.out.println("NODE: " + node + " -> " + domain);
-        });
-
-        System.out.println("PARIS ORDERING");
-        System.out.println(edgeOrdering.getPairs_ordering());
-
-        System.out.println("ORDERING DETAILS");
-        for (int i = 0; i < states.map_state_to_first_endpoint.length; i++) {
-            int edge = states.map_state_to_edge[i];
-            int src = states.map_state_to_first_endpoint[i];
-            int dst = states.map_state_to_second_endpoint[i];
-            int matchedNode = states.map_state_to_unmatched_node[i];
-            EdgeDirection direction = states.map_edge_to_direction[i];
-            System.out.println("STATE: " + i + "\tSRC: " + src + "\tDST: " + dst + "\tEDGE: " + edge + "\tDIRECTION: " + direction + "\tUN-MATCHED_NODE: " + matchedNode);
-        }
+//        });
+//
+//        System.out.println("PARIS ORDERING");
+//        System.out.println(edgeOrdering.getPairs_ordering());
+//
+//        System.out.println("ORDERING DETAILS");
+//        for (int i = 0; i < states.map_state_to_first_endpoint.length; i++) {
+//            int edge = states.map_state_to_edge[i];
+//            int src = states.map_state_to_first_endpoint[i];
+//            int dst = states.map_state_to_second_endpoint[i];
+//            int matchedNode = states.map_state_to_unmatched_node[i];
+//            EdgeDirection direction = states.map_edge_to_direction[i];
+//            System.out.println("STATE: " + i + "\tSRC: " + src + "\tDST: " + dst + "\tEDGE: " + edge + "\tDIRECTION: " + direction + "\tUN-MATCHED_NODE: " + matchedNode);
+//        }
     }
 
     public static void printSymmetryConditions(IntArrayList[] nodes_symmetry, IntArrayList[] edges_symmetry) {
-        System.out.println("NODES SIMMETRY: " + Arrays.toString(nodes_symmetry)) ;
-        System.out.println("EDGES SIMMETRY: " + Arrays.toString(edges_symmetry)) ;
+        System.out.println("NODES SYMMETRY: " + Arrays.toString(nodes_symmetry)) ;
+        System.out.println("EDGES SYMMETRY: " + Arrays.toString(edges_symmetry)) ;
     }
 }

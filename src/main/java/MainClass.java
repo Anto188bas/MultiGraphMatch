@@ -9,7 +9,6 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import matching.controllers.MatchingBase;
-import matching.controllers.MatchingBaseTask;
 import matching.controllers.MatchingSimple;
 import matching.controllers.MatchingWhere;
 import matching.models.OutData;
@@ -21,7 +20,6 @@ import target_graph.nodes.MacroNodeHandler;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import tech.tablesaw.api.Table;
 
-import javax.sound.midi.SysexMessage;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -44,8 +42,6 @@ public class MainClass {
 
         Table[] nodes_tables = FileManager.files_reading(configuration.nodes_main_directory, ',');
         Table[] edges_tables_properties = FileManager.files_reading(configuration.edges_main_directory, ',');
-        System.out.println("NODES DIRECTORY: " + configuration.nodes_main_directory);
-        System.out.println("EDGES DIRECTORY: " + configuration.edges_main_directory);
 
         System.out.println("Elaborating nodes...");
 
@@ -84,14 +80,14 @@ public class MainClass {
 
                 Int2ObjectOpenHashMap<ObjectArrayList<QueryCondition>> mapOrPropositionToConditionSet = where_managing.getMapOrPropositionToConditionSet();
 
-                if (mapOrPropositionToConditionSet.size() > 0) { // Multi-Thread (at least one OR
+                if (mapOrPropositionToConditionSet.size() > 0) { // Multi-Thread (at least one OR)
+                    ObjectArrayList<ObjectArraySet<String>> sharedMemory = new ObjectArrayList<>();
                     double time = System.currentTimeMillis();
 
                     QueryStructure query_t = new QueryStructure();
                     query_t.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.of(where_managing));
 
                     for (int orIndex = 0; orIndex < mapOrPropositionToConditionSet.size(); orIndex++) {
-                        System.out.println("OR PROPOSITION n. " + (orIndex + 1));
                         query_t.clean();
 
                         ObjectArrayList<QueryCondition> simpleConditions = new ObjectArrayList<>();
@@ -105,9 +101,6 @@ public class MainClass {
                             }
                         }
 
-                        System.out.println("NUM. SIMPLE CONDITIONS: " + simpleConditions.size());
-                        System.out.println("NUM. COMPLEX CONDITIONS: " + complexConditions.size());
-
                         OutData outData = new OutData();
                         MatchingBase matchingMachine;
                         if (complexConditions.size() == 0) { // No complex conditions
@@ -116,23 +109,24 @@ public class MainClass {
                             matchingMachine = new MatchingWhere(outData, query_t, false, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, simpleConditions, complexConditions);
                         }
                         matchingMachine.matching();
-//                        matchingMachine = null;
-//                        simpleConditions = null;
-//                        complexConditions = null;
-//                        System.gc(); // Invoke the Garbage Collector
+                        sharedMemory.add(outData.occurrences);
+                    }
+
+                    // Union of the occurrences sets
+                    ObjectArraySet<String> finalOccurrences = new ObjectArraySet<>();
+                    for(ObjectArraySet<String> occurrences: sharedMemory) {
+                        finalOccurrences.addAll(occurrences);
                     }
 
                     time = (System.currentTimeMillis() - time) / 1000;
                     totalTime = time;
-                    numOccurrences = 0;
+                    numOccurrences = finalOccurrences.size();
                     System.out.println("FINAL NUMBER OF OCCURRENCES: " + numOccurrences + "\tTIME: " + totalTime);
                 } else { // Single-Thread (only AND)
                     QueryStructure query_t = new QueryStructure();
                     query_t.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.of(where_managing));
 
                     int orIndex = 0;
-                    System.out.println("OR PROPOSITION n. " + (orIndex + 1));
-                    query_t.clean();
 
                     ObjectArrayList<QueryCondition> simpleConditions = new ObjectArrayList<>();
                     ObjectArrayList<QueryCondition> complexConditions = new ObjectArrayList<>();
@@ -144,9 +138,6 @@ public class MainClass {
                             complexConditions.add(condition);
                         }
                     }
-
-                    System.out.println("NUM. SIMPLE CONDITIONS: " + simpleConditions.size());
-                    System.out.println("NUM. COMPLEX CONDITIONS: " + complexConditions.size());
 
                     OutData outData = new OutData();
                     MatchingBase matchingMachine;
