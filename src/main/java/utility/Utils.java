@@ -56,10 +56,10 @@ public class Utils {
 //            });
 //        });
 
-//        System.out.println("QUERY NODES");
-//        query_obj.getQuery_nodes().forEach((id, node) -> {
-//            System.out.println("ID: " + id + "-> " + node);
-//        });
+        System.out.println("QUERY NODES");
+        query_obj.getQuery_nodes().forEach((id, node) -> {
+            System.out.println("ID: " + id + "-> " + node);
+        });
 //
 //        System.out.println("QUERY EDGES");
 //        query_obj.getQuery_pattern().getOut_edges().forEach((key, list) -> {

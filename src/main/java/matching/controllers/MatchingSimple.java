@@ -59,7 +59,7 @@ public class MatchingSimple extends MatchingBase {
         outData.matching_time = System.currentTimeMillis();
 
         //DEBUG INFO
-        Utils.printDebugInfo(graphPaths, query, states, edgeOrdering);
+//        Utils.printDebugInfo(graphPaths, query, states, edgeOrdering);
 
         // MATCHING
         outData.num_occurrences = matching_procedure();

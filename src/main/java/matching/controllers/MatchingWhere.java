@@ -13,7 +13,6 @@ import ordering.NodesPair;
 import target_graph.graph.GraphPaths;
 import target_graph.nodes.GraphMacroNode;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
-
 import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Optional;
