@@ -31,7 +31,7 @@ public class TestPaths {
         String query_test = "MATCH (n1:P)<-[:F*2..2]-(n0:P), (n0:P) -[:C]-> (n2:P) RETURN n0,n1,n2";
         System.out.println(query_test);
 
-        QueryStructure query_obj = new QueryStructure();
+        QueryStructure query_obj = new QueryStructure(targetGraph);
         query_obj.parser(query_test, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager(), nodesTables, edgesTables, Optional.empty());
 
         OutData outData = new OutData();

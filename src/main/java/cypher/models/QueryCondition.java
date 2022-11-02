@@ -11,6 +11,7 @@ import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import org.opencypher.v9_0.expressions.*;
 import scala.collection.Iterator;
+import target_graph.graph.TargetGraph;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.index.DoubleIndex;
 import tech.tablesaw.index.FloatIndex;
@@ -32,9 +33,11 @@ public class QueryCondition {
     private String conditionKey;
     private PropositionStatus status;
     private QueryConditionType type;
+    private TargetGraph targetGraph;
+
 
     // CONSTRUCTOR
-    public QueryCondition(Expression expression, Table[] nodes, Table[] edges, Object2IntOpenHashMap<String> node_name, Object2IntOpenHashMap<String> edge_name, Int2ObjectOpenHashMap<QueryNode> query_nodes, Int2ObjectOpenHashMap<QueryEdge> query_edges, Optional<WhereConditionExtraction> where_managing) {
+    public QueryCondition(Expression expression, TargetGraph targetGraph, Table[] nodes, Table[] edges, Object2IntOpenHashMap<String> node_name, Object2IntOpenHashMap<String> edge_name, Int2ObjectOpenHashMap<QueryNode> query_nodes, Int2ObjectOpenHashMap<QueryEdge> query_edges, Optional<WhereConditionExtraction> where_managing) {
         negation = false;
         associations = new HashMap<>();
         associations.put("Equals", "=");
@@ -42,6 +45,7 @@ public class QueryCondition {
         associations.put("LessThan", "<");
         associations.put("GreaterThanOrEqual", ">=");
         associations.put("LessThanOrEqual", "<=");
+        this.targetGraph = targetGraph;
         conditions_init(expression, nodes, edges, node_name, edge_name, query_nodes, query_edges, where_managing);
     }
 

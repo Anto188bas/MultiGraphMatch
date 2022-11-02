@@ -54,7 +54,7 @@ public class TestTargetGraph {
                 ObjectArrayList<ObjectArraySet<String>> sharedMemory = new ObjectArrayList<>();
                 double time = System.currentTimeMillis();
 
-                QueryStructure query_t = new QueryStructure();
+                QueryStructure query_t = new QueryStructure(targetGraph);
                 query_t.parser(query_test, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager(), nodesTables, edgesTables, Optional.of(where_managing));
 
                 for (int orIndex = 0; orIndex < mapOrPropositionToConditionSet.size(); orIndex++) {
@@ -93,7 +93,7 @@ public class TestTargetGraph {
                 numOccurrences = finalOccurrences.size();
                 System.out.println("FINAL NUMBER OF OCCURRENCES: " + numOccurrences + "\tTIME: " + totalTime);
             } else { // Single-Thread (only AND)
-                QueryStructure query_t = new QueryStructure();
+                QueryStructure query_t = new QueryStructure(targetGraph);
                 query_t.parser(query_test, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager(), nodesTables, edgesTables, Optional.of(where_managing));
 
                 int orIndex = 0;
@@ -124,7 +124,7 @@ public class TestTargetGraph {
                 System.out.println("FINAL NUMBER OF OCCURRENCES: " + numOccurrences + "\tTIME: " + totalTime);
             }
         } else { // No WHERE CONDITIONS
-            QueryStructure query = new QueryStructure();
+            QueryStructure query = new QueryStructure(targetGraph);
             query.parser(query_test, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager(),nodesTables, edgesTables, Optional.empty());
 
             OutData outData = new OutData();

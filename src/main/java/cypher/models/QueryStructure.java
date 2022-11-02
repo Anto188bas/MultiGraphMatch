@@ -15,6 +15,7 @@ import org.opencypher.v9_0.expressions.*;
 import org.opencypher.v9_0.parser.CypherParser;
 import scala.Option;
 import scala.collection.Iterator;
+import target_graph.graph.TargetGraph;
 import target_graph.managers.EdgesLabelsManager;
 import target_graph.managers.NodesLabelsManager;
 import tech.tablesaw.api.Row;
@@ -39,8 +40,9 @@ public class QueryStructure {
     private final Int2ObjectOpenHashMap<ObjectArraySet<NodesPair>> map_pair_to_neighborhood;
     private final Int2ObjectOpenHashMap<Int2IntOpenHashMap> map_node_color_degrees;
     private final Int2ObjectOpenHashMap<IntArraySet> map_node_to_domain;
+    private final TargetGraph targetGraph;
 
-    public QueryStructure() {
+    public QueryStructure(TargetGraph targetGraph) {
         query_nodes = new Int2ObjectOpenHashMap<>();
         map_node_name_to_idx = new Object2IntOpenHashMap<>();
         query_edges = new Int2ObjectOpenHashMap<>();
@@ -54,6 +56,7 @@ public class QueryStructure {
         map_pair_to_neighborhood = new Int2ObjectOpenHashMap<>();
         map_node_color_degrees = new Int2ObjectOpenHashMap<>();
         map_node_to_domain = new Int2ObjectOpenHashMap<>();
+        this.targetGraph = targetGraph;
     }
 
     // PARSER FUNCTION
@@ -71,7 +74,7 @@ public class QueryStructure {
                 matchHandler(clause, nodesLabelsManager, edgesLabelsManager);
                 Option<Where> where_conditions = ((Match) clause).where();
                 if (!where_conditions.isDefined()) continue;
-                WhereConditionHandler.handleWhereCondition(where_conditions.get().expression(), nodes, edges, map_node_name_to_idx, map_edge_name_to_idx, query_nodes, query_edges, where_managing, nodesLabelsManager, edgesLabelsManager);
+                WhereConditionHandler.handleWhereCondition(where_conditions.get().expression(), targetGraph, nodes, edges, map_node_name_to_idx, map_edge_name_to_idx, query_nodes, query_edges, where_managing, nodesLabelsManager, edgesLabelsManager);
             } else if (clause instanceof Return) {
                 QueryReturn query_return = new QueryReturn();
                 query_return.return_elaboration((Return) clause);

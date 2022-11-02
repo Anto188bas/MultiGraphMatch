@@ -6,6 +6,7 @@ import cypher.controller.WhereConditionHandler;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import org.opencypher.v9_0.expressions.Expression;
+import target_graph.graph.TargetGraph;
 import target_graph.managers.EdgesLabelsManager;
 import target_graph.managers.NodesLabelsManager;
 import tech.tablesaw.api.Table;
@@ -20,7 +21,7 @@ public class WhereExpression {
 
     // CONSTRUCTOR
     public WhereExpression(
-            Expression lft, String cj_op, Expression rft, Table[] nodes, Table[] edges,
+            Expression lft, String cj_op, Expression rft, TargetGraph targetGraph, Table[] nodes, Table[] edges,
             Object2IntOpenHashMap<String>      node_name,
             Object2IntOpenHashMap<String>      edge_name,
             Int2ObjectOpenHashMap<QueryNode>   query_nodes,
@@ -29,9 +30,9 @@ public class WhereExpression {
             NodesLabelsManager nodesLabelsManager,
             EdgesLabelsManager edgesLabelsManager
     ){
-        left_expression  = WhereConditionHandler.handleWhereCondition(lft, nodes, edges, node_name, edge_name, query_nodes, query_edges, where_managing, nodesLabelsManager, edgesLabelsManager);
+        left_expression  = WhereConditionHandler.handleWhereCondition(lft, targetGraph, nodes, edges, node_name, edge_name, query_nodes, query_edges, where_managing, nodesLabelsManager, edgesLabelsManager);
         conj_operator    = cj_op;
-        right_expression = WhereConditionHandler.handleWhereCondition(rft, nodes, edges, node_name, edge_name, query_nodes, query_edges, where_managing, nodesLabelsManager, edgesLabelsManager);
+        right_expression = WhereConditionHandler.handleWhereCondition(rft, targetGraph, nodes, edges, node_name, edge_name, query_nodes, query_edges, where_managing, nodesLabelsManager, edgesLabelsManager);
     }
 
     // GETTER

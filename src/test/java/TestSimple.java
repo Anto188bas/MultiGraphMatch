@@ -37,7 +37,7 @@ public class TestSimple {
             String query_test = queries[i];
             System.out.println(query_test);
 
-            QueryStructure query = new QueryStructure();
+            QueryStructure query = new QueryStructure(targetGraph);
             query.parser(query_test, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager(), nodesTables, edgesTables, Optional.empty());
 
             OutData outData = new OutData();
