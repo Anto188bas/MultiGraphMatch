@@ -9,9 +9,11 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.opencypher.v9_0.expressions.*;
 import scala.collection.Iterator;
 import target_graph.graph.TargetGraph;
+import target_graph.managers.PropertiesManager;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.index.DoubleIndex;
 import tech.tablesaw.index.FloatIndex;
@@ -203,17 +205,44 @@ public class QueryCondition {
             if (mapNodeNameToID.containsKey(this.node_param.getElementName())) { // CONDITION ON NODE
                 QueryNode node = queryStructure.getQuery_nodes().get(mapNodeNameToID.getInt(node_param.getElementName()));
                 node.addSimpleCondition(this, this.conditionKey);
-                node.setWhereConditionsCompatibilityDomain(this.getDomain());
+                node.setWhereConditionsCompatibilityDomain(this.getDomain(queryStructure));
             } else { // CONDITION ON EDGE
                 QueryEdge edge = queryStructure.getQuery_edges().get(mapEdgeNameToID.getInt(node_param.getElementName()));
                 edge.addSimpleCondition(this, this.conditionKey);
-                edge.setWhereConditionsCompatibilityDomain(this.getDomain());
+                edge.setWhereConditionsCompatibilityDomain(this.getDomain(queryStructure));
             }
         }
     }
 
+    public IntArraySet getEqualsTo(String propertyName, Object expressionValue, Object2IntOpenHashMap<String> mapNodeNameToID, Object2IntOpenHashMap<String> mapEdgeNameToID, IntArraySet fullIdList) {
+        PropertiesManager propertiesManager;
+        if (mapNodeNameToID.containsKey(this.node_param.getElementName())) { // CONDITION ON NODE
+            propertiesManager = targetGraph.getNodesPropertiesManager();
+        } else if (mapEdgeNameToID.containsKey(this.node_param.getElementName())) { // CONDITION ON EDGE
+            propertiesManager = targetGraph.getEdgesPropertiesManager();
+        } else {
+            System.err.println("Error! This kind of condition is not handled!");
+            System.exit(-1);
+            return null;
+        }
 
-    public IntArraySet getDomain() {
+        int propertyId = propertiesManager.getMapPropertyStringToPropertyId().getInt(propertyName);
+        IntArraySet idList = propertiesManager.getMapPropertyIdToValues().get(propertyId).get(expressionValue);
+
+        if (idList == null) {
+            idList = new IntArraySet();
+        }
+
+
+        if (this.isNegation()) {
+            idList = Utils.intArraySetDifference(fullIdList, idList);
+        }
+
+        return idList;
+    }
+
+
+    public IntArraySet getDomain(QueryStructure queryStructure) {
         String propertyName = this.getNode_param().getElementKey();
         Object expressionValue = this.getExpr_value();
         Table selectedTable = this.conditionCheck.getSelectedTable();
@@ -226,6 +255,8 @@ public class QueryCondition {
 
         String operation = this.getOperation();
 
+        Object2IntOpenHashMap<String> mapNodeNameToID = queryStructure.getMap_node_name_to_idx();
+        Object2IntOpenHashMap<String> mapEdgeNameToID = queryStructure.getMap_edge_name_to_idx();
 
         switch (columnType) {
             case "INTEGER":
@@ -266,11 +297,7 @@ public class QueryCondition {
                             break;
 
                         case "Equals":
-                            idList = new IntArraySet((List<Integer>) selectedTable.where(((IntIndex) index).get((Integer) expressionValue)).column("id").asList());
-
-                            if (this.isNegation()) {
-                                idList = Utils.intArraySetDifference(fullIdList, idList);
-                            }
+                            idList = getEqualsTo(propertyName, expressionValue, mapNodeNameToID, mapEdgeNameToID, fullIdList);
 
                             break;
 
@@ -337,11 +364,7 @@ public class QueryCondition {
                             break;
 
                         case "Equals":
-                            idList = new IntArraySet((List<Integer>) selectedTable.where(((DoubleIndex) index).get((Double) expressionValue)).column("id").asList());
-
-                            if (this.isNegation()) {
-                                idList = Utils.intArraySetDifference(fullIdList, idList);
-                            }
+                            idList = getEqualsTo(propertyName, expressionValue, mapNodeNameToID, mapEdgeNameToID, fullIdList);
 
                             break;
 
@@ -409,12 +432,7 @@ public class QueryCondition {
                             break;
 
                         case "Equals":
-                            idList = new IntArraySet((List<Integer>) selectedTable.where(((FloatIndex) index).get((Float) expressionValue)).column("id").asList());
-
-                            if (this.isNegation()) {
-                                idList = Utils.intArraySetDifference(fullIdList, idList);
-                            }
-
+                            idList = getEqualsTo(propertyName, expressionValue, mapNodeNameToID, mapEdgeNameToID, fullIdList);
 
                             break;
 
@@ -460,11 +478,7 @@ public class QueryCondition {
                 } else {
                     switch (operation) {
                         case "Equals":
-                            idList = new IntArraySet((List<Integer>) selectedTable.where(((StringIndex) index).get((String) expressionValue)).column("id").asList());
-
-                            if (this.isNegation()) {
-                                idList = Utils.intArraySetDifference(fullIdList, idList);
-                            }
+                            idList = getEqualsTo(propertyName, expressionValue, mapNodeNameToID, mapEdgeNameToID, fullIdList);
 
                             break;
 
