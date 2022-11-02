@@ -5,7 +5,6 @@ import cypher.controller.WhereConditionExtraction;
 import cypher.models.QueryCondition;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import matching.controllers.MatchingBase;
@@ -13,17 +12,11 @@ import matching.controllers.MatchingSimple;
 import matching.controllers.MatchingWhere;
 import matching.models.OutData;
 import reading.FileManager;
-import target_graph.edges.EdgeHandler;
-import target_graph.graph.GraphPaths;
-import target_graph.nodes.GraphMacroNode;
-import target_graph.nodes.MacroNodeHandler;
-import target_graph.propeties_idx.NodesEdgesLabelsMaps;
+import target_graph.graph.TargetGraph;
 import tech.tablesaw.api.Table;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.*;
@@ -31,36 +24,20 @@ import java.util.concurrent.*;
 public class MainClass {
     public static void main(String[] args) throws IOException {
         // CONFIGURATION
-        NodesEdgesLabelsMaps idx_label = new NodesEdgesLabelsMaps();
         Configuration configuration = new Configuration(args);
-
-//        System.setOut(new PrintStream(new BufferedOutputStream(new FileOutputStream("output.txt")), true));
-
 
         // PATH
         System.out.println("Reading target graph...");
 
-        Table[] nodes_tables = FileManager.files_reading(configuration.nodes_main_directory, ',');
-        Table[] edges_tables_properties = FileManager.files_reading(configuration.edges_main_directory, ',');
+        Table[] nodesTables = FileManager.files_reading(configuration.nodes_main_directory, ',');
+        Table[] edgesTables = FileManager.files_reading(configuration.edges_main_directory, ',');
 
-        System.out.println("Elaborating nodes...");
-
-        // NODES ELABORATION
-        HashMap<String, GraphMacroNode> macro_nodes = new HashMap<>();
-        Int2ObjectOpenHashMap<String> nodes_macro = new Int2ObjectOpenHashMap<>();
-        Int2ObjectOpenHashMap<ArrayList<String>> level_nodeId = new Int2ObjectOpenHashMap<>();
-        int max_deep_level = MacroNodeHandler.graph_macro_node_creation(
-                nodes_tables.clone(), "labels", idx_label, macro_nodes, level_nodeId, nodes_macro
-        );
-
-        System.out.println("Elaborating edges...");
-        // EDGE ELABORATION
-        Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntOpenHashSet[]>> src_dst_aggregation = new Int2ObjectOpenHashMap<>();
-        GraphPaths graphPaths = EdgeHandler.createGraphPaths(edges_tables_properties, idx_label, src_dst_aggregation);
+        // TARGET GRAPH
+        TargetGraph targetGraph = new TargetGraph(nodesTables, edgesTables, "id","labels");
 
         // TARGET BITMATRIX
         TargetBitmatrix target_bitmatrix = new TargetBitmatrix();
-        target_bitmatrix.create_bitset(src_dst_aggregation, idx_label, macro_nodes, nodes_macro);
+        target_bitmatrix.createBitset(targetGraph.getSrcDstAggregation(), targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager());
 
         // QUERIES READING
         List<String> queries = FileManager.query_reading(configuration);
@@ -90,7 +67,7 @@ public class MainClass {
                             double time = System.currentTimeMillis();
 
                             QueryStructure query_t = new QueryStructure();
-                            query_t.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.of(where_managing));
+                            query_t.parser(query_test, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager(), nodesTables, edgesTables, Optional.of(where_managing));
 
                             for (int orIndex = 0; orIndex < mapOrPropositionToConditionSet.size(); orIndex++) {
                                 query_t.clean();
@@ -109,9 +86,9 @@ public class MainClass {
                                 OutData outData = new OutData();
                                 MatchingBase matchingMachine;
                                 if (complexConditions.size() == 0) { // No complex conditions
-                                    matchingMachine = new MatchingSimple(outData, query_t, false, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, simpleConditions);
+                                    matchingMachine = new MatchingSimple(outData, query_t, false, false, Long.MAX_VALUE, targetGraph, target_bitmatrix, simpleConditions);
                                 } else { // Complex conditions
-                                    matchingMachine = new MatchingWhere(outData, query_t, false, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, simpleConditions, complexConditions);
+                                    matchingMachine = new MatchingWhere(outData, query_t, false, false, Long.MAX_VALUE, targetGraph, target_bitmatrix, simpleConditions, complexConditions);
                                 }
                                 matchingMachine.matching();
                                 sharedMemory.add(outData.occurrences);
@@ -129,7 +106,7 @@ public class MainClass {
                             System.out.println("FINAL NUMBER OF OCCURRENCES: " + numOccurrences + "\tTIME: " + totalTime);
                         } else { // Single-Thread (only AND)
                             QueryStructure query_t = new QueryStructure();
-                            query_t.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.of(where_managing));
+                            query_t.parser(query_test, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager(), nodesTables, edgesTables, Optional.of(where_managing));
 
                             int orIndex = 0;
 
@@ -147,10 +124,9 @@ public class MainClass {
                             OutData outData = new OutData();
                             MatchingBase matchingMachine;
                             if (complexConditions.size() == 0) { // No complex conditions
-                                matchingMachine = new MatchingSimple(outData, query_t, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, simpleConditions);
-
+                                matchingMachine = new MatchingSimple(outData, query_t, true, false, Long.MAX_VALUE, targetGraph, target_bitmatrix, simpleConditions);
                             } else { // Complex conditions
-                                matchingMachine = new MatchingWhere(outData, query_t, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, simpleConditions, complexConditions);
+                                matchingMachine = new MatchingWhere(outData, query_t, true, false, Long.MAX_VALUE, targetGraph, target_bitmatrix, simpleConditions, complexConditions);
                             }
 
                             outData = matchingMachine.matching();
@@ -161,10 +137,10 @@ public class MainClass {
                         }
                     } else { // No WHERE CONDITIONS
                         QueryStructure query = new QueryStructure();
-                        query.parser(query_test, idx_label, nodes_tables, edges_tables_properties, Optional.empty());
+                        query.parser(query_test, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager(),nodesTables, edgesTables, Optional.empty());
 
                         OutData outData = new OutData();
-                        MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, idx_label, target_bitmatrix, graphPaths, macro_nodes, nodes_macro, new ObjectArrayList<>());
+                        MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, targetGraph, target_bitmatrix, new ObjectArrayList<>());
                         outData = matchingMachine.matching();
 
                         totalTime = outData.getTotalTime();

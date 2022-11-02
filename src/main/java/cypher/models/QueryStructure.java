@@ -8,7 +8,6 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import matching.controllers.WhereUtils;
 import ordering.EdgeDirection;
 import ordering.NodesPair;
 import org.opencypher.v9_0.ast.*;
@@ -16,14 +15,14 @@ import org.opencypher.v9_0.expressions.*;
 import org.opencypher.v9_0.parser.CypherParser;
 import scala.Option;
 import scala.collection.Iterator;
+import target_graph.managers.EdgesLabelsManager;
+import target_graph.managers.NodesLabelsManager;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.index.IntIndex;
-import tech.tablesaw.selection.Selection;
 
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -58,8 +57,8 @@ public class QueryStructure {
     }
 
     // PARSER FUNCTION
-    public void parser(String query, NodesEdgesLabelsMaps label_type_map, Table[] nodes, Table[] edges, Optional<WhereConditionExtraction> where_managing){
-        CypherParser parser      = new CypherParser();
+    public void parser(String query,NodesLabelsManager nodesLabelsManager, EdgesLabelsManager edgesLabelsManager, Table[] nodes, Table[] edges, Optional<WhereConditionExtraction> where_managing){
+        CypherParser parser = new CypherParser();
         Query query_obj          = (Query) parser.parse(query, null);
         if(!(query_obj.part() instanceof SingleQuery)) return;
         SingleQuery single_query = (SingleQuery) query_obj.part();
@@ -69,12 +68,12 @@ public class QueryStructure {
         while (clauses.hasNext()){
             Clause clause = clauses.next();
             if(clause instanceof Match){
-                match_handler(clause, label_type_map);
+                matchHandler(clause, nodesLabelsManager, edgesLabelsManager);
                 Option<Where> where_conditions = ((Match) clause).where();
                 if(!where_conditions.isDefined()) continue;
-                WhereConditionHandler.where_condition_handler(
-                   where_conditions.get().expression(), nodes, edges, map_node_name_to_idx,
-                   map_edge_name_to_idx, query_nodes, query_edges, where_managing, label_type_map
+                WhereConditionHandler.handleWhereCondition(
+                        where_conditions.get().expression(), nodes, edges, map_node_name_to_idx,
+                        map_edge_name_to_idx, query_nodes, query_edges, where_managing, nodesLabelsManager, edgesLabelsManager
                 );
             }
             else if(clause instanceof Return){
@@ -86,7 +85,7 @@ public class QueryStructure {
     }
 
     // MATCH PART ELABORATION
-    private void match_handler(Clause clause, NodesEdgesLabelsMaps label_type_map){
+    private void matchHandler(Clause clause, NodesLabelsManager nodesLabelsManager, EdgesLabelsManager edgesLabelsManager){
         Pattern pattern = ((Match) clause).pattern();
         Iterator<PatternPart> pattern_parts = pattern.patternParts().iterator();
         while (pattern_parts.hasNext()){
@@ -95,17 +94,17 @@ public class QueryStructure {
             String         named_pattern   = get_pattern_name(pattern_part);
             PatternElement pattern_element = pattern_part.element();
             if (pattern_element.isSingleNode())
-                node_manager((NodePattern) pattern_element, label_type_map);
+                nodeManager((NodePattern) pattern_element, nodesLabelsManager);
             else{
                 LinkedList<Integer> nodes_ids = new LinkedList<>();
                 LinkedList<Integer> edges_ids = new LinkedList<>();
-                pattern_elaboration(pattern_element, nodes_ids, edges_ids, label_type_map);
+                patternElaboration(pattern_element, nodes_ids, edges_ids, nodesLabelsManager, edgesLabelsManager);
                 this.query_pattern.create_aggregation(nodes_ids, edges_ids, this.query_edges);
             }
         }
-        pairs_elaboration();
+        buildNodesPairs();
         map_id_to_pair_elaboration();
-        neighborhoods_elaboration();
+        elaborateNeighborhoods();
     }
 
     public void clean() {
@@ -134,7 +133,7 @@ public class QueryStructure {
     }
 
     // NODE CREATION
-    private int node_manager(NodePattern nodePattern, NodesEdgesLabelsMaps label_type_map){
+    private int nodeManager(NodePattern nodePattern, NodesLabelsManager nodesLabelsManager){
         Option<LogicalVariable> name = nodePattern.variable();
         // NODE MANE NOT DEFINED (:LABEL {PROPS}). SO, EACH ELEMENT IS A NEW NODE.
         if(!name.isDefined()){
@@ -148,7 +147,7 @@ public class QueryStructure {
         if (map_node_name_to_idx.containsKey(name_str))
             return map_node_name_to_idx.getInt(name_str);
         // NODE HAVE TO BE CREATED
-        QueryNode node  = new QueryNode(nodePattern, name_str, label_type_map);
+        QueryNode node  = new QueryNode(nodePattern, name_str, nodesLabelsManager);
         int id          = query_nodes.size();
         query_nodes.put(id, node);
         map_node_name_to_idx.put(name_str, id);
@@ -156,31 +155,32 @@ public class QueryStructure {
     }
 
     // EDGE CREATION
-    private int edge_manager(RelationshipPattern relationship, NodesEdgesLabelsMaps label_type_map){
+    private int edgeManager(RelationshipPattern relationship, EdgesLabelsManager edgesLabelsManager){
         int id = query_edges.size();
-        query_edges.put(id, new QueryEdge(relationship, label_type_map));
+        query_edges.put(id, new QueryEdge(relationship, edgesLabelsManager));
         if(query_edges.get(id).getEdge_name() == null) query_edges.get(id).setEdge_name(id);
         map_edge_name_to_idx.put(query_edges.get(id).getEdge_name(), id);
         return id;
     }
 
     // PATTERN ELABORATION
-    private void pattern_elaboration(
-        PatternElement       patternElement,
-        LinkedList<Integer>  nodes_ids,
-        LinkedList<Integer>  edges_ids,
-        NodesEdgesLabelsMaps label_type_map
+    private void patternElaboration(
+            PatternElement       patternElement,
+            LinkedList<Integer>  nodes_ids,
+            LinkedList<Integer>  edges_ids,
+            NodesLabelsManager nodesLabelsManager,
+            EdgesLabelsManager edgesLabelsManager
     ){
         RelationshipChain relationshipChain = (RelationshipChain) patternElement;
         // RIGHT ELEMENT
-        nodes_ids.addFirst(node_manager(relationshipChain.rightNode(), label_type_map));
-        edges_ids.addFirst(edge_manager(relationshipChain.relationship(), label_type_map));
+        nodes_ids.addFirst(nodeManager(relationshipChain.rightNode(), nodesLabelsManager));
+        edges_ids.addFirst(edgeManager(relationshipChain.relationship(), edgesLabelsManager));
         // LEFT ELEMENT
         PatternElement new_pattern = relationshipChain.element();
         if(new_pattern instanceof RelationshipChain)
-           pattern_elaboration(new_pattern, nodes_ids, edges_ids, label_type_map);
+            patternElaboration(new_pattern, nodes_ids, edges_ids, nodesLabelsManager, edgesLabelsManager);
         else if(new_pattern instanceof NodePattern)
-            nodes_ids.addFirst(node_manager((NodePattern) new_pattern, label_type_map));
+            nodes_ids.addFirst(nodeManager((NodePattern) new_pattern, nodesLabelsManager));
     }
 
 
@@ -197,7 +197,7 @@ public class QueryStructure {
             color_degrees.put(color, 1);
     }
 
-    private void pairs_elaboration() {
+    private void buildNodesPairs() {
         for (int edge_key : query_edges.keySet()) {
             NodesPair endpoints = getEdgeEndpoints(query_pattern.getOut_edges(), edge_key);
 
@@ -223,7 +223,7 @@ public class QueryStructure {
         }
     }
 
-    private void neighborhoods_elaboration() {
+    private void elaborateNeighborhoods() {
         // MAP EACH NODE TO ITS NEIGHBORHOOD
         for (int node : query_nodes.keySet()) {
             IntArraySet node_neighborhood = getNodeNeighborhood(node, query_pattern.getIn_edges(), query_pattern.getOut_edges(), query_pattern.getIn_out_edges());

@@ -68,6 +68,9 @@ public class TargetGraph {
     private final Table[] nodesTables;
     private final Table[] edgesTables;
 
+    // TODO: remove it!
+    private Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntOpenHashSet[]>> srcDstAggregation;
+
     public TargetGraph(Table[] nodesTables, Table[] edgesTables, String idsColumnName, String labelsColumnName) {
         graphPaths = new GraphPaths();
 
@@ -145,6 +148,7 @@ public class TargetGraph {
             currentTable.addColumns(edgeIdColumn);
         }
 
+        this.srcDstAggregation = srcDstAggregation;
         this.graphPaths = new GraphPaths(mapPairToKey, mapKeyToEdgeList, this.edgesLabelsManager.getMapIntLabelToStringLabel().size() ,mapKeyToEdgeList.size(), mapNodeIdToLabelsDegrees);
     }
 
@@ -235,4 +239,9 @@ public class TargetGraph {
     public PropertiesManager getEdgesPropertiesManager() {
         return edgesPropertiesManager;
     }
+
+    public Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntOpenHashSet[]>> getSrcDstAggregation() {
+        return srcDstAggregation;
+    }
+
 }

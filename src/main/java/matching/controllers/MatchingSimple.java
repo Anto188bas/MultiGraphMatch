@@ -10,19 +10,14 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import matching.models.OutData;
 import matching.models.PathsMatchingData;
 import ordering.NodesPair;
-import target_graph.graph.GraphPaths;
-import target_graph.nodes.GraphMacroNode;
-import target_graph.propeties_idx.NodesEdgesLabelsMaps;
-import utility.Utils;
 
-import java.io.FileNotFoundException;
-import java.util.HashMap;
-import java.util.Optional;
+import target_graph.graph.TargetGraph;
+
 
 public class MatchingSimple extends MatchingBase {
     ObjectArrayList<QueryCondition> simpleConditions;
-    public MatchingSimple(OutData outData, QueryStructure query, boolean justCount, boolean distinct, long numMaxOccs, NodesEdgesLabelsMaps labels_types_idx, TargetBitmatrix target_bitmatrix, GraphPaths graphPaths, HashMap<String, GraphMacroNode> macro_nodes, Int2ObjectOpenHashMap<String> nodes_macro, ObjectArrayList<QueryCondition> simpleConditions) {
-        super(outData, query, justCount, distinct, numMaxOccs, labels_types_idx, target_bitmatrix, graphPaths, macro_nodes, nodes_macro);
+    public MatchingSimple(OutData outData, QueryStructure query, boolean justCount, boolean distinct, long numMaxOccs, TargetGraph targetGraph, TargetBitmatrix target_bitmatrix, ObjectArrayList<QueryCondition> simpleConditions) {
+        super(outData, query, justCount, distinct, numMaxOccs, targetGraph, target_bitmatrix);
         this.simpleConditions = simpleConditions;
     }
 

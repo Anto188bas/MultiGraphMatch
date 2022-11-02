@@ -7,6 +7,7 @@ import org.opencypher.v9_0.expressions.LogicalVariable;
 import org.opencypher.v9_0.expressions.Range;
 import org.opencypher.v9_0.expressions.RelationshipPattern;
 import scala.Option;
+import target_graph.managers.EdgesLabelsManager;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import utility.Utils;
 
@@ -30,7 +31,7 @@ public class QueryEdge {
 
     private IntArraySet whereConditionsCompatibilityDomain;
 
-    public QueryEdge(RelationshipPattern edgePattern, NodesEdgesLabelsMaps label_type_map){
+    public QueryEdge(RelationshipPattern edgePattern, EdgesLabelsManager edgesLabelsManager){
         properties = new HashMap<>();
         min_deep      = 1;
         max_deep      = 1;
@@ -41,7 +42,7 @@ public class QueryEdge {
         simpleConditions    = new HashMap<>();
         complexConditions    = new HashMap<>();
         configure_edge_name(edgePattern);
-        configure_edge_type(edgePattern, label_type_map);
+        configureEdgeType(edgePattern, edgesLabelsManager);
         configure_path_length(edgePattern);
         configure_edge_properties(edgePattern);
         configure_type_direction();
@@ -55,10 +56,10 @@ public class QueryEdge {
     }
 
     // CONFIGURE EDGE TYPE
-    private void configure_edge_type(RelationshipPattern edgePattern, NodesEdgesLabelsMaps label_type_map){
+    private void configureEdgeType(RelationshipPattern edgePattern, EdgesLabelsManager edgesLabelsManager){
         var types = edgePattern.types().iterator();
         while (types.hasNext())
-           edge_label.add(label_type_map.getLabelIdxEdge(types.next().name()));
+            edge_label.add(edgesLabelsManager.getMapStringLabelToIntLabel().getInt((types.next().name())));
     }
 
 

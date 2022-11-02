@@ -2,20 +2,15 @@ package matching.controllers;
 
 import bitmatrix.models.TargetBitmatrix;
 import cypher.controller.PropositionStatus;
-import cypher.controller.WhereConditionExtraction;
 import cypher.models.*;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
+
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import matching.models.MatchingData;
 import matching.models.OutData;
 import ordering.NodesPair;
-import target_graph.graph.GraphPaths;
-import target_graph.nodes.GraphMacroNode;
-import target_graph.propeties_idx.NodesEdgesLabelsMaps;
-import java.io.FileNotFoundException;
-import java.util.HashMap;
-import java.util.Optional;
+
+import target_graph.graph.TargetGraph;
+
 
 public class MatchingWhere extends MatchingBase {
     public boolean doWhereCheck;
@@ -23,8 +18,8 @@ public class MatchingWhere extends MatchingBase {
     public ObjectArrayList<QueryCondition> complexConditions;
 
 
-    public MatchingWhere(OutData outData, QueryStructure query, boolean justCount, boolean distinct, long numMaxOccs, NodesEdgesLabelsMaps labels_types_idx, TargetBitmatrix target_bitmatrix, GraphPaths graphPaths, HashMap<String, GraphMacroNode> macro_nodes, Int2ObjectOpenHashMap<String> nodes_macro, ObjectArrayList<QueryCondition> simpleConditions, ObjectArrayList<QueryCondition> complexConditions) {
-        super(outData, query, justCount, distinct, numMaxOccs, labels_types_idx, target_bitmatrix, graphPaths, macro_nodes, nodes_macro);
+    public MatchingWhere(OutData outData, QueryStructure query, boolean justCount, boolean distinct, long numMaxOccs, TargetGraph targetGraph, TargetBitmatrix target_bitmatrix, ObjectArrayList<QueryCondition> simpleConditions, ObjectArrayList<QueryCondition> complexConditions) {
+        super(outData, query, justCount, distinct, numMaxOccs, targetGraph, target_bitmatrix);
         this.simpleConditions = simpleConditions;
         this.complexConditions = complexConditions;
     }

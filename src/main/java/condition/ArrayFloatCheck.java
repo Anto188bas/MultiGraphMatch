@@ -1,14 +1,18 @@
 package condition;
-import  scala.Function2;
-import  java.util.ArrayList;
-import  java.util.HashMap;
+
+import scala.Function2;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class ArrayFloatCheck extends Comparison {
     // ATTRIBUTES
     private HashMap<String, Function2<Float, ArrayList<Float>, Boolean>> functions;
 
     // CONSTRUCTOR
-    public ArrayFloatCheck(){init_object();}
+    public ArrayFloatCheck() {
+        init_object();
+    }
 
     // METHODs
     private void init_object() {

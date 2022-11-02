@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import org.opencypher.v9_0.expressions.*;
 import scala.Option;
+import target_graph.managers.NodesLabelsManager;
 import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import utility.Utils;
 
@@ -20,18 +21,19 @@ public class QueryNode {
     private HashMap<String, QueryCondition> complexConditions;
     private IntArraySet whereConditionsCompatibilityDomain;
 
-    public QueryNode(NodePattern node_pattern, String name, NodesEdgesLabelsMaps label_type_map){
+
+    public QueryNode(NodePattern node_pattern, String name, NodesLabelsManager nodesLabelsManager){
         labels     = new IntArrayList();
         properties = new HashMap<>();
         simpleConditions = new HashMap<>();
         complexConditions = new HashMap<>();
         node_name  = name;
-        configure_node_labels(node_pattern, label_type_map);
+        configureNodeLabels(node_pattern, nodesLabelsManager);
         configure_node_properties(node_pattern);
     }
 
-    public QueryNode(NodePattern node_pattern, NodesEdgesLabelsMaps label_type_map){
-        this(node_pattern, null, label_type_map);
+    public QueryNode(NodePattern node_pattern, NodesLabelsManager nodesLabelsManager){
+        this(node_pattern, null, nodesLabelsManager);
         node_name  = configure_node_name(node_pattern);
     }
 
@@ -43,11 +45,11 @@ public class QueryNode {
     }
 
     // SET NODE LABELS NAME
-    private void configure_node_labels(NodePattern nodePattern, NodesEdgesLabelsMaps label_type_map){
-        var labels_names = nodePattern.labels().iterator();
-        while (labels_names.hasNext()){
-            String label_name = labels_names.next().name();
-            labels.add(label_type_map.getLabelIdxNode(label_name));
+    private void configureNodeLabels(NodePattern nodePattern, NodesLabelsManager nodesLabelsManager){
+        var labelsNames = nodePattern.labels().iterator();
+        while (labelsNames.hasNext()){
+            String labelString = labelsNames.next().name();
+            labels.add(nodesLabelsManager.getMapStringLabelToIntLabel().getInt(labelString));
         }
     }
 

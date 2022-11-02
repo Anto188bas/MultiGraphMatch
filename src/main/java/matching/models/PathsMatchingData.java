@@ -23,4 +23,12 @@ public class PathsMatchingData extends MatchingData {
             setCandidatesPaths[i] = new ObjectArrayList<>();
         }
     }
+
+    public String getSolutionPathsString() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < solutionPaths.length; i++) {
+            sb.append(solutionPaths[i].toString());
+        }
+        return sb.toString();
+    }
 }

@@ -142,37 +142,6 @@ public class WhereConditionExtraction {
 //
 //        System.out.println("********************************************************************************");
     }
-
-    /**
-     * Here we assign where conditions to nodes and edges.
-     * Suppose we have the following condition: n1.name = n2.name.
-     * The idea is simple. If n1 precedes n2 in the ordering, then we assign the condition to n2. Otherwise, we assign the condition to n1.
-     */
-    public void assignConditionsToNodesAndEdges(QueryStructure queryStructure, IntArrayList nodesOrdering, IntArrayList edgesOrdering) {
-        this.queryConditions.forEach((condition -> {
-            condition.assignComplexCondition(queryStructure, nodesOrdering, edgesOrdering);
-        }));
-    }
-
-    /**
-     * Here we assign where conditions to nodes and edges.
-     * Use this method only if you don't have complex conditions (i.e. n1.name = n2.name) and OR propositions.
-     * In this case, we can filter the compatibility domains and use the standard algorithm.
-     */
-    public void assignConConditionsToNodesAndEdges(QueryStructure queryStructure) {
-        this.queryConditions.forEach((condition -> {
-            condition.assignSimpleCondition(queryStructure);
-        }));
-    }
-
-    // TODO implement me
-    public void assignPatternConditionToQuery(){}
-
-    // GET
-    public IntArrayList getSetWhereConditions() {
-        return setWhereConditions;
-    }
-
     public Object2IntOpenHashMap<String> getMap_condition_to_orPropositionPos() {
         return map_condition_to_orPropositionPos;
     }

@@ -1,15 +1,19 @@
 package condition;
+
 import scala.Function2;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
 
-public class ArrayIntCheck extends Comparison{
+public class ArrayIntCheck extends Comparison {
     // ATTRIBUTES
     private HashMap<String, Function2<Integer, ArrayList<Integer>, Boolean>> functions;
 
     // CONSTRUCTOR
-    public ArrayIntCheck() {init_object();}
+    public ArrayIntCheck() {
+        init_object();
+    }
 
     // METHODs
     private void init_object() {

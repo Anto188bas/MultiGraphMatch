@@ -1,5 +1,7 @@
 package condition;
+
 import scala.Function2;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -9,7 +11,9 @@ public class ArrayDoubleCheck extends Comparison {
     private HashMap<String, Function2<Double, ArrayList<Double>, Boolean>> functions;
 
     // CONSTRUCTORS
-    public ArrayDoubleCheck(){init_object();}
+    public ArrayDoubleCheck() {
+        init_object();
+    }
 
     // METHODs
     private void init_object() {

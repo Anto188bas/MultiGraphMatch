@@ -13,12 +13,9 @@ import matching.models.OutData;
 import ordering.EdgeOrdering;
 import simmetry_condition.SymmetryCondition;
 import state_machine.StateStructures;
-import target_graph.graph.GraphPaths;
-import target_graph.nodes.GraphMacroNode;
-import target_graph.propeties_idx.NodesEdgesLabelsMaps;
+import target_graph.graph.TargetGraph;
 
 import java.util.Arrays;
-import java.util.HashMap;
 
 public abstract class MatchingBase {
     public OutData outData;
@@ -26,11 +23,9 @@ public abstract class MatchingBase {
     public boolean justCount;
     public boolean distinct;
     public long numMaxOccs;
-    public NodesEdgesLabelsMaps labels_types_idx;
+
     public TargetBitmatrix target_bitmatrix;
-    public GraphPaths graphPaths;
-    public HashMap<String, GraphMacroNode> macro_nodes;
-    public Int2ObjectOpenHashMap<String> nodes_macro;
+    public TargetGraph targetGraph;
 
     public EdgeOrdering edgeOrdering;
     public StateStructures states;
@@ -47,20 +42,16 @@ public abstract class MatchingBase {
     public int numTotalOccs;
 
     public MatchingBase(OutData outData, QueryStructure query, boolean justCount, boolean distinct, long numMaxOccs,
-                        NodesEdgesLabelsMaps labels_types_idx, TargetBitmatrix target_bitmatrix, GraphPaths graphPaths,
-                        HashMap<String, GraphMacroNode> macro_nodes, Int2ObjectOpenHashMap<String> nodes_macro) {
+                        TargetGraph targetGraph, TargetBitmatrix target_bitmatrix) {
         this.outData = outData;
         this.query = query;
         this.justCount = justCount;
         this.distinct = distinct;
         this.numMaxOccs = numMaxOccs;
-        this.labels_types_idx = labels_types_idx;
         this.target_bitmatrix = target_bitmatrix;
-        this.graphPaths = graphPaths;
-        this.macro_nodes = macro_nodes;
-        this.nodes_macro = nodes_macro;
         this.numTotalOccs = 0;
         this.states = new StateStructures();
+        this.targetGraph = targetGraph;
     }
     public abstract OutData matching ();
 
@@ -75,18 +66,18 @@ public abstract class MatchingBase {
     protected void computeCompatibilityDomains() {
         outData.domain_time = System.currentTimeMillis();
         QueryBitmatrix query_bitmatrix = new QueryBitmatrix();
-        query_bitmatrix.create_bitset(query, labels_types_idx);
+        query_bitmatrix.createBitset(query, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager());
         Int2ObjectOpenHashMap<IntArrayList> compatibility = BitmatrixManager.bitmatrix_manager(query_bitmatrix, target_bitmatrix);
-        query.domains_elaboration(query_bitmatrix.getTable(), target_bitmatrix.getTable(), compatibility, graphPaths.getMap_node_color_degrees());
+        query.domains_elaboration(query_bitmatrix.getTable(), target_bitmatrix.getTable(), compatibility, targetGraph.getGraphPaths().getMap_node_color_degrees());
         outData.domain_time = (System.currentTimeMillis() - outData.domain_time) / 1000;
     }
 
     protected void computeFilteredCompatibilityDomains() {
         outData.domain_time = System.currentTimeMillis();
         QueryBitmatrix query_bitmatrix = new QueryBitmatrix();
-        query_bitmatrix.create_bitset(query, labels_types_idx);
+        query_bitmatrix.createBitset(query, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager());
         Int2ObjectOpenHashMap<IntArrayList> compatibility = BitmatrixManager.bitmatrix_manager(query_bitmatrix, target_bitmatrix);
-        query.filtered_domains_elaboration(query_bitmatrix.getTable(), target_bitmatrix.getTable(), compatibility, graphPaths.getMap_node_color_degrees());
+        query.filtered_domains_elaboration(query_bitmatrix.getTable(), target_bitmatrix.getTable(), compatibility, targetGraph.getGraphPaths().getMap_node_color_degrees());
         outData.domain_time = (System.currentTimeMillis() - outData.domain_time) / 1000;
     }
 
@@ -158,14 +149,14 @@ public abstract class MatchingBase {
     public void updateCandidatesForStateZero(int q_src, int q_dst, int f_node, int s_node) {
         matchingData.setCandidates[0] = NewFindCandidates.find_first_candidates(
                 q_src, q_dst, f_node, s_node, states.map_state_to_edge[0],
-                query, graphPaths, matchingData, nodes_symmetry, states
+                query, targetGraph.getGraphPaths(), matchingData, nodes_symmetry, states
         );
         matchingData.candidatesIT[0] = -1;
     }
 
     public void updateCandidatesForStateGraterThanZero() {
         matchingData.setCandidates[si] = NewFindCandidates.find_candidates(
-                graphPaths, query, si, nodes_symmetry, edges_symmetry, states, matchingData
+                targetGraph.getGraphPaths(), query, si, nodes_symmetry, edges_symmetry, states, matchingData
         );
         matchingData.candidatesIT[si] = -1;
     }
@@ -193,7 +184,7 @@ public abstract class MatchingBase {
         return (matchingData.candidatesIT[si] == matchingData.setCandidates[si].size());
     }
 
-    public  void newOccurrenceFound() {
+    public void newOccurrenceFound() {
         numTotalOccs++;
         if (!justCount || distinct) {
             outData.occurrences.add(Arrays.toString(matchingData.solution_edges));

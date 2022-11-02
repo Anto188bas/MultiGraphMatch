@@ -1,32 +1,27 @@
 package matching.controllers;
 
 import bitmatrix.models.TargetBitmatrix;
-import cypher.controller.WhereConditionExtraction;
 import cypher.models.QueryCondition;
 import cypher.models.QueryStructure;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import matching.models.OutData;
 import matching.models.PathsMatchingData;
 import ordering.NodesPair;
-import target_graph.graph.GraphPaths;
-import target_graph.nodes.GraphMacroNode;
-import target_graph.propeties_idx.NodesEdgesLabelsMaps;
-import utility.Utils;
+import target_graph.graph.TargetGraph;
 
-import java.io.FileNotFoundException;
-import java.util.HashMap;
-import java.util.Optional;
+import java.util.Arrays;
 
-public class MatchingPath extends MatchingBase {
+
+public class MatchingPathSimple extends MatchingBase {
 
     public PathsMatchingData matchingData;
     ObjectArrayList<QueryCondition> simpleConditions;
 
-    public MatchingPath(OutData outData, QueryStructure query, boolean justCount, boolean distinct, long numMaxOccs, NodesEdgesLabelsMaps labels_types_idx, TargetBitmatrix target_bitmatrix, GraphPaths graphPaths, HashMap<String, GraphMacroNode> macro_nodes, Int2ObjectOpenHashMap<String> nodes_macro, ObjectArrayList<QueryCondition> simpleConditions) {
-        super(outData, query, justCount, distinct, numMaxOccs, labels_types_idx, target_bitmatrix, graphPaths, macro_nodes, nodes_macro);
+    public MatchingPathSimple(OutData outData, QueryStructure query, boolean justCount, boolean distinct, long numMaxOccs, TargetGraph targetGraph, TargetBitmatrix target_bitmatrix, ObjectArrayList<QueryCondition> simpleConditions) {
+        super(outData, query, justCount, distinct, numMaxOccs, targetGraph, target_bitmatrix);
         this.simpleConditions = simpleConditions;
+        this.matchingData = new PathsMatchingData(query);
     }
 
     public OutData matching()  {
@@ -62,7 +57,7 @@ public class MatchingPath extends MatchingBase {
         outData.matching_time = System.currentTimeMillis();
 
         //DEBUG INFO
-        Utils.printDebugInfo(graphPaths, query, states, edgeOrdering);
+//        Utils.printDebugInfo(graphPaths, query, states, edgeOrdering);
 
         // MATCHING
         outData.num_occurrences = matching_procedure();
@@ -150,7 +145,7 @@ public class MatchingPath extends MatchingBase {
     }
 
     public void updateCandidatesForStateZero(int q_src, int q_dst, int f_node, int s_node) {
-        matchingData.setCandidatesPaths[0] = PathsUtils.findStartPaths(f_node, query, graphPaths, matchingData, nodes_symmetry, states);
+        matchingData.setCandidatesPaths[0] = PathsUtils.findStartPaths(f_node, query, targetGraph.getGraphPaths(), matchingData, nodes_symmetry, states);
         matchingData.candidatesIT[0] = -1;
     }
 
@@ -181,7 +176,7 @@ public class MatchingPath extends MatchingBase {
     }
 
     public void updateCandidatesForStateGraterThanZero() {
-        matchingData.setCandidatesPaths[si] = PathsUtils.findPaths(si, query, graphPaths, matchingData, nodes_symmetry, edges_symmetry, states);
+        matchingData.setCandidatesPaths[si] = PathsUtils.findPaths(si, query, targetGraph.getGraphPaths(), matchingData, nodes_symmetry, edges_symmetry, states);
         matchingData.candidatesIT[si] = -1;
     }
 
@@ -213,5 +208,17 @@ public class MatchingPath extends MatchingBase {
         if (node_to_match != -1) {
             matchingData.matchedNodes.add(matchingData.solution_nodes[node_to_match]);
         }
+    }
+
+    public void newOccurrenceFound() {
+        numTotalOccs++;
+        if (!justCount || distinct) {
+            outData.occurrences.add(matchingData.getSolutionPathsString());
+        }
+        if (numTotalOccs == numMaxOccs) {
+            report();
+            System.exit(0);
+        }
+        psi = si;
     }
 }
