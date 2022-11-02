@@ -8,7 +8,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import org.opencypher.v9_0.expressions.Expression;
 import target_graph.managers.EdgesLabelsManager;
 import target_graph.managers.NodesLabelsManager;
-import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import tech.tablesaw.api.Table;
 
 import java.util.Optional;

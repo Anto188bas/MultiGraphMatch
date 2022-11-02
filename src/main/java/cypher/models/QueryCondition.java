@@ -461,7 +461,7 @@ public class QueryCondition {
                             if (this.isNegation()) {
                                 idList = Utils.intArraySetDifference(fullIdList, idList);
                             }
-                            
+
                             break;
 
                         case "StartsWith":
@@ -470,7 +470,7 @@ public class QueryCondition {
                             if (this.isNegation()) {
                                 idList = Utils.intArraySetDifference(fullIdList, idList);
                             }
-                            
+
                             break;
 
                         case "EndsWith":
@@ -479,7 +479,7 @@ public class QueryCondition {
                             if (this.isNegation()) {
                                 idList = Utils.intArraySetDifference(fullIdList, idList);
                             }
-                            
+
 
                             break;
 
@@ -489,7 +489,7 @@ public class QueryCondition {
                             if (this.isNegation()) {
                                 idList = Utils.intArraySetDifference(fullIdList, idList);
                             }
-                            
+
                             break;
 
                         default:

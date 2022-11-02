@@ -52,11 +52,11 @@ public class EdgeOrdering {
             }
         }
 
-        if(!nodes_ordering.contains(firstEndpoint)) {
+        if (!nodes_ordering.contains(firstEndpoint)) {
             nodes_ordering.add(firstEndpoint);
         }
 
-        if(!nodes_ordering.contains(secondEndpoint)) {
+        if (!nodes_ordering.contains(secondEndpoint)) {
             nodes_ordering.add(secondEndpoint);
         }
     }
@@ -157,13 +157,12 @@ public class EdgeOrdering {
             ObjectArraySet<NodesPair> ordered_pairs_neighborhood = new ObjectArraySet<>();
 
             // We build the neighborhood of the already selected pairs
-            selected_pairs.forEach(pair ->
-                    map_pair_to_neighborhood.get(pair.getId().intValue()).forEach(neighbour_pair -> {
-                        // We don't consider pairs already selected
-                        if (!selected_pairs.contains(neighbour_pair)) {
-                            ordered_pairs_neighborhood.add(neighbour_pair);
-                        }
-                    }));
+            selected_pairs.forEach(pair -> map_pair_to_neighborhood.get(pair.getId().intValue()).forEach(neighbour_pair -> {
+                // We don't consider pairs already selected
+                if (!selected_pairs.contains(neighbour_pair)) {
+                    ordered_pairs_neighborhood.add(neighbour_pair);
+                }
+            }));
 
             // Pairs having both endpoints matched
             ObjectArraySet<NodesPair> pairs_with_both_endpoints_matched = new ObjectArraySet<>();
@@ -195,7 +194,7 @@ public class EdgeOrdering {
 
                     int neighbour;
                     int node;
-                    if(nodes_ordering.contains(current_pair.getFirstEndpoint().intValue())) {
+                    if (nodes_ordering.contains(current_pair.getFirstEndpoint().intValue())) {
                         neighbour = current_pair.getSecondEndpoint().intValue();
                         node = current_pair.getFirstEndpoint().intValue();
                     } else {

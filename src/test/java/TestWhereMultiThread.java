@@ -5,7 +5,6 @@ import cypher.controller.WhereConditionExtraction;
 import cypher.models.QueryCondition;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import matching.controllers.MatchingBase;
@@ -14,18 +13,12 @@ import matching.controllers.MatchingSimple;
 import matching.controllers.MatchingWhere;
 import matching.models.OutData;
 import reading.FileManager;
-import target_graph.edges.EdgeHandler;
-import target_graph.graph.GraphPaths;
 import target_graph.graph.TargetGraph;
-import target_graph.nodes.GraphMacroNode;
-import target_graph.nodes.MacroNodeHandler;
-import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import tech.tablesaw.api.Table;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.*;
@@ -42,7 +35,7 @@ public class TestWhereMultiThread {
         Table[] edgesTables = FileManager.files_reading(configuration.edges_main_directory, ',');
 
         // TARGET GRAPH
-        TargetGraph targetGraph = new TargetGraph(nodesTables, edgesTables, "id","labels");
+        TargetGraph targetGraph = new TargetGraph(nodesTables, edgesTables, "id", "labels");
 
         // TARGET BITMATRIX
         TargetBitmatrix target_bitmatrix = new TargetBitmatrix();
@@ -108,7 +101,7 @@ public class TestWhereMultiThread {
                             }
 
                             double time = System.currentTimeMillis();
-                            for(Runnable runnable: runnableArrayList) {
+                            for (Runnable runnable : runnableArrayList) {
                                 pool.execute(runnable);
                             }
 
@@ -172,7 +165,7 @@ public class TestWhereMultiThread {
                     // SAVING
                     if (configuration.out_file != null) {
                         try {
-                            FileManager.saveIntoCSV_NEW(query_test, configuration.out_file, totalTime, numOccurrences);
+                            FileManager.saveToCSV(query_test, configuration.out_file, totalTime, numOccurrences);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -180,8 +173,9 @@ public class TestWhereMultiThread {
                     return totalTime;
                 }
             });
-            try {handler.get(tout.getSeconds(), TimeUnit.SECONDS);}
-            catch (Exception e) {
+            try {
+                handler.get(tout.getSeconds(), TimeUnit.SECONDS);
+            } catch (Exception e) {
                 handler.cancel(true);
                 System.err.println("timeout");
                 System.exit(-1);

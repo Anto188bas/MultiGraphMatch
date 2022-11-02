@@ -1,4 +1,3 @@
-
 package target_graph.managers;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -16,9 +15,9 @@ public class PropertiesManager {
     private final Object2IntOpenHashMap<String> mapPropertyStringToPropertyId;
     private final Int2ObjectOpenHashMap<String> mapPropertyIdToPropertyString;
 
-    private  final Int2ObjectOpenHashMap<Object2ObjectOpenHashMap<Object, ObjectArrayList>> mapPropertyIdToValues;
+    private final Int2ObjectOpenHashMap<Object2ObjectOpenHashMap<Object, ObjectArrayList>> mapPropertyIdToValues;
 
-    public PropertiesManager(String idsColumnName){
+    public PropertiesManager(String idsColumnName) {
         this.idsColumnName = idsColumnName;
         propertySet = new ObjectArraySet<>();
         mapPropertyStringToPropertyId = new Object2IntOpenHashMap<>();
@@ -27,9 +26,9 @@ public class PropertiesManager {
         mapPropertyIdToValues = new Int2ObjectOpenHashMap<>();
     }
 
-    public void addProperties(List<String> properties){
-        properties.forEach(property  ->  {
-            if(!propertySet.contains(property)){
+    public void addProperties(List<String> properties) {
+        properties.forEach(property -> {
+            if (!propertySet.contains(property)) {
                 propertySet.add(property);
                 int id = propertySet.size() - 1;
                 mapPropertyStringToPropertyId.put(property, id);
@@ -44,13 +43,14 @@ public class PropertiesManager {
      * We use this function both for nodes and edges.
      * When we call this function for nodes, we can retrieve its id from the row (so, we pass -1 as id).
      * When we call this function for edges, we can't retrieve its id from the row (so, we pass the id as parameter).
+     *
      * @param elementRow
      * @param properties
      * @param id
      */
-    public void addElement(Row elementRow, List<String> properties, int id){
+    public void addElement(Row elementRow, List<String> properties, int id) {
         int elementId;
-        if(id == -1) {
+        if (id == -1) {
             elementId = elementRow.getInt(idsColumnName);
         } else {
             elementId = id;
@@ -63,7 +63,7 @@ public class PropertiesManager {
 
             Object2ObjectOpenHashMap<Object, ObjectArrayList> mapValueToElementIds = mapPropertyIdToValues.get(propertyId);
 
-            if(!mapValueToElementIds.containsKey(value)){
+            if (!mapValueToElementIds.containsKey(value)) {
                 mapValueToElementIds.put(value, new ObjectArrayList<>());
             }
 

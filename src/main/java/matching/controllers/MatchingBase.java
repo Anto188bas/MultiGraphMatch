@@ -3,7 +3,6 @@ package matching.controllers;
 import bitmatrix.controller.BitmatrixManager;
 import bitmatrix.models.QueryBitmatrix;
 import bitmatrix.models.TargetBitmatrix;
-import cypher.controller.WhereConditionExtraction;
 import cypher.models.QueryNode;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -41,8 +40,7 @@ public abstract class MatchingBase {
 
     public int numTotalOccs;
 
-    public MatchingBase(OutData outData, QueryStructure query, boolean justCount, boolean distinct, long numMaxOccs,
-                        TargetGraph targetGraph, TargetBitmatrix target_bitmatrix) {
+    public MatchingBase(OutData outData, QueryStructure query, boolean justCount, boolean distinct, long numMaxOccs, TargetGraph targetGraph, TargetBitmatrix target_bitmatrix) {
         this.outData = outData;
         this.query = query;
         this.justCount = justCount;
@@ -53,12 +51,13 @@ public abstract class MatchingBase {
         this.states = new StateStructures();
         this.targetGraph = targetGraph;
     }
-    public abstract OutData matching ();
 
-    protected boolean check_nodes_labels(){
-        for (QueryNode node: query.getQuery_nodes().values()) {
-            for(int label: node.getLabels())
-                if(label == -1) return true;
+    public abstract OutData matching();
+
+    protected boolean check_nodes_labels() {
+        for (QueryNode node : query.getQuery_nodes().values()) {
+            for (int label : node.getLabels())
+                if (label == -1) return true;
         }
         return false;
     }
@@ -99,6 +98,7 @@ public abstract class MatchingBase {
         edges_symmetry = SymmetryCondition.getEdgeSymmetryConditions(query);
         outData.symmetry_time = (System.currentTimeMillis() - outData.symmetry_time) / 1000;
     }
+
     public void removeMatchingInfoForStateGraterThanZero() {
         matchingData.matchedEdges.remove(matchingData.solution_edges[si]);
         matchingData.solution_edges[si] = -1;
@@ -118,11 +118,13 @@ public abstract class MatchingBase {
         matchingData.solution_nodes[states.map_state_to_first_endpoint[0]] = -1;
         matchingData.solution_nodes[states.map_state_to_second_endpoint[0]] = -1;
     }
+
     public void updateSolutionNodesAndEdgeForStateZero() {
         matchingData.solution_edges[0] = matchingData.setCandidates[0].getInt(++matchingData.candidatesIT[0]);
         matchingData.solution_nodes[states.map_state_to_first_endpoint[0]] = matchingData.setCandidates[0].getInt(++matchingData.candidatesIT[0]);
         matchingData.solution_nodes[states.map_state_to_second_endpoint[0]] = matchingData.setCandidates[0].getInt(++matchingData.candidatesIT[0]);
     }
+
     public void updateMatchingInfoForStateZero() {
         matchingData.matchedEdges.add(matchingData.solution_edges[0]);
         matchingData.matchedNodes.add(matchingData.solution_nodes[states.map_state_to_first_endpoint[0]]);
@@ -141,23 +143,17 @@ public abstract class MatchingBase {
         matchingData.solution_edges[si] = matchingData.setCandidates[si].getInt(matchingData.candidatesIT[si]);
         int node_to_match = states.map_state_to_unmatched_node[si];
         if (node_to_match != -1)
-            matchingData.solution_nodes[node_to_match] =
-                    matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
+            matchingData.solution_nodes[node_to_match] = matchingData.setCandidates[si].getInt(++matchingData.candidatesIT[si]);
     }
 
 
     public void updateCandidatesForStateZero(int q_src, int q_dst, int f_node, int s_node) {
-        matchingData.setCandidates[0] = NewFindCandidates.find_first_candidates(
-                q_src, q_dst, f_node, s_node, states.map_state_to_edge[0],
-                query, targetGraph.getGraphPaths(), matchingData, nodes_symmetry, states
-        );
+        matchingData.setCandidates[0] = FindCandidates.find_first_candidates(q_src, q_dst, f_node, s_node, states.map_state_to_edge[0], query, targetGraph.getGraphPaths(), matchingData, nodes_symmetry, states);
         matchingData.candidatesIT[0] = -1;
     }
 
     public void updateCandidatesForStateGraterThanZero() {
-        matchingData.setCandidates[si] = NewFindCandidates.find_candidates(
-                targetGraph.getGraphPaths(), query, si, nodes_symmetry, edges_symmetry, states, matchingData
-        );
+        matchingData.setCandidates[si] = FindCandidates.find_candidates(targetGraph.getGraphPaths(), query, si, nodes_symmetry, edges_symmetry, states, matchingData);
         matchingData.candidatesIT[si] = -1;
     }
 

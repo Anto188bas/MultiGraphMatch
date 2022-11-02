@@ -13,7 +13,6 @@ import matching.controllers.MatchingWhere;
 import matching.models.OutData;
 import reading.FileManager;
 import target_graph.graph.TargetGraph;
-import target_graph.managers.NodesLabelsManager;
 import tech.tablesaw.api.Table;
 
 import java.io.IOException;
@@ -140,7 +139,7 @@ public class TestTargetGraph {
         // SAVING
         if (configuration.out_file != null) {
             try {
-                FileManager.saveIntoCSV_NEW(query_test, configuration.out_file, totalTime, numOccurrences);
+                FileManager.saveToCSV(query_test, configuration.out_file, totalTime, numOccurrences);
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -25,47 +25,48 @@ public class GraphPaths {
         this.map_node_color_degrees = new Int2ObjectOpenHashMap<>();
     }
 
-    public GraphPaths(
-        Int2ObjectOpenHashMap<Int2IntOpenHashMap> map_pair_to_key,
-        Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> tmp_map_key_to_edge_list,
-        int num_edge_colors,
-        int num_pairs,
-        Int2ObjectOpenHashMap<Int2IntOpenHashMap> map_node_color_degrees
-    ) {
-        this.num_pairs            = num_pairs;
-        this.num_edge_colors      = num_edge_colors;
-        this.map_pair_to_key      = map_pair_to_key;
+    public GraphPaths(Int2ObjectOpenHashMap<Int2IntOpenHashMap> map_pair_to_key, Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> tmp_map_key_to_edge_list, int num_edge_colors, int num_pairs, Int2ObjectOpenHashMap<Int2IntOpenHashMap> map_node_color_degrees) {
+        this.num_pairs = num_pairs;
+        this.num_edge_colors = num_edge_colors;
+        this.map_pair_to_key = map_pair_to_key;
         this.map_key_to_edge_list = new IntArrayList[this.num_pairs][this.num_edge_colors];
         this.map_node_color_degrees = map_node_color_degrees;
 
 
         // TABLE POPULATION
-        for(int i = 0; i < this.num_pairs; i++) {
-            for(int j = 0; j < this.num_edge_colors; j++) {
-                if(tmp_map_key_to_edge_list.get(i).containsKey(j))
+        for (int i = 0; i < this.num_pairs; i++) {
+            for (int j = 0; j < this.num_edge_colors; j++) {
+                if (tmp_map_key_to_edge_list.get(i).containsKey(j))
                     map_key_to_edge_list[i][j] = tmp_map_key_to_edge_list.get(i).get(j).clone();
-                else
-                    map_key_to_edge_list[i][j] = new IntArrayList();
+                else map_key_to_edge_list[i][j] = new IntArrayList();
             }
         }
     }
 
     // GETTER
-    public Int2ObjectOpenHashMap<Int2IntOpenHashMap>    getMap_pair_to_key()      {return map_pair_to_key;}
-    public IntArrayList[][]                             getMap_key_to_edge_list() {return map_key_to_edge_list;}
-    public Int2ObjectOpenHashMap<Int2IntOpenHashMap>    getMap_node_color_degrees() {return map_node_color_degrees;}
+    public Int2ObjectOpenHashMap<Int2IntOpenHashMap> getMap_pair_to_key() {
+        return map_pair_to_key;
+    }
+
+    public IntArrayList[][] getMap_key_to_edge_list() {
+        return map_key_to_edge_list;
+    }
+
+    public Int2ObjectOpenHashMap<Int2IntOpenHashMap> getMap_node_color_degrees() {
+        return map_node_color_degrees;
+    }
 
     public ArrayList<Triplet<Integer, Integer, Integer>> getBySRCandDSTs(int src, IntArrayList dsts) {
         ArrayList<Triplet<Integer, Integer, Integer>> result = new ArrayList<>();
         Int2IntOpenHashMap src_map = this.map_pair_to_key.get(src);
-        for (int dst: dsts)
+        for (int dst : dsts)
             result.add(new Triplet<>(src, dst, src_map.get(dst)));
         return result;
     }
 
     public ArrayList<Triplet<Integer, Integer, Integer>> getByDSTandSRCs(int dst, IntArrayList srcs) {
         ArrayList<Triplet<Integer, Integer, Integer>> result = new ArrayList<>();
-        for (int src: srcs) {
+        for (int src : srcs) {
             Int2IntOpenHashMap src_map = this.map_pair_to_key.get(src);
             result.add(new Triplet<>(src, dst, src_map.get(dst)));
         }
@@ -73,11 +74,11 @@ public class GraphPaths {
     }
 
 
-    public Triplet<Integer, Integer, Integer> getBySRCandDST (int src, int dst) {
+    public Triplet<Integer, Integer, Integer> getBySRCandDST(int src, int dst) {
         Triplet<Integer, Integer, Integer> result = null;
-        if(this.map_pair_to_key.containsKey(src)) {
+        if (this.map_pair_to_key.containsKey(src)) {
             Int2IntOpenHashMap src_map = this.map_pair_to_key.get(src);
-            if(src_map.containsKey(dst)) {
+            if (src_map.containsKey(dst)) {
                 result = new Triplet<>(src, dst, src_map.get(dst));
             }
         }
@@ -89,11 +90,12 @@ public class GraphPaths {
      * - dst is an out-neighbor of src;
      * - edge_id is the id of the edge between src and dst.
      * This method does not consider the edge color.
+     *
      * @param src source node.
      */
     public Int2ObjectOpenHashMap<IntArraySet> getAdiacsBySrc(int src) {
         Int2ObjectOpenHashMap<IntArraySet> result = new Int2ObjectOpenHashMap<>();
-        if(map_pair_to_key.containsKey(src)) {
+        if (map_pair_to_key.containsKey(src)) {
             map_pair_to_key.get(src).forEach((dst, pairKey) -> {
                 IntArraySet adiacs = new IntArraySet();
                 for (int color = 0; color < map_key_to_edge_list[pairKey.intValue()].length; color++) {
@@ -114,6 +116,7 @@ public class GraphPaths {
      * - src is an in-neighbor of dst;
      * - edge_id is the id of the edge between src and dst.
      * This method does not consider the edge color.
+     *
      * @param dst destination node.
      */
     public Int2ObjectOpenHashMap<IntArraySet> getAdiacsByDst(int dst) {
@@ -121,10 +124,10 @@ public class GraphPaths {
 
         map_pair_to_key.forEach((src, outNeighbours) -> {
             IntArraySet adiacs = new IntArraySet();
-            if(outNeighbours.containsKey(dst)) {
+            if (outNeighbours.containsKey(dst)) {
                 int pairKey = outNeighbours.get(dst);
-                for(int color = 0; color < map_key_to_edge_list[pairKey].length; color++) {
-                    for(int edge : map_key_to_edge_list[pairKey][color]) {
+                for (int color = 0; color < map_key_to_edge_list[pairKey].length; color++) {
+                    for (int edge : map_key_to_edge_list[pairKey][color]) {
                         adiacs.add(edge);
                     }
                 }
@@ -147,11 +150,11 @@ public class GraphPaths {
     public Int2ObjectOpenHashMap<IntArraySet> getAdiacsBySrcAndColors(int src, IntArrayList colors) {
         Int2ObjectOpenHashMap<IntArraySet> result = new Int2ObjectOpenHashMap<>();
 
-        if(map_pair_to_key.containsKey(src)) {
+        if (map_pair_to_key.containsKey(src)) {
             map_pair_to_key.get(src).forEach((dst, pairKey) -> {
                 IntArraySet adiacs = new IntArraySet();
-                for(int color: colors) {
-                    for(int edge : map_key_to_edge_list[pairKey.intValue()][color]) {
+                for (int color : colors) {
+                    for (int edge : map_key_to_edge_list[pairKey.intValue()][color]) {
                         adiacs.add(edge);
                     }
                 }
@@ -178,10 +181,10 @@ public class GraphPaths {
         map_pair_to_key.forEach((src, outNeighbours) -> {
             IntArraySet adiacs = new IntArraySet();
 
-            if(outNeighbours.containsKey(dst)) {
+            if (outNeighbours.containsKey(dst)) {
                 int pairKey = outNeighbours.get(dst);
-                for(int color: colors) {
-                    for(int edge : map_key_to_edge_list[pairKey][color]) {
+                for (int color : colors) {
+                    for (int edge : map_key_to_edge_list[pairKey][color]) {
                         adiacs.add(edge);
                     }
                 }
@@ -200,7 +203,7 @@ public class GraphPaths {
         str.append("map_pair_to_key\n");
         str.append(this.map_pair_to_key.toString()).append('\n');
         str.append("map_key_to_edge_list\n");
-        for(int i = 0; i < num_pairs; i++) {
+        for (int i = 0; i < num_pairs; i++) {
             str.append("KEY: ").append(i).append('\n');
             for (int j = 0; j < num_edge_colors; j++) {
                 str.append("\tCOLOR: ").append(j).append(" => ").append(map_key_to_edge_list[i][j]).append('\n');

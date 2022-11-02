@@ -33,7 +33,7 @@ public class MainClass {
         Table[] edgesTables = FileManager.files_reading(configuration.edges_main_directory, ',');
 
         // TARGET GRAPH
-        TargetGraph targetGraph = new TargetGraph(nodesTables, edgesTables, "id","labels");
+        TargetGraph targetGraph = new TargetGraph(nodesTables, edgesTables, "id", "labels");
 
         // TARGET BITMATRIX
         TargetBitmatrix target_bitmatrix = new TargetBitmatrix();
@@ -137,7 +137,7 @@ public class MainClass {
                         }
                     } else { // No WHERE CONDITIONS
                         QueryStructure query = new QueryStructure();
-                        query.parser(query_test, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager(),nodesTables, edgesTables, Optional.empty());
+                        query.parser(query_test, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager(), nodesTables, edgesTables, Optional.empty());
 
                         OutData outData = new OutData();
                         MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, targetGraph, target_bitmatrix, new ObjectArrayList<>());
@@ -151,7 +151,7 @@ public class MainClass {
                     // SAVING
                     if (configuration.out_file != null) {
                         try {
-                            FileManager.saveIntoCSV_NEW(query_test, configuration.out_file, totalTime, numOccurrences);
+                            FileManager.saveToCSV(query_test, configuration.out_file, totalTime, numOccurrences);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -159,8 +159,9 @@ public class MainClass {
                     return totalTime;
                 }
             });
-            try {handler.get(tout.getSeconds(), TimeUnit.SECONDS);}
-            catch (Exception e) {
+            try {
+                handler.get(tout.getSeconds(), TimeUnit.SECONDS);
+            } catch (Exception e) {
                 handler.cancel(true);
                 System.err.println("timeout");
                 System.exit(-1);

@@ -17,7 +17,6 @@ import scala.Option;
 import scala.collection.Iterator;
 import target_graph.managers.EdgesLabelsManager;
 import target_graph.managers.NodesLabelsManager;
-import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.index.IntIndex;
@@ -27,56 +26,53 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class QueryStructure {
-    private final Int2ObjectOpenHashMap<QueryNode>                  query_nodes;
-    private final Object2IntOpenHashMap<String>                     map_node_name_to_idx;
-    private final Int2ObjectOpenHashMap<QueryEdge>                  query_edges;
-    private final Object2IntOpenHashMap<String>                     map_edge_name_to_idx;
-    private final QueryEdgeAggregation                              query_pattern;
-    private final ObjectArraySet<NodesPair>                         pairs;
-    private final Int2ObjectOpenHashMap<NodesPair>                  map_id_to_pair;
-    private final Int2ObjectOpenHashMap<IntArraySet>                map_endpoints_to_edges;
-    private final Int2ObjectOpenHashMap<NodesPair>                  map_edge_to_endpoints;
-    private final Int2ObjectOpenHashMap<IntArraySet>                map_node_to_neighborhood;
-    private final Int2ObjectOpenHashMap<ObjectArraySet<NodesPair>>  map_pair_to_neighborhood;
-    private final Int2ObjectOpenHashMap<Int2IntOpenHashMap>         map_node_color_degrees;
-    private final Int2ObjectOpenHashMap<IntArraySet>                map_node_to_domain;
-    public QueryStructure(){
-        query_nodes                 = new Int2ObjectOpenHashMap<>();
-        map_node_name_to_idx        = new Object2IntOpenHashMap<>();
-        query_edges                 = new Int2ObjectOpenHashMap<>();
-        map_edge_name_to_idx        = new Object2IntOpenHashMap<>();
-        query_pattern               = new QueryEdgeAggregation();
-        pairs                       = new ObjectArraySet<>();
-        map_id_to_pair              = new Int2ObjectOpenHashMap<>();
-        map_endpoints_to_edges      = new Int2ObjectOpenHashMap<>();
-        map_edge_to_endpoints       = new Int2ObjectOpenHashMap<>();
-        map_node_to_neighborhood    = new Int2ObjectOpenHashMap<>();
-        map_pair_to_neighborhood    = new Int2ObjectOpenHashMap<>();
-        map_node_color_degrees      = new Int2ObjectOpenHashMap<>();
-        map_node_to_domain          = new Int2ObjectOpenHashMap<>();
+    private final Int2ObjectOpenHashMap<QueryNode> query_nodes;
+    private final Object2IntOpenHashMap<String> map_node_name_to_idx;
+    private final Int2ObjectOpenHashMap<QueryEdge> query_edges;
+    private final Object2IntOpenHashMap<String> map_edge_name_to_idx;
+    private final QueryEdgeAggregation query_pattern;
+    private final ObjectArraySet<NodesPair> pairs;
+    private final Int2ObjectOpenHashMap<NodesPair> map_id_to_pair;
+    private final Int2ObjectOpenHashMap<IntArraySet> map_endpoints_to_edges;
+    private final Int2ObjectOpenHashMap<NodesPair> map_edge_to_endpoints;
+    private final Int2ObjectOpenHashMap<IntArraySet> map_node_to_neighborhood;
+    private final Int2ObjectOpenHashMap<ObjectArraySet<NodesPair>> map_pair_to_neighborhood;
+    private final Int2ObjectOpenHashMap<Int2IntOpenHashMap> map_node_color_degrees;
+    private final Int2ObjectOpenHashMap<IntArraySet> map_node_to_domain;
+
+    public QueryStructure() {
+        query_nodes = new Int2ObjectOpenHashMap<>();
+        map_node_name_to_idx = new Object2IntOpenHashMap<>();
+        query_edges = new Int2ObjectOpenHashMap<>();
+        map_edge_name_to_idx = new Object2IntOpenHashMap<>();
+        query_pattern = new QueryEdgeAggregation();
+        pairs = new ObjectArraySet<>();
+        map_id_to_pair = new Int2ObjectOpenHashMap<>();
+        map_endpoints_to_edges = new Int2ObjectOpenHashMap<>();
+        map_edge_to_endpoints = new Int2ObjectOpenHashMap<>();
+        map_node_to_neighborhood = new Int2ObjectOpenHashMap<>();
+        map_pair_to_neighborhood = new Int2ObjectOpenHashMap<>();
+        map_node_color_degrees = new Int2ObjectOpenHashMap<>();
+        map_node_to_domain = new Int2ObjectOpenHashMap<>();
     }
 
     // PARSER FUNCTION
-    public void parser(String query,NodesLabelsManager nodesLabelsManager, EdgesLabelsManager edgesLabelsManager, Table[] nodes, Table[] edges, Optional<WhereConditionExtraction> where_managing){
+    public void parser(String query, NodesLabelsManager nodesLabelsManager, EdgesLabelsManager edgesLabelsManager, Table[] nodes, Table[] edges, Optional<WhereConditionExtraction> where_managing) {
         CypherParser parser = new CypherParser();
-        Query query_obj          = (Query) parser.parse(query, null);
-        if(!(query_obj.part() instanceof SingleQuery)) return;
+        Query query_obj = (Query) parser.parse(query, null);
+        if (!(query_obj.part() instanceof SingleQuery)) return;
         SingleQuery single_query = (SingleQuery) query_obj.part();
         // MATCHING AND RESULT ELABORATION
         Iterator<Clause> clauses = single_query.clauses().iterator();
 
-        while (clauses.hasNext()){
+        while (clauses.hasNext()) {
             Clause clause = clauses.next();
-            if(clause instanceof Match){
+            if (clause instanceof Match) {
                 matchHandler(clause, nodesLabelsManager, edgesLabelsManager);
                 Option<Where> where_conditions = ((Match) clause).where();
-                if(!where_conditions.isDefined()) continue;
-                WhereConditionHandler.handleWhereCondition(
-                        where_conditions.get().expression(), nodes, edges, map_node_name_to_idx,
-                        map_edge_name_to_idx, query_nodes, query_edges, where_managing, nodesLabelsManager, edgesLabelsManager
-                );
-            }
-            else if(clause instanceof Return){
+                if (!where_conditions.isDefined()) continue;
+                WhereConditionHandler.handleWhereCondition(where_conditions.get().expression(), nodes, edges, map_node_name_to_idx, map_edge_name_to_idx, query_nodes, query_edges, where_managing, nodesLabelsManager, edgesLabelsManager);
+            } else if (clause instanceof Return) {
                 QueryReturn query_return = new QueryReturn();
                 query_return.return_elaboration((Return) clause);
                 // TODO implement me
@@ -85,17 +81,16 @@ public class QueryStructure {
     }
 
     // MATCH PART ELABORATION
-    private void matchHandler(Clause clause, NodesLabelsManager nodesLabelsManager, EdgesLabelsManager edgesLabelsManager){
+    private void matchHandler(Clause clause, NodesLabelsManager nodesLabelsManager, EdgesLabelsManager edgesLabelsManager) {
         Pattern pattern = ((Match) clause).pattern();
         Iterator<PatternPart> pattern_parts = pattern.patternParts().iterator();
-        while (pattern_parts.hasNext()){
-            PatternPart    pattern_part    = pattern_parts.next();
+        while (pattern_parts.hasNext()) {
+            PatternPart pattern_part = pattern_parts.next();
             // TODO manage named pattern
-            String         named_pattern   = get_pattern_name(pattern_part);
+            String named_pattern = get_pattern_name(pattern_part);
             PatternElement pattern_element = pattern_part.element();
-            if (pattern_element.isSingleNode())
-                nodeManager((NodePattern) pattern_element, nodesLabelsManager);
-            else{
+            if (pattern_element.isSingleNode()) nodeManager((NodePattern) pattern_element, nodesLabelsManager);
+            else {
                 LinkedList<Integer> nodes_ids = new LinkedList<>();
                 LinkedList<Integer> edges_ids = new LinkedList<>();
                 patternElaboration(pattern_element, nodes_ids, edges_ids, nodesLabelsManager, edgesLabelsManager);
@@ -133,68 +128,59 @@ public class QueryStructure {
     }
 
     // NODE CREATION
-    private int nodeManager(NodePattern nodePattern, NodesLabelsManager nodesLabelsManager){
+    private int nodeManager(NodePattern nodePattern, NodesLabelsManager nodesLabelsManager) {
         Option<LogicalVariable> name = nodePattern.variable();
         // NODE MANE NOT DEFINED (:LABEL {PROPS}). SO, EACH ELEMENT IS A NEW NODE.
-        if(!name.isDefined()){
+        if (!name.isDefined()) {
             QueryNode node = new QueryNode(nodePattern, null);
-            int id         = query_nodes.size();
+            int id = query_nodes.size();
             query_nodes.put(id, node);
             return id;
         }
         String name_str = name.get().name();
         // NODE HAS ALREADY BEEN CREATED
-        if (map_node_name_to_idx.containsKey(name_str))
-            return map_node_name_to_idx.getInt(name_str);
+        if (map_node_name_to_idx.containsKey(name_str)) return map_node_name_to_idx.getInt(name_str);
         // NODE HAVE TO BE CREATED
-        QueryNode node  = new QueryNode(nodePattern, name_str, nodesLabelsManager);
-        int id          = query_nodes.size();
+        QueryNode node = new QueryNode(nodePattern, name_str, nodesLabelsManager);
+        int id = query_nodes.size();
         query_nodes.put(id, node);
         map_node_name_to_idx.put(name_str, id);
         return id;
     }
 
     // EDGE CREATION
-    private int edgeManager(RelationshipPattern relationship, EdgesLabelsManager edgesLabelsManager){
+    private int edgeManager(RelationshipPattern relationship, EdgesLabelsManager edgesLabelsManager) {
         int id = query_edges.size();
         query_edges.put(id, new QueryEdge(relationship, edgesLabelsManager));
-        if(query_edges.get(id).getEdge_name() == null) query_edges.get(id).setEdge_name(id);
+        if (query_edges.get(id).getEdge_name() == null) query_edges.get(id).setEdge_name(id);
         map_edge_name_to_idx.put(query_edges.get(id).getEdge_name(), id);
         return id;
     }
 
     // PATTERN ELABORATION
-    private void patternElaboration(
-            PatternElement       patternElement,
-            LinkedList<Integer>  nodes_ids,
-            LinkedList<Integer>  edges_ids,
-            NodesLabelsManager nodesLabelsManager,
-            EdgesLabelsManager edgesLabelsManager
-    ){
+    private void patternElaboration(PatternElement patternElement, LinkedList<Integer> nodes_ids, LinkedList<Integer> edges_ids, NodesLabelsManager nodesLabelsManager, EdgesLabelsManager edgesLabelsManager) {
         RelationshipChain relationshipChain = (RelationshipChain) patternElement;
         // RIGHT ELEMENT
         nodes_ids.addFirst(nodeManager(relationshipChain.rightNode(), nodesLabelsManager));
         edges_ids.addFirst(edgeManager(relationshipChain.relationship(), edgesLabelsManager));
         // LEFT ELEMENT
         PatternElement new_pattern = relationshipChain.element();
-        if(new_pattern instanceof RelationshipChain)
+        if (new_pattern instanceof RelationshipChain)
             patternElaboration(new_pattern, nodes_ids, edges_ids, nodesLabelsManager, edgesLabelsManager);
-        else if(new_pattern instanceof NodePattern)
+        else if (new_pattern instanceof NodePattern)
             nodes_ids.addFirst(nodeManager((NodePattern) new_pattern, nodesLabelsManager));
     }
 
 
-    private void node_color_degrees_init(int node){
-        if(map_node_color_degrees.containsKey(node)) return;
+    private void node_color_degrees_init(int node) {
+        if (map_node_color_degrees.containsKey(node)) return;
         map_node_color_degrees.put(node, new Int2IntOpenHashMap());
     }
 
-    private void node_color_degrees_increase(int node, int color){
+    private void node_color_degrees_increase(int node, int color) {
         Int2IntOpenHashMap color_degrees = map_node_color_degrees.get(node);
-        if(color_degrees.containsKey(color))
-            color_degrees.replace(color, color_degrees.get(color) + 1);
-        else
-            color_degrees.put(color, 1);
+        if (color_degrees.containsKey(color)) color_degrees.replace(color, color_degrees.get(color) + 1);
+        else color_degrees.put(color, 1);
     }
 
     private void buildNodesPairs() {
@@ -205,7 +191,7 @@ public class QueryStructure {
                 endpoints = getEdgeEndpoints(query_pattern.getIn_out_edges(), edge_key);
             } // Else is a directed edge
 
-            if(map_endpoints_to_edges.containsKey(endpoints.getId().intValue())) {
+            if (map_endpoints_to_edges.containsKey(endpoints.getId().intValue())) {
                 map_endpoints_to_edges.get(endpoints.getId().intValue()).add(edge_key);
             } else {
                 IntArraySet edge_set = new IntArraySet();
@@ -216,9 +202,9 @@ public class QueryStructure {
             pairs.add(endpoints);
             node_color_degrees_init(endpoints.getFirstEndpoint());
             node_color_degrees_init(endpoints.getSecondEndpoint());
-            for(int type: query_edges.get(edge_key).getEdge_label()) {
+            for (int type : query_edges.get(edge_key).getEdge_label()) {
                 node_color_degrees_increase(endpoints.getFirstEndpoint(), type);
-                node_color_degrees_increase(endpoints.getSecondEndpoint(),type);
+                node_color_degrees_increase(endpoints.getSecondEndpoint(), type);
             }
         }
     }
@@ -238,7 +224,7 @@ public class QueryStructure {
     }
 
     private void map_id_to_pair_elaboration() {
-        for(NodesPair pair: pairs) {
+        for (NodesPair pair : pairs) {
             this.map_id_to_pair.put(pair.getId().intValue(), pair);
         }
     }
@@ -252,7 +238,7 @@ public class QueryStructure {
             record.getValue().int2ObjectEntrySet().fastForEach(sub_record -> {
                 int second_endpoint = sub_record.getIntKey();
 
-                for(int _edge_id: sub_record.getValue()) {
+                for (int _edge_id : sub_record.getValue()) {
                     if (_edge_id == edgeId) {
                         endpoints.set(new NodesPair(first_endpoint, second_endpoint));  // Endpoints are lexicographically ordered
                     }
@@ -308,13 +294,13 @@ public class QueryStructure {
     public boolean edges_equivalent_to(IntArrayList pe1List, IntArrayList pe2List) {
         if (pe1List.size() != pe2List.size()) return false;
         IntArrayList pe2List_copy = pe2List.clone();
-        for (int edge_1_id: pe1List) {
-            QueryEdge e1        = query_edges.get(edge_1_id);
-            int sel_edge_id     = -1;
-            for (int edge_2_id: pe2List_copy){
-                QueryEdge e2    = query_edges.get(edge_2_id);
+        for (int edge_1_id : pe1List) {
+            QueryEdge e1 = query_edges.get(edge_1_id);
+            int sel_edge_id = -1;
+            for (int edge_2_id : pe2List_copy) {
+                QueryEdge e2 = query_edges.get(edge_2_id);
                 if (e1.equivalent_to(e2)) {
-                    sel_edge_id = edge_2_id ;
+                    sel_edge_id = edge_2_id;
                     break;
                 }
             }
@@ -325,22 +311,12 @@ public class QueryStructure {
     }
 
     // NODES PAIRS COMPATIBILITIES
-    public boolean node_pairs_are_not_compatible(
-            int node_1,   int node_2,
-            int f_node_1, int f_node_2,
-            Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> relationships
-    ){
-        if(
-                (relationships.isEmpty()) ||
-                (relationships.get(node_1) == null && relationships.get(f_node_1) == null)
-        ) {
+    public boolean node_pairs_are_not_compatible(int node_1, int node_2, int f_node_1, int f_node_2, Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> relationships) {
+        if ((relationships.isEmpty()) || (relationships.get(node_1) == null && relationships.get(f_node_1) == null)) {
             return false;
         }
 
-        if(
-                (relationships.get(node_1) == null) ||
-                (relationships.get(f_node_1) == null )
-        ) {
+        if ((relationships.get(node_1) == null) || (relationships.get(f_node_1) == null)) {
             return true;
         }
 
@@ -348,9 +324,7 @@ public class QueryStructure {
         IntArrayList edges_set_1 = relationships.get(node_1).get(node_2);
         IntArrayList edges_set_2 = relationships.get(f_node_1).get(f_node_2);
 
-        return (edges_set_1 == null && edges_set_2 != null) ||
-               (edges_set_1 != null && edges_set_2 == null) ||
-               (edges_set_1 != null && !edges_equivalent_to(edges_set_1, edges_set_2));
+        return (edges_set_1 == null && edges_set_2 != null) || (edges_set_1 != null && edges_set_2 == null) || (edges_set_1 != null && !edges_equivalent_to(edges_set_1, edges_set_2));
     }
 
 
@@ -360,34 +334,26 @@ public class QueryStructure {
         Int2IntOpenHashMap target_color_degrees = t_map_node_color_degrees.get(t_src);
 
         // System.out.println(color_degrees + "; " + target_color_degrees);
-        for(int type: color_degrees.keySet()){
+        for (int type : color_degrees.keySet()) {
             int q_src_degree = color_degrees.get(type);
             int t_src_degree = target_color_degrees.getOrDefault(type, 0);
-            if(q_src_degree > t_src_degree) return false;
+            if (q_src_degree > t_src_degree) return false;
         }
 
         // DST
         color_degrees = map_node_color_degrees.get(q_dst);
         target_color_degrees = t_map_node_color_degrees.get(t_dst);
-        for(int type: color_degrees.keySet()){
+        for (int type : color_degrees.keySet()) {
             int q_dst_degree = color_degrees.get(type);
             int t_dst_degree = target_color_degrees.getOrDefault(type, 0);
-            if(q_dst_degree > t_dst_degree) return false;
+            if (q_dst_degree > t_dst_degree) return false;
         }
 
         return true;
     }
 
-    private void domain_population(
-       Table query_bitmatrix_table, Table target_bitmatrix_table,
-       Int2ObjectOpenHashMap<IntArrayList> compatibility,
-       IntIndex query_src_index, IntIndex query_dst_index, IntIndex target_id_index,
-       Int2ObjectOpenHashMap<IntArrayList> first_second,
-       Int2ObjectOpenHashMap<IntArrayList> second_first,
-       int c1, int c2, String c1_name, String c2_name,
-       Int2ObjectOpenHashMap<Int2IntOpenHashMap> target_map_node_color_degrees
-    ) {
-        for(Row query_row: query_bitmatrix_table.where(query_src_index.get(c1).and(query_dst_index.get(c2)))) {
+    private void domain_population(Table query_bitmatrix_table, Table target_bitmatrix_table, Int2ObjectOpenHashMap<IntArrayList> compatibility, IntIndex query_src_index, IntIndex query_dst_index, IntIndex target_id_index, Int2ObjectOpenHashMap<IntArrayList> first_second, Int2ObjectOpenHashMap<IntArrayList> second_first, int c1, int c2, String c1_name, String c2_name, Int2ObjectOpenHashMap<Int2IntOpenHashMap> target_map_node_color_degrees) {
+        for (Row query_row : query_bitmatrix_table.where(query_src_index.get(c1).and(query_dst_index.get(c2)))) {
             for (int target_id : compatibility.get(query_row.getInt("btx_id"))) {
                 for (Row target_row : target_bitmatrix_table.where(target_id_index.get(target_id))) {
                     int t_src = target_row.getInt(c1_name);
@@ -396,7 +362,7 @@ public class QueryStructure {
                     // DEGREE CHECK
                     int t_src_act = t_src;
                     int t_dst_act = t_dst;
-                    if(c1_name.equals("dst")){
+                    if (c1_name.equals("dst")) {
                         t_src_act = t_dst;
                         t_dst_act = t_src;
                     }
@@ -411,16 +377,8 @@ public class QueryStructure {
         }
     }
 
-    private void filtered_domain_population(
-            Table query_bitmatrix_table, Table target_bitmatrix_table,
-            Int2ObjectOpenHashMap<IntArrayList> compatibility,
-            IntIndex query_src_index, IntIndex query_dst_index, IntIndex target_id_index,
-            Int2ObjectOpenHashMap<IntArrayList> first_second,
-            Int2ObjectOpenHashMap<IntArrayList> second_first,
-            int c1, int c2, String c1_name, String c2_name,
-            Int2ObjectOpenHashMap<Int2IntOpenHashMap> target_map_node_color_degrees
-    ) {
-        for(Row query_row: query_bitmatrix_table.where(query_src_index.get(c1).and(query_dst_index.get(c2)))) {
+    private void filtered_domain_population(Table query_bitmatrix_table, Table target_bitmatrix_table, Int2ObjectOpenHashMap<IntArrayList> compatibility, IntIndex query_src_index, IntIndex query_dst_index, IntIndex target_id_index, Int2ObjectOpenHashMap<IntArrayList> first_second, Int2ObjectOpenHashMap<IntArrayList> second_first, int c1, int c2, String c1_name, String c2_name, Int2ObjectOpenHashMap<Int2IntOpenHashMap> target_map_node_color_degrees) {
+        for (Row query_row : query_bitmatrix_table.where(query_src_index.get(c1).and(query_dst_index.get(c2)))) {
             for (int target_id : compatibility.get(query_row.getInt("btx_id"))) {
                 Table tableSelection = target_bitmatrix_table.where(target_id_index.get(target_id));
 
@@ -431,23 +389,24 @@ public class QueryStructure {
                     // DEGREE CHECK
                     int t_src_act = t_src;
                     int t_dst_act = t_dst;
-                    if(c1_name.equals("dst")){
+                    if (c1_name.equals("dst")) {
                         t_src_act = t_dst;
                         t_dst_act = t_src;
                     }
 
                     // WHERE CONDITIONS CHECK
-                    if(this.query_nodes.get(c1).getSimpleConditions().size() > 0 ) {
-                        if(!this.query_nodes.get(c1).getWhereConditionsCompatibilityDomain().contains(t_src_act)) continue;
+                    if (this.query_nodes.get(c1).getSimpleConditions().size() > 0) {
+                        if (!this.query_nodes.get(c1).getWhereConditionsCompatibilityDomain().contains(t_src_act))
+                            continue;
                     }
 
-                    if(this.query_nodes.get(c2).getSimpleConditions().size() > 0 ) {
-                        if(!this.query_nodes.get(c2).getWhereConditionsCompatibilityDomain().contains(t_dst_act)) continue;
+                    if (this.query_nodes.get(c2).getSimpleConditions().size() > 0) {
+                        if (!this.query_nodes.get(c2).getWhereConditionsCompatibilityDomain().contains(t_dst_act))
+                            continue;
                     }
 
                     // DEGREE CHECK
                     if (!degree_comparison(t_src_act, c1, t_dst_act, c2, target_map_node_color_degrees)) continue;
-
 
 
                     if (!first_second.containsKey(t_src)) first_second.put(t_src, new IntArrayList());
@@ -465,7 +424,7 @@ public class QueryStructure {
         IntIndex query_dst_index = new IntIndex(query_bitmatrix_table.intColumn("dst"));
         IntIndex target_id_index = new IntIndex(target_bitmatrix_table.intColumn("btx_id"));
 
-        for(NodesPair pair: pairs) {
+        for (NodesPair pair : pairs) {
             int src = pair.getFirstEndpoint();
             int dst = pair.getSecondEndpoint();
 
@@ -473,20 +432,10 @@ public class QueryStructure {
             Int2ObjectOpenHashMap<IntArrayList> second_first = new Int2ObjectOpenHashMap<>();
 
             // DIRECTED POPULATION
-            domain_population(
-                query_bitmatrix_table, target_bitmatrix_table, compatibility,
-                query_src_index, query_dst_index, target_id_index, first_second,
-                second_first, src, dst, "src", "dst",
-                target_map_node_color_degrees
-            );
+            domain_population(query_bitmatrix_table, target_bitmatrix_table, compatibility, query_src_index, query_dst_index, target_id_index, first_second, second_first, src, dst, "src", "dst", target_map_node_color_degrees);
 
             // REVERSE POPULATION
-            domain_population(
-                query_bitmatrix_table, target_bitmatrix_table, compatibility,
-                query_src_index, query_dst_index, target_id_index, first_second,
-                second_first, dst, src, "dst", "src",
-                target_map_node_color_degrees
-            );
+            domain_population(query_bitmatrix_table, target_bitmatrix_table, compatibility, query_src_index, query_dst_index, target_id_index, first_second, second_first, dst, src, "dst", "src", target_map_node_color_degrees);
             pair.setCompatibilityDomain(first_second, second_first);
         }
         //TODO: compute nodes domains only if there are paths
@@ -499,7 +448,7 @@ public class QueryStructure {
         IntIndex target_id_index = new IntIndex(target_bitmatrix_table.intColumn("btx_id"));
 
 
-        for(NodesPair pair: pairs) {
+        for (NodesPair pair : pairs) {
             int src = pair.getFirstEndpoint();
             int dst = pair.getSecondEndpoint();
 
@@ -507,20 +456,10 @@ public class QueryStructure {
             Int2ObjectOpenHashMap<IntArrayList> second_first = new Int2ObjectOpenHashMap<>();
 
             // DIRECTED POPULATION
-            filtered_domain_population(
-                    query_bitmatrix_table, target_bitmatrix_table, compatibility,
-                    query_src_index, query_dst_index, target_id_index, first_second,
-                    second_first, src, dst, "src", "dst",
-                    target_map_node_color_degrees
-            );
+            filtered_domain_population(query_bitmatrix_table, target_bitmatrix_table, compatibility, query_src_index, query_dst_index, target_id_index, first_second, second_first, src, dst, "src", "dst", target_map_node_color_degrees);
 
             // REVERSE POPULATION
-            filtered_domain_population(
-                    query_bitmatrix_table, target_bitmatrix_table, compatibility,
-                    query_src_index, query_dst_index, target_id_index, first_second,
-                    second_first, dst, src, "dst", "src",
-                    target_map_node_color_degrees
-            );
+            filtered_domain_population(query_bitmatrix_table, target_bitmatrix_table, compatibility, query_src_index, query_dst_index, target_id_index, first_second, second_first, dst, src, "dst", "src", target_map_node_color_degrees);
             pair.setCompatibilityDomain(first_second, second_first);
         }
         //TODO: compute nodes domains only if there are paths
@@ -528,7 +467,7 @@ public class QueryStructure {
     }
 
     protected void computeNodesDomains() {
-        for(int nodeID: query_nodes.keySet()) {
+        for (int nodeID : query_nodes.keySet()) {
             IntArraySet domain = new IntArraySet();
 
             QueryNode node = this.getQuery_nodes().get(nodeID);
@@ -536,10 +475,10 @@ public class QueryStructure {
             if (node.getSimpleConditions().size() > 0) {
                 domain = node.getWhereConditionsCompatibilityDomain();
             } else {
-                for(NodesPair pair: pairs) {
-                    if(pair.getFirstEndpoint() == nodeID) {
+                for (NodesPair pair : pairs) {
+                    if (pair.getFirstEndpoint() == nodeID) {
                         domain.addAll(pair.getFirst_second().keySet());
-                    } else if(pair.getSecondEndpoint() == nodeID) {
+                    } else if (pair.getSecondEndpoint() == nodeID) {
                         domain.addAll(pair.getSecond_first().keySet());
                     }
                 }
@@ -550,10 +489,10 @@ public class QueryStructure {
 
     public EdgeDirection getDirection(int src, int dst, int edgeId) {
         QueryEdge edge = this.query_edges.get(edgeId);
-        if(edge.getDirection() == "BOTH") {
+        if (edge.getDirection() == "BOTH") {
             return EdgeDirection.BOTH;
         } else {
-            if(this.query_pattern.getOut_edges().containsKey(src) && this.query_pattern.getOut_edges().get(src).containsKey(dst) && this.query_pattern.getOut_edges().get(src).get(dst).contains(edgeId)) {
+            if (this.query_pattern.getOut_edges().containsKey(src) && this.query_pattern.getOut_edges().get(src).containsKey(dst) && this.query_pattern.getOut_edges().get(src).get(dst).contains(edgeId)) {
                 return EdgeDirection.OUT;
             } else {
                 return EdgeDirection.IN;
@@ -563,33 +502,81 @@ public class QueryStructure {
 
 
     // GETTER
-    public Int2ObjectOpenHashMap<QueryNode>                 getQuery_nodes()                {return query_nodes;          }
-    public QueryNode                                        getQuery_node(int node)         {return query_nodes.get(node);}
-    public Object2IntOpenHashMap<String>                    getMap_node_name_to_idx()       {return map_node_name_to_idx;        }
-    public Object2IntOpenHashMap<String>                    getMap_edge_name_to_idx()       {return map_edge_name_to_idx;}
-    public Int2ObjectOpenHashMap<QueryEdge>                 getQuery_edges()                {return query_edges;          }
-    public QueryEdge                                        getQuery_edge(int edge)         {return query_edges.get(edge);}
-    public QueryEdgeAggregation                             getQuery_pattern()              {return query_pattern;        }
-    public boolean                                          isIn(int node1, int node2)      {return query_pattern.isIn(node1,  node2);}
-    public boolean                                          isOut(int node1, int node2)     {return query_pattern.isOut(node1, node2);}
-    public boolean                                          isRev(int node1, int node2)     {return query_pattern.isRev(node1, node2);}
-    public IntArrayList                                     get_node_neighbours(int node)   {return new IntArrayList(this.map_node_to_neighborhood.get(node));}
-    public ObjectArraySet<NodesPair>                        getPairs()                      {return pairs;}
-    public Int2ObjectOpenHashMap<IntArraySet>               getMap_endpoints_to_edges()     {return map_endpoints_to_edges;}
-    public Int2ObjectOpenHashMap<NodesPair>                 getMap_edge_to_endpoints()      {return map_edge_to_endpoints;}
-    public Int2ObjectOpenHashMap<IntArraySet>               getMap_node_to_neighborhood()   {return map_node_to_neighborhood;}
-    public Int2ObjectOpenHashMap<ObjectArraySet<NodesPair>> getMap_pair_to_neighborhood()   {return map_pair_to_neighborhood;}
-    public Int2ObjectOpenHashMap<NodesPair>                 getMap_id_to_pair()             {return map_id_to_pair;}
-    public Int2ObjectOpenHashMap<IntArraySet>               getMap_node_to_domain()         {return map_node_to_domain;}
+    public Int2ObjectOpenHashMap<QueryNode> getQuery_nodes() {
+        return query_nodes;
+    }
+
+    public QueryNode getQuery_node(int node) {
+        return query_nodes.get(node);
+    }
+
+    public Object2IntOpenHashMap<String> getMap_node_name_to_idx() {
+        return map_node_name_to_idx;
+    }
+
+    public Object2IntOpenHashMap<String> getMap_edge_name_to_idx() {
+        return map_edge_name_to_idx;
+    }
+
+    public Int2ObjectOpenHashMap<QueryEdge> getQuery_edges() {
+        return query_edges;
+    }
+
+    public QueryEdge getQuery_edge(int edge) {
+        return query_edges.get(edge);
+    }
+
+    public QueryEdgeAggregation getQuery_pattern() {
+        return query_pattern;
+    }
+
+    public boolean isIn(int node1, int node2) {
+        return query_pattern.isIn(node1, node2);
+    }
+
+    public boolean isOut(int node1, int node2) {
+        return query_pattern.isOut(node1, node2);
+    }
+
+    public boolean isRev(int node1, int node2) {
+        return query_pattern.isRev(node1, node2);
+    }
+
+    public IntArrayList get_node_neighbours(int node) {
+        return new IntArrayList(this.map_node_to_neighborhood.get(node));
+    }
+
+    public ObjectArraySet<NodesPair> getPairs() {
+        return pairs;
+    }
+
+    public Int2ObjectOpenHashMap<IntArraySet> getMap_endpoints_to_edges() {
+        return map_endpoints_to_edges;
+    }
+
+    public Int2ObjectOpenHashMap<NodesPair> getMap_edge_to_endpoints() {
+        return map_edge_to_endpoints;
+    }
+
+    public Int2ObjectOpenHashMap<IntArraySet> getMap_node_to_neighborhood() {
+        return map_node_to_neighborhood;
+    }
+
+    public Int2ObjectOpenHashMap<ObjectArraySet<NodesPair>> getMap_pair_to_neighborhood() {
+        return map_pair_to_neighborhood;
+    }
+
+    public Int2ObjectOpenHashMap<NodesPair> getMap_id_to_pair() {
+        return map_id_to_pair;
+    }
+
+    public Int2ObjectOpenHashMap<IntArraySet> getMap_node_to_domain() {
+        return map_node_to_domain;
+    }
 
     // TO STRING
     @Override
     public String toString() {
-        return "QueryStructure{"   + "\n"          +
-                "query_nodes="     + query_nodes   + "\n" +
-                ", node_name_idx=" + map_node_name_to_idx + "\n" +
-                ", query_edges="   + query_edges   + "\n" +
-                ", query_pattern=" + query_pattern + "\n" +
-                '}';
+        return "QueryStructure{" + "\n" + "query_nodes=" + query_nodes + "\n" + ", node_name_idx=" + map_node_name_to_idx + "\n" + ", query_edges=" + query_edges + "\n" + ", query_pattern=" + query_pattern + "\n" + '}';
     }
 }

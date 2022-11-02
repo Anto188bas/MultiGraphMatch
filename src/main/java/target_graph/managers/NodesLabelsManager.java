@@ -13,6 +13,7 @@ public class NodesLabelsManager {
 
     /**
      * Class constructor. This class is used to manage labels for nodes.
+     *
      * @param offset
      */
     public NodesLabelsManager(int offset) {
@@ -34,11 +35,12 @@ public class NodesLabelsManager {
 
     /**
      * Add the element to the manager. After that, it will be possible to retrieve the label set of the element (starting from its id).
+     *
      * @param elementId
      * @param labelSetString
      */
     public void addElement(int elementId, String labelSetString) {
-        String[] stringLabels= splitLabels(labelSetString);
+        String[] stringLabels = splitLabels(labelSetString);
         int[] intLabels = Arrays.stream(stringLabels).mapToInt(label -> addLabelIfNotExists(label)).toArray();
         mapElementIdToLabelSet.put(elementId, intLabels);
     }
@@ -46,11 +48,12 @@ public class NodesLabelsManager {
 
     /**
      * Add the label to the manager (if it's not already present) and return its id.
+     *
      * @param label
      * @return
      */
     private int addLabelIfNotExists(String label) {
-        if(mapStringLabelToIntLabel.containsKey(label)) {
+        if (mapStringLabelToIntLabel.containsKey(label)) {
             return mapStringLabelToIntLabel.getInt(label);
         }
 

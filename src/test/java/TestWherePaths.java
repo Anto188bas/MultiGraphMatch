@@ -4,30 +4,20 @@ import cypher.controller.WhereConditionExtraction;
 import cypher.models.QueryCondition;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import matching.controllers.*;
 import matching.models.OutData;
 import reading.FileManager;
-import target_graph.edges.EdgeHandler;
-import target_graph.graph.GraphPaths;
 import target_graph.graph.TargetGraph;
-import target_graph.nodes.GraphMacroNode;
-import target_graph.nodes.MacroNodeHandler;
-import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import tech.tablesaw.api.Table;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Optional;
 
 public class TestWherePaths {
     public static void main(String[] args) {
         // PATH
-        String root_dir  = System.getProperty("user.dir");
+        String root_dir = System.getProperty("user.dir");
 //        String netw_path = root_dir + "/Networks/Person";
         String netw_path = root_dir + "/Networks/TestPaths";
 
@@ -36,7 +26,7 @@ public class TestWherePaths {
         Table[] edgesTables = FileManager.files_reading(netw_path + "/edges", ',');
 
         // TARGET GRAPH
-        TargetGraph targetGraph = new TargetGraph(nodesTables, edgesTables, "id","labels");
+        TargetGraph targetGraph = new TargetGraph(nodesTables, edgesTables, "id", "labels");
 
         // TARGET BITMATRIX
         TargetBitmatrix target_bitmatrix = new TargetBitmatrix();
@@ -54,7 +44,7 @@ public class TestWherePaths {
 
 //        String query_test           = "MATCH (n1:P)<-[:F*2..2]-(n0:P), (n0:P) -[:C]-> (n2:P) WHERE (n0.name = \"Leonardo\" AND n0.age = 30 AND n1.name = \"Giuseppe\") RETURN n0,n1";
 
-        String query_test           = "MATCH (n1:P)<-[:F*1..2]-(n0:P), (n0:P) -[:C]-> (n2:P) WHERE (n0.name = \"Leonardo\" AND n0.age = 30 AND n1.name = \"Giuseppe\") OR (n0.name = \"Leonardo\" AND n1.name = \"Leonardo\") RETURN n0,n1";
+        String query_test = "MATCH (n1:P)<-[:F*1..2]-(n0:P), (n0:P) -[:C]-> (n2:P) WHERE (n0.name = \"Leonardo\" AND n0.age = 30 AND n1.name = \"Giuseppe\") OR (n0.name = \"Leonardo\" AND n1.name = \"Leonardo\") RETURN n0,n1";
 
         double totalTime;
         long numOccurrences;
@@ -143,7 +133,7 @@ public class TestWherePaths {
             }
         } else { // No WHERE CONDITIONS
             QueryStructure query = new QueryStructure();
-            query.parser(query_test, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager(),nodesTables, edgesTables, Optional.empty());
+            query.parser(query_test, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager(), nodesTables, edgesTables, Optional.empty());
 
             OutData outData = new OutData();
             MatchingPathSimple matchingMachine = new MatchingPathSimple(outData, query, true, false, Long.MAX_VALUE, targetGraph, target_bitmatrix, new ObjectArrayList<>());

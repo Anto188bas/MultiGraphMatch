@@ -24,14 +24,14 @@ public class MatchingPathSimple extends MatchingBase {
         this.matchingData = new PathsMatchingData(query);
     }
 
-    public OutData matching()  {
+    public OutData matching() {
         if (check_nodes_labels()) {
             report();
             return outData;
         }
 
         // SIMPLE WHERE CONDITIONS
-        if(simpleConditions.size() > 0) {
+        if (simpleConditions.size() > 0) {
             WhereUtils.assignSimpleConditionsToNodesAndEdges(simpleConditions, query);
 
             // DOMAINS
@@ -197,8 +197,7 @@ public class MatchingPathSimple extends MatchingBase {
 
         matchingData.solutionPaths[si] = new IntArrayList(candidatesPaths.subList(0, listSize - 1));
         int node_to_match = states.map_state_to_unmatched_node[si];
-        if (node_to_match != -1)
-            matchingData.solution_nodes[node_to_match] = candidatesPaths.getInt(listSize - 1);
+        if (node_to_match != -1) matchingData.solution_nodes[node_to_match] = candidatesPaths.getInt(listSize - 1);
     }
 
     public void updateMatchingInfoForStateGreaterThanZero() {

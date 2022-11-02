@@ -149,7 +149,7 @@ public class TargetGraph {
         }
 
         this.srcDstAggregation = srcDstAggregation;
-        this.graphPaths = new GraphPaths(mapPairToKey, mapKeyToEdgeList, this.edgesLabelsManager.getMapIntLabelToStringLabel().size() ,mapKeyToEdgeList.size(), mapNodeIdToLabelsDegrees);
+        this.graphPaths = new GraphPaths(mapPairToKey, mapKeyToEdgeList, this.edgesLabelsManager.getMapIntLabelToStringLabel().size(), mapKeyToEdgeList.size(), mapNodeIdToLabelsDegrees);
     }
 
     private int getEdgeLabelsColumnId(List<String> colNames) {

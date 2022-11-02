@@ -16,19 +16,20 @@ import target_graph.graph.TargetGraph;
 
 public class MatchingSimple extends MatchingBase {
     ObjectArrayList<QueryCondition> simpleConditions;
+
     public MatchingSimple(OutData outData, QueryStructure query, boolean justCount, boolean distinct, long numMaxOccs, TargetGraph targetGraph, TargetBitmatrix target_bitmatrix, ObjectArrayList<QueryCondition> simpleConditions) {
         super(outData, query, justCount, distinct, numMaxOccs, targetGraph, target_bitmatrix);
         this.simpleConditions = simpleConditions;
     }
 
-    public OutData matching()  {
+    public OutData matching() {
         if (check_nodes_labels()) {
             report();
             return outData;
         }
 
         // SIMPLE WHERE CONDITIONS
-        if(simpleConditions.size() > 0) {
+        if (simpleConditions.size() > 0) {
             WhereUtils.assignSimpleConditionsToNodesAndEdges(simpleConditions, query);
 
             // DOMAINS
@@ -69,8 +70,8 @@ public class MatchingSimple extends MatchingBase {
 
         Int2ObjectOpenHashMap<IntArrayList> first_compatibility = firstPair.getFirst_second();
 
-        for (int f_node: first_compatibility.keySet()) {
-            for (int s_node: first_compatibility.get(f_node)) {
+        for (int f_node : first_compatibility.keySet()) {
+            for (int s_node : first_compatibility.get(f_node)) {
                 updateCandidatesForStateZero(q_src, q_dst, f_node, s_node);
 
                 while (matchingData.candidatesIT[0] < matchingData.setCandidates[0].size() - 1) {

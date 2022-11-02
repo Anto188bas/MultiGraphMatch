@@ -26,14 +26,14 @@ public class MatchingPathWhere extends MatchingPathSimple {
         this.complexConditions = complexConditions;
     }
 
-    public OutData matching()  {
+    public OutData matching() {
         if (check_nodes_labels()) {
             report();
             return outData;
         }
 
         // SIMPLE WHERE CONDITIONS
-        if(simpleConditions.size() > 0) {
+        if (simpleConditions.size() > 0) {
             WhereUtils.assignSimpleConditionsToNodesAndEdges(simpleConditions, query);
 
             // DOMAINS
@@ -88,7 +88,7 @@ public class MatchingPathWhere extends MatchingPathSimple {
                 startFromStateZero();
                 updateSolutionNodesAndEdgeForStateZero();
 
-                if(areWhereConditionsVerified()) {
+                if (areWhereConditionsVerified()) {
                     updateMatchingInfoForStateZero();
                     goAhead();
                     updateCandidatesForStateGraterThanZero();

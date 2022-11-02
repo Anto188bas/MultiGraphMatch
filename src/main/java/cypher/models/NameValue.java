@@ -8,19 +8,31 @@ public class NameValue {
     private String elementKey;
 
     // CONSTRUCTORs
-    public NameValue() {}
+    public NameValue() {
+    }
+
     public NameValue(String elementName, String elementKey) {
         this.elementName = elementName;
-        this.elementKey  = elementKey;
+        this.elementKey = elementKey;
     }
 
 
     // GETTER AND SETTER
-    public String getElementName()                {return elementName;}
-    public void   setElementName(String nodeName) {this.elementName = nodeName;}
+    public String getElementName() {
+        return elementName;
+    }
 
-    public String getElementKey()                 {return elementKey;}
-    public void   setElementKey(String nodeKey)   {this.elementKey = nodeKey;}
+    public void setElementName(String nodeName) {
+        this.elementName = nodeName;
+    }
+
+    public String getElementKey() {
+        return elementKey;
+    }
+
+    public void setElementKey(String nodeKey) {
+        this.elementKey = nodeKey;
+    }
 
     // TO STRING
 

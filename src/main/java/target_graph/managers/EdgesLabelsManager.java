@@ -12,12 +12,13 @@ public class EdgesLabelsManager {
 
     /**
      * Class constructor. This class is used to manage labels for edges.
+     *
      * @param offset
      */
     public EdgesLabelsManager(int offset) {
         mapStringLabelToIntLabel = new Object2IntOpenHashMap<>();
         mapIntLabelToStringLabel = new Int2ObjectOpenHashMap<>();
-        mapElementIdToLabel= new Int2IntOpenHashMap();
+        mapElementIdToLabel = new Int2IntOpenHashMap();
 
         this.offset = offset;
     }
@@ -25,6 +26,7 @@ public class EdgesLabelsManager {
 
     /**
      * Add the element to the manager. After that, it will be possible to retrieve the label of the element (starting from its id).
+     *
      * @param elementId
      * @param labelString
      */
@@ -38,11 +40,12 @@ public class EdgesLabelsManager {
 
     /**
      * Add the label to the manager (if it's not already present) and return its id.
+     *
      * @param label
      * @return
      */
     private int addLabelIfNotExists(String label) {
-        if(mapStringLabelToIntLabel.containsKey(label)) {
+        if (mapStringLabelToIntLabel.containsKey(label)) {
             return mapStringLabelToIntLabel.getInt(label);
         }
 

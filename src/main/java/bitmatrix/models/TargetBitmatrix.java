@@ -1,20 +1,13 @@
 package bitmatrix.models;
 
-import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import target_graph.edges.NewEdgeAggregation;
 import target_graph.managers.EdgesLabelsManager;
 import target_graph.managers.NodesLabelsManager;
-import target_graph.nodes.GraphMacroNode;
-import target_graph.propeties_idx.NodesEdgesLabelsMaps;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.index.IntIndex;
 
 import java.util.BitSet;
-import java.util.HashMap;
 
 
 public class TargetBitmatrix extends BitMatrix {

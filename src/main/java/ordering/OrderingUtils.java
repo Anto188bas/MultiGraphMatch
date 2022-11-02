@@ -35,7 +35,7 @@ public class OrderingUtils {
     public static Int2ObjectOpenHashMap<IntArraySet> mergeInt2ObjectOpenHashMap(Int2ObjectOpenHashMap<IntArraySet> a, Int2ObjectOpenHashMap<IntArraySet> b) {
         Int2ObjectOpenHashMap<IntArraySet> result = new Int2ObjectOpenHashMap<>();
         b.keySet().forEach((IntConsumer) (key) -> {
-            if(a.containsKey(key)) {
+            if (a.containsKey(key)) {
                 result.put(key, intArraySetUnion(a.get(key), b.get(key)));
             } else {
                 result.put(key, b.get(key));
@@ -70,12 +70,13 @@ public class OrderingUtils {
         return degrees;
     }
 
-    public static Int2IntOpenHashMap computeEdgesDegree(ObjectArraySet<NodesPair> pairs,  Int2IntOpenHashMap nodes_degree) {
+    public static Int2IntOpenHashMap computeEdgesDegree(ObjectArraySet<NodesPair> pairs, Int2IntOpenHashMap nodes_degree) {
         Int2IntOpenHashMap map_pair_to_degree = new Int2IntOpenHashMap();
-        for(NodesPair pair : pairs) {
+        for (NodesPair pair : pairs) {
             int first_endpoint_degree = nodes_degree.get(pair.getFirstEndpoint().intValue());
             int second_endpoint_degree = nodes_degree.get(pair.getSecondEndpoint().intValue());
-            map_pair_to_degree.put(pair.getId().intValue(), (first_endpoint_degree + second_endpoint_degree));        }
+            map_pair_to_degree.put(pair.getId().intValue(), (first_endpoint_degree + second_endpoint_degree));
+        }
 
         return map_pair_to_degree;
     }
