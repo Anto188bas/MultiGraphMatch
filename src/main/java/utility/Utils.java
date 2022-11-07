@@ -43,20 +43,20 @@ public class Utils {
          * LOG
          */
 //        System.setOut(new PrintStream(new BufferedOutputStream(new FileOutputStream("output.txt")), true));
-//        System.out.println("TARGET GRAPH");
-//        graphPaths.getMap_pair_to_key().forEach((src, map) -> {
-//            map.forEach((dst, key) -> {
-//                System.out.print("(SRC: " + src +", DST: " + dst + ") -> {");
-//                IntArrayList[] edgeList = graphPaths.getMap_key_to_edge_list()[key];
-//                for(int color = 0; color < edgeList.length; color++) {
-//                    int finalColor = color;
-//                    edgeList[color].forEach((IntConsumer) (edge) -> {
-//                        System.out.print("( " + edge + ":C" + finalColor + "), " );
-//                    });
-//                }
-//                System.out.print("}\n");
-//            });
-//        });
+        System.out.println("TARGET GRAPH");
+        graphPaths.getMap_pair_to_key().forEach((src, map) -> {
+            map.forEach((dst, key) -> {
+                System.out.print("(SRC: " + src +", DST: " + dst + ") -> {");
+                IntArrayList[] edgeList = graphPaths.getMap_key_to_edge_list()[key];
+                for(int color = 0; color < edgeList.length; color++) {
+                    int finalColor = color;
+                    edgeList[color].forEach((IntConsumer) (edge) -> {
+                        System.out.print("( " + edge + ":C" + finalColor + "), " );
+                    });
+                }
+                System.out.print("}\n");
+            });
+        });
 
         System.out.println("QUERY NODES");
         query_obj.getQuery_nodes().forEach((id, node) -> {

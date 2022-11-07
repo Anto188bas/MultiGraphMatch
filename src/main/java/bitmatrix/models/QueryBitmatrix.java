@@ -72,15 +72,20 @@ public class QueryBitmatrix extends BitMatrix {
 
     // 3. SPECULATE ROWs CREATION
     // WE NEED TO CREATE A SEPARATE STRUCTURE BECAUSE THE REVERSE IMPLIES DST-SRC AND NOT SRC-DST
-    private ArrayList<BitSet> speculate_rows_computing(ArrayList<BitSet> bit_mtx_row) {
-        ArrayList<BitSet> speculate = new ArrayList<>();
-        // INIT SPECULATE ROW
-        int last_idx = getStart_directed_pos().length - 1;
-        for (BitSet row : bit_mtx_row) {
-            speculate.add(super.speculate_row(row, last_idx));
-        }
-        return speculate;
-    }
+//    private ArrayList<BitSet> speculate_rows_computing(ArrayList<BitSet> bit_mtx_row) {
+//        ArrayList<BitSet> speculate = new ArrayList<>();
+//        // INIT SPECULATE ROW
+//        int last_idx = getStart_directed_pos().length - 1;
+//        for (BitSet row : bit_mtx_row) {
+//            speculate.add(super.speculate_row(row, last_idx));
+//        }
+//        return speculate;
+//    }
+//
+//    private BitSet getSpeculateRow(BitSet bitSet) {
+//        int last_idx = getStart_directed_pos().length - 1;
+//        return super.speculate_row(bitSet, last_idx);
+//    }
 
     // BIT-MATRIX CONFIGURATION
     public void createBitset(QueryStructure query, NodesLabelsManager nodesLabelsManager, EdgesLabelsManager edgesLabelsManager) {
@@ -89,6 +94,7 @@ public class QueryBitmatrix extends BitMatrix {
         int dstPosition = getStart_directed_pos().length - 2;
 
         Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>>> aggregate_edge = query.getQuery_pattern().aggregate_edge();
+
         aggregate_edge.forEach((src, dst_list) -> {
             int[] src_labels = query.getQuery_node(src).getLabels().toIntArray();
             dst_list.forEach((dst, verse_edges) -> {
@@ -103,10 +109,8 @@ public class QueryBitmatrix extends BitMatrix {
                 src_dst_edges.add(src_dst_aggreg);
                 // EDGES TYPEs ASSOCIATION
                 edges_part_configuration(query, dstPosition, src_labels, dst_labels, src_dst_edges, verse_edges);
-                ArrayList<BitSet> dst_src_edges = speculate_rows_computing(src_dst_edges);
                 // SRC-DST-ROWs ASSOCIATION
                 add_src_dst_multipleRows(src, dst, src_dst_edges);
-                add_src_dst_multipleRows(dst, src, dst_src_edges);
             });
         });
     }

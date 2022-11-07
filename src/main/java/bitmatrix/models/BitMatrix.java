@@ -69,6 +69,21 @@ public abstract class BitMatrix {
         return new_row;
     }
 
+    protected ArrayList<BitSet> speculate_rows_computing(ArrayList<BitSet> bit_mtx_row) {
+        ArrayList<BitSet> speculate = new ArrayList<>();
+        // INIT SPECULATE ROW
+        int last_idx = getStart_directed_pos().length - 1;
+        for (BitSet row : bit_mtx_row) {
+            speculate.add(speculate_row(row, last_idx));
+        }
+        return speculate;
+    }
+
+    protected BitSet getSpeculateRow(BitSet bitSet) {
+        int last_idx = getStart_directed_pos().length - 1;
+        return speculate_row(bitSet, last_idx);
+    }
+
     // GETTER
     public Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> getTable() {
         return table;

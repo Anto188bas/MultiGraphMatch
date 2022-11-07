@@ -27,7 +27,7 @@ public class TargetBitmatrix extends BitMatrix {
     public void createBitset(Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntOpenHashSet[]>> src_dst_colors, NodesLabelsManager nodesLabelsManager, EdgesLabelsManager edgesLabelsManager) {
         int numOfDifferentNodesLabels = nodesLabelsManager.getMapIntLabelToStringLabel().size();
         int numOfDifferentEdgesLabels = edgesLabelsManager.getMapIntLabelToStringLabel().size();
-        int bitSetSize = setStartDirectedPosition(numOfDifferentNodesLabels, numOfDifferentEdgesLabels, false);
+        int bitSetSize = setStartDirectedPosition(numOfDifferentNodesLabels, numOfDifferentEdgesLabels, true);
 
         src_dst_colors.int2ObjectEntrySet().fastForEach(src_dsts -> {
             // SELECTED SRC NODE
@@ -44,6 +44,7 @@ public class TargetBitmatrix extends BitMatrix {
                 edge_part_configuration(bit_mtx_row, dst_colors.getValue(), numOfDifferentNodesLabels, numOfDifferentEdgesLabels);
                 // SRC-DST-ROW ASSOCIATION
                 add_src_dst_singleRow(src_dsts.getIntKey(), dst_colors.getIntKey(), bit_mtx_row);
+                add_src_dst_singleRow(dst_colors.getIntKey(), src_dsts.getIntKey(), super.getSpeculateRow(bit_mtx_row));
             });
         });
     }

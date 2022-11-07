@@ -71,17 +71,33 @@ public class QueryEdgeAggregation {
             src_record.getValue().int2ObjectEntrySet().fastForEach(dst_record -> {
                 int dst = dst_record.getIntKey();
                 IntArrayList edges = dst_record.getValue();
-                // DST AND SRC ARE IN AGGREGATION. BUT DST IS A SOURCE NODE INSTEAD SRC A DESTINATION ONE. SO
-                // THESE EDGES WILL BE INCOMING ONES
-                if (aggregation.containsKey(dst) && aggregation.get(dst).containsKey(src))
-                    aggregation.get(dst).get(src).put(dir_1, edges);
-                    // SRC IS A SOURCE NODE, WHILE DST A DESTINATION ONE
-                else {
-                    if (!aggregation.containsKey(src)) aggregation.put(src, new Int2ObjectOpenHashMap<>());
-                    Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> src_dst_list = aggregation.get(src);
-                    if (!src_dst_list.containsKey(dst)) src_dst_list.put(dst, new Int2ObjectOpenHashMap<>());
-                    src_dst_list.get(dst).put(dir_2, edges);
+
+                int firstNode, secondNode, direction;
+                if(src < dst) { // src -> dst
+                    firstNode = src;
+                    secondNode = dst;
+                    direction = dir_2;
+                } else { // dst <- src
+                    firstNode = dst;
+                    secondNode = src;
+                    direction = dir_1;
                 }
+                if(!aggregation.containsKey(firstNode)) aggregation.put(firstNode, new Int2ObjectOpenHashMap<>());
+                Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> secondNodeList = aggregation.get(firstNode);
+                if(!secondNodeList.containsKey(secondNode)) secondNodeList.put(secondNode, new Int2ObjectOpenHashMap<>());
+                secondNodeList.get(secondNode).put(direction, edges);
+
+//                // DST AND SRC ARE IN AGGREGATION. BUT DST IS A SOURCE NODE INSTEAD SRC A DESTINATION ONE. SO
+//                // THESE EDGES WILL BE INCOMING ONES
+//                if (aggregation.containsKey(dst) && aggregation.get(dst).containsKey(src))
+//                    aggregation.get(dst).get(src).put(dir_1, edges);
+//                    // SRC IS A SOURCE NODE, WHILE DST A DESTINATION ONE
+//                else {
+//                    if (!aggregation.containsKey(src)) aggregation.put(src, new Int2ObjectOpenHashMap<>());
+//                    Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> src_dst_list = aggregation.get(src);
+//                    if (!src_dst_list.containsKey(dst)) src_dst_list.put(dst, new Int2ObjectOpenHashMap<>());
+//                    src_dst_list.get(dst).put(dir_2, edges);
+//                }
             });
         });
     }
