@@ -104,7 +104,7 @@ public abstract class BitMatrix {
 
     // ADD SRC-DST-ROW INTO THE TABLE
     // TARGET VERSION
-    public void add_src_dst_singleRow(int src, int dst, BitSet row) {
+    public int add_src_dst_singleRow(int src, int dst, BitSet row) {
         int bitset_id = add_bitset_if_not_exist(row);
         // src - dst - bitset_id association
         Int2ObjectOpenHashMap<IntArrayList> bitsetIdMap;
@@ -122,6 +122,7 @@ public abstract class BitMatrix {
             bitsetIdMap.put(src, dstList);
         }
         dstList.add(dst);
+        return bitset_id;
     }
 
     // QUERY VERSION

@@ -1,6 +1,7 @@
 package bitmatrix.models;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import target_graph.managers.EdgesLabelsManager;
 import target_graph.managers.NodesLabelsManager;
@@ -9,9 +10,11 @@ import java.util.BitSet;
 
 
 public class TargetBitmatrix extends BitMatrix {
+    private final Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> reversedTable; // btx_id -> src -> {dst, ...}
     // CONSTRUCTOR
     public TargetBitmatrix() {
         super();
+        reversedTable = new Int2ObjectOpenHashMap<>();
     }
 
     // BITMATRIX EDGES SETTING
@@ -20,6 +23,28 @@ public class TargetBitmatrix extends BitMatrix {
         if (dir_colors[0] != null) for (int color : dir_colors[0]) bit_mtx_row.set(offset_1 + offset_2 + color);
         // IN EDGES
         if (dir_colors[1] != null) for (int color : dir_colors[1]) bit_mtx_row.set(offset_1 + color);
+    }
+    @Override
+    public int add_src_dst_singleRow(int src, int dst, BitSet row) {
+        int bitset_id = super.add_src_dst_singleRow(src, dst, row);
+
+        Int2ObjectOpenHashMap<IntArrayList> bitsetIdMap;
+        if (reversedTable.containsKey(bitset_id)) {
+            bitsetIdMap = reversedTable.get(bitset_id);
+        } else {
+            bitsetIdMap = new Int2ObjectOpenHashMap<>();
+            reversedTable.put(bitset_id, bitsetIdMap);
+        }
+        IntArrayList srcList;
+        if(bitsetIdMap.containsKey(dst)) {
+            srcList = bitsetIdMap.get(dst);
+        } else {
+            srcList = new IntArrayList();
+            bitsetIdMap.put(dst, srcList);
+        }
+        srcList.add(src);
+
+        return bitset_id;
     }
 
 
@@ -47,5 +72,9 @@ public class TargetBitmatrix extends BitMatrix {
                 add_src_dst_singleRow(dst_colors.getIntKey(), src_dsts.getIntKey(), super.getSpeculateRow(bit_mtx_row));
             });
         });
+    }
+
+    public Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> getReversedTable() {
+        return reversedTable;
     }
 }

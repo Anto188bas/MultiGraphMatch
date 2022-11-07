@@ -76,7 +76,7 @@ public abstract class MatchingBase {
         QueryBitmatrix query_bitmatrix = new QueryBitmatrix();
         query_bitmatrix.createBitset(query, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager());
         Int2ObjectOpenHashMap<IntArrayList> compatibility = BitmatrixManager.bitmatrix_manager(query_bitmatrix, target_bitmatrix);
-        query.filtered_domains_elaboration(query_bitmatrix.getTable(), target_bitmatrix.getTable(), compatibility, targetGraph.getGraphPaths().getMap_node_color_degrees());
+        query.filtered_domains_elaboration(query_bitmatrix.getTable(), target_bitmatrix.getTable(), target_bitmatrix.getReversedTable(), compatibility, targetGraph.getGraphPaths().getMap_node_color_degrees());
         outData.domain_time = (System.currentTimeMillis() - outData.domain_time) / 1000;
     }
 
