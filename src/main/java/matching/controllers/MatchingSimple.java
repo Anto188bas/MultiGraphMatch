@@ -12,6 +12,7 @@ import matching.models.PathsMatchingData;
 import ordering.NodesPair;
 
 import target_graph.graph.TargetGraph;
+import utility.Utils;
 
 
 public class MatchingSimple extends MatchingBase {
@@ -55,7 +56,7 @@ public class MatchingSimple extends MatchingBase {
         outData.matching_time = System.currentTimeMillis();
 
         //DEBUG INFO
-//        Utils.printDebugInfo(graphPaths, query, states, edgeOrdering);
+//        Utils.printDebugInfo(targetGraph.getGraphPaths(), query, states, edgeOrdering);
 
         // MATCHING
         outData.num_occurrences = matching_procedure();

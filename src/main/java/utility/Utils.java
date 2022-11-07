@@ -3,6 +3,8 @@ package utility;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
+import it.unimi.dsi.fastutil.ints.IntCollection;
+import it.unimi.dsi.fastutil.ints.IntIterator;
 import ordering.EdgeDirection;
 import ordering.EdgeOrdering;
 import state_machine.StateStructures;
@@ -60,31 +62,31 @@ public class Utils {
         query_obj.getQuery_nodes().forEach((id, node) -> {
             System.out.println("ID: " + id + "-> " + node);
         });
-//
-//        System.out.println("QUERY EDGES");
-//        query_obj.getQuery_pattern().getOut_edges().forEach((key, list) -> {
-//            System.out.println(key + "->" + list);
-//        });
-//
-//        System.out.println("PAIRS DOMAINS");
-//        query_obj.getPairs().forEach((pair) -> {
-//            System.out.print("P: " + pair + "\tDOMAIN (FS): ");
-//            pair.getFirst_second().forEach((key, list) -> {
-//                for (int dst : list) {
-//                    System.out.print("[" + key + ", " + dst + "], ");
-//                }
-//
-//            });
-//
-//            System.out.print("\tDOMAIN (SF): ");
-//
-//            pair.getSecond_first().forEach((key, list) -> {
-//                for (int dst : list) {
-//                    System.out.print("[" + key + ", " + dst + "], ");
-//                }
-//            });
-//            System.out.print("\n");
-//        });
+
+        System.out.println("QUERY EDGES");
+        query_obj.getQuery_pattern().getOut_edges().forEach((key, list) -> {
+            System.out.println(key + "->" + list);
+        });
+
+        System.out.println("PAIRS DOMAINS");
+        query_obj.getPairs().forEach((pair) -> {
+            System.out.print("P: " + pair + "\tDOMAIN (FS): ");
+            pair.getFirst_second().forEach((key, list) -> {
+                for (int dst : list) {
+                    System.out.print("[" + key + ", " + dst + "], ");
+                }
+
+            });
+
+            System.out.print("\tDOMAIN (SF): ");
+
+            pair.getSecond_first().forEach((key, list) -> {
+                for (int dst : list) {
+                    System.out.print("[" + key + ", " + dst + "], ");
+                }
+            });
+            System.out.print("\n");
+        });
 //
 //        System.out.println("NODES DOMAINS");
 //        query_obj.getMap_node_to_domain().forEach((node, domain) -> {
@@ -93,9 +95,9 @@ public class Utils {
 //            System.out.println("NODE: " + node + " -> " + domain);
 //        });
 //
-//        System.out.println("PARIS ORDERING");
-//        System.out.println(edgeOrdering.getPairs_ordering());
-//
+        System.out.println("PARIS ORDERING");
+        System.out.println(edgeOrdering.getPairs_ordering());
+
 //        System.out.println("ORDERING DETAILS");
 //        for (int i = 0; i < states.map_state_to_first_endpoint.length; i++) {
 //            int edge = states.map_state_to_edge[i];
@@ -110,5 +112,19 @@ public class Utils {
     public static void printSymmetryConditions(IntArrayList[] nodes_symmetry, IntArrayList[] edges_symmetry) {
         System.out.println("NODES SYMMETRY: " + Arrays.toString(nodes_symmetry)) ;
         System.out.println("EDGES SYMMETRY: " + Arrays.toString(edges_symmetry)) ;
+    }
+
+    public static IntArrayList intersection(IntCollection a, IntCollection b) {
+        IntArrayList result = new IntArrayList();
+
+        IntIterator iterator = b.iterator();
+        while (iterator.hasNext()) {
+            int next = iterator.nextInt();
+            if (a.contains(next)) {
+                result.add(next);
+            }
+        }
+
+        return result;
     }
 }

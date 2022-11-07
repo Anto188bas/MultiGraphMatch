@@ -1,8 +1,8 @@
 package bitmatrix.models;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import tech.tablesaw.api.IntColumn;
-import tech.tablesaw.api.Table;
-import tech.tablesaw.index.IntIndex;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,20 +10,15 @@ import java.util.BitSet;
 
 
 public abstract class BitMatrix {
-    private final Table table;
+    private final Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> table; // btx_id -> src -> {dst, ...}
 
-    // TODO NEW (IT SHOULD BE REPLACE table)
 
     private final ArrayList<BitSet> bitmatrix;
-    private IntIndex bitmatrix_id_indexing;
     private int[] start_directed_pos;
     private int[] start_reverse_pos;
 
     public BitMatrix() {
-        IntColumn src_col = IntColumn.create("src");
-        IntColumn dst_col = IntColumn.create("dst");
-        IntColumn bit_mtx_id = IntColumn.create("btx_id");
-        table = Table.create(src_col, dst_col, bit_mtx_id);
+        table = new Int2ObjectOpenHashMap<>();
         bitmatrix = new ArrayList<>();
     }
 
@@ -46,17 +41,6 @@ public abstract class BitMatrix {
         return i;
     }
 
-    public int add_bitset_if_not_exist(BitSet record, int last_idx) {
-        int i = 0;
-        for (; i < this.bitmatrix.size(); i++) {
-            BitSet sel_bitset = bitmatrix.get(i);
-            if (sel_bitset.equals(record)) return i;
-            BitSet reverse = speculate_row(record, last_idx);
-            if (sel_bitset.equals(reverse)) return i;
-        }
-        bitmatrix.add(record);
-        return i;
-    }
 
     // CONFIGURE START DIRECTED POSITION VECTOR
     public int setStartDirectedPosition(int numOfDifferentNodesLabels, int numOfDifferentEdgesLabels, boolean isDirected) {
@@ -86,16 +70,12 @@ public abstract class BitMatrix {
     }
 
     // GETTER
-    public Table getTable() {
+    public Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> getTable() {
         return table;
     }
 
     public ArrayList<BitSet> getBitmatrix() {
         return bitmatrix;
-    }
-
-    public IntIndex getBitmatrix_id_indexing() {
-        return bitmatrix_id_indexing;
     }
 
     public int[] getStart_directed_pos() {
@@ -106,25 +86,32 @@ public abstract class BitMatrix {
         return start_reverse_pos;
     }
 
-    // SETTER
-    public void setBitmatrix_id_indexing(IntIndex bitmatrix_id_indexing) {
-        this.bitmatrix_id_indexing = bitmatrix_id_indexing;
-    }
-
 
     // ADD SRC-DST-ROW INTO THE TABLE
-    // QUERY VERSION
-    public void add_src_dst_row(int src, int dst, BitSet row) {
+    // TARGET VERSION
+    public void add_src_dst_singleRow(int src, int dst, BitSet row) {
         int bitset_id = add_bitset_if_not_exist(row);
         // src - dst - bitset_id association
-        ((IntColumn) table.column("src")).append(src);
-        ((IntColumn) table.column("dst")).append(dst);
-        ((IntColumn) table.column("btx_id")).append(bitset_id);
+        Int2ObjectOpenHashMap<IntArrayList> bitsetIdMap;
+        if (table.containsKey(bitset_id)) {
+            bitsetIdMap = table.get(bitset_id);
+        } else {
+            bitsetIdMap = new Int2ObjectOpenHashMap<>();
+            table.put(bitset_id, bitsetIdMap);
+        }
+        IntArrayList dstList;
+        if(bitsetIdMap.containsKey(src)) {
+            dstList = bitsetIdMap.get(src);
+        } else {
+            dstList = new IntArrayList();
+            bitsetIdMap.put(src, dstList);
+        }
+        dstList.add(dst);
     }
 
-    // TARGET VERSION
-    public void add_src_dst_row(int src, int dst, ArrayList<BitSet> rows) {
+    // QUERY VERSION
+    public void add_src_dst_multipleRows(int src, int dst, ArrayList<BitSet> rows) {
         for (BitSet row : rows)
-            add_src_dst_row(src, dst, row);
+            add_src_dst_singleRow(src, dst, row);
     }
 }

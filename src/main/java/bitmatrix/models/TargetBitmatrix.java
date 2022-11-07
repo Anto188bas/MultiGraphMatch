@@ -4,8 +4,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import target_graph.managers.EdgesLabelsManager;
 import target_graph.managers.NodesLabelsManager;
-import tech.tablesaw.api.Table;
-import tech.tablesaw.index.IntIndex;
 
 import java.util.BitSet;
 
@@ -31,7 +29,6 @@ public class TargetBitmatrix extends BitMatrix {
         int numOfDifferentEdgesLabels = edgesLabelsManager.getMapIntLabelToStringLabel().size();
         int bitSetSize = setStartDirectedPosition(numOfDifferentNodesLabels, numOfDifferentEdgesLabels, false);
 
-        Table table = super.getTable();
         src_dst_colors.int2ObjectEntrySet().fastForEach(src_dsts -> {
             // SELECTED SRC NODE
             int src = src_dsts.getIntKey();
@@ -46,10 +43,8 @@ public class TargetBitmatrix extends BitMatrix {
                 // EDGE PART CONFIGURATION
                 edge_part_configuration(bit_mtx_row, dst_colors.getValue(), numOfDifferentNodesLabels, numOfDifferentEdgesLabels);
                 // SRC-DST-ROW ASSOCIATION
-                add_src_dst_row(src_dsts.getIntKey(), dst_colors.getIntKey(), bit_mtx_row);
+                add_src_dst_singleRow(src_dsts.getIntKey(), dst_colors.getIntKey(), bit_mtx_row);
             });
         });
-        // INDEXING CREATION
-        super.setBitmatrix_id_indexing(new IntIndex(table.intColumn("btx_id")));
     }
 }

@@ -47,9 +47,9 @@ public class TestWhereSingleThread {
             System.out.println(query_test);
 
             ExecutorService exec = Executors.newSingleThreadExecutor();
-            final Future<Double> handler = exec.submit(new Callable<Double>() {
-                @Override
-                public Double call() throws Exception {
+//            final Future<Double> handler = exec.submit(new Callable<Double>() {
+//                @Override
+//                public Double call() throws Exception {
                     double totalTime;
                     long numOccurrences;
 
@@ -156,16 +156,17 @@ public class TestWhereSingleThread {
                             e.printStackTrace();
                         }
                     }
-                    return totalTime;
-                }
-            });
-            try {
-                handler.get(tout.getSeconds(), TimeUnit.SECONDS);
-            } catch (Exception e) {
-                handler.cancel(true);
-                System.err.println("timeout");
-                System.exit(-1);
-            }
+//                    return totalTime;
+//                }
+//            });
+//            try {
+//                handler.get(tout.getSeconds(), TimeUnit.SECONDS);
+//            } catch (Exception e) {
+//                System.err.println(e);
+//                handler.cancel(true);
+//                System.err.println("timeout");
+//                System.exit(-1);
+//            }
         });
 
 

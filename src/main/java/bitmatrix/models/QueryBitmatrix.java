@@ -6,8 +6,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import target_graph.managers.EdgesLabelsManager;
 import target_graph.managers.NodesLabelsManager;
-import tech.tablesaw.api.Table;
-import tech.tablesaw.index.IntIndex;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -86,7 +84,6 @@ public class QueryBitmatrix extends BitMatrix {
 
     // BIT-MATRIX CONFIGURATION
     public void createBitset(QueryStructure query, NodesLabelsManager nodesLabelsManager, EdgesLabelsManager edgesLabelsManager) {
-        Table table = super.getTable();
         isDirected = query.getQuery_pattern().getIn_out_edges().size() == 0;
         int bitSetSize = setStartDirectedPosition(nodesLabelsManager.getMapIntLabelToStringLabel().size(), edgesLabelsManager.getMapIntLabelToStringLabel().size(), isDirected);
         int dstPosition = getStart_directed_pos().length - 2;
@@ -108,11 +105,10 @@ public class QueryBitmatrix extends BitMatrix {
                 edges_part_configuration(query, dstPosition, src_labels, dst_labels, src_dst_edges, verse_edges);
                 ArrayList<BitSet> dst_src_edges = speculate_rows_computing(src_dst_edges);
                 // SRC-DST-ROWs ASSOCIATION
-                add_src_dst_row(src, dst, src_dst_edges);
-                add_src_dst_row(dst, src, dst_src_edges);
+                add_src_dst_multipleRows(src, dst, src_dst_edges);
+                add_src_dst_multipleRows(dst, src, dst_src_edges);
             });
         });
-        super.setBitmatrix_id_indexing(new IntIndex(table.intColumn("btx_id")));
     }
 
     // GETTER
