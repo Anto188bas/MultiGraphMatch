@@ -21,7 +21,6 @@ import utility.Utils;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class QueryStructure {

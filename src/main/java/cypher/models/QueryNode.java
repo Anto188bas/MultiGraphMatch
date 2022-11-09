@@ -110,6 +110,10 @@ public class QueryNode {
         return whereConditionsCompatibilityDomain;
     }
 
+    public String getNode_name() {
+        return node_name;
+    }
+
     // SETTER
     public void setWhereConditionsCompatibilityDomain(IntArraySet whereConditionsCompatibilityDomain) {
         if (this.whereConditionsCompatibilityDomain == null || this.whereConditionsCompatibilityDomain.size() == 0)
