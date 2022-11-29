@@ -32,6 +32,7 @@ public class TestWhereSingleThread {
         Table[] nodesTables = FileManager.files_reading(configuration.nodes_main_directory, ',');
         Table[] edgesTables = FileManager.files_reading(configuration.edges_main_directory, ',');
 
+        System.out.println("Elaborating target graph...");
         // TARGET GRAPH
         TargetGraph targetGraph = new TargetGraph(nodesTables, edgesTables, "id", "labels");
 
@@ -39,6 +40,7 @@ public class TestWhereSingleThread {
         TargetBitmatrix target_bitmatrix = new TargetBitmatrix();
         target_bitmatrix.createBitset(targetGraph.getSrcDstAggregation(), targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager());
 
+        System.out.println("Reading queries...");
         // QUERIES READING
         List<String> queries = FileManager.query_reading(configuration);
         final Duration tout = Duration.ofSeconds(configuration.timeout);

@@ -25,6 +25,13 @@ public class Utils {
         return result;
     }
 
+    public static IntArrayList intArrayListUnion(IntArrayList a, IntArrayList b) {
+        IntArrayList result = a.clone();
+        result.addAll(b);
+
+        return result;
+    }
+
     public static IntArraySet intArraySetDifference(IntArraySet a, IntArraySet b) {
         IntArraySet result = a.clone();
         result.removeAll(b);
@@ -32,8 +39,22 @@ public class Utils {
         return result;
     }
 
+    public static IntArrayList intArrayListDifference(IntArrayList a, IntArrayList b) {
+        IntArrayList result = a.clone();
+        result.removeAll(b);
+
+        return result;
+    }
+
     public static IntArraySet intArraySetIntersection(IntArraySet a, IntArraySet b) {
         IntArraySet result = a.clone();
+        result.retainAll(b);
+
+        return result;
+    }
+
+    public static IntArrayList intArrayListIntersection(IntArrayList a, IntArrayList b) {
+        IntArrayList result = a.clone();
         result.retainAll(b);
 
         return result;

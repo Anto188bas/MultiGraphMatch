@@ -36,7 +36,7 @@ public class QueryStructure {
     private final Int2ObjectOpenHashMap<IntArraySet> map_node_to_neighborhood;
     private final Int2ObjectOpenHashMap<ObjectArraySet<NodesPair>> map_pair_to_neighborhood;
     private final Int2ObjectOpenHashMap<Int2IntOpenHashMap> map_node_color_degrees;
-    private final Int2ObjectOpenHashMap<IntArraySet> map_node_to_domain;
+    private final Int2ObjectOpenHashMap<IntArrayList> map_node_to_domain;
     private final TargetGraph targetGraph;
 
     public QueryStructure(TargetGraph targetGraph) {
@@ -516,7 +516,7 @@ public class QueryStructure {
 
     protected void computeNodesDomains() {
         for (int nodeID : query_nodes.keySet()) {
-            IntArraySet domain = new IntArraySet();
+            IntArrayList domain = new IntArrayList();
 
             QueryNode node = this.getQuery_nodes().get(nodeID);
             // If there are simple conditions, we use the compatibility domains filtered with the conditions
@@ -618,7 +618,7 @@ public class QueryStructure {
         return map_id_to_pair;
     }
 
-    public Int2ObjectOpenHashMap<IntArraySet> getMap_node_to_domain() {
+    public Int2ObjectOpenHashMap<IntArrayList> getMap_node_to_domain() {
         return map_node_to_domain;
     }
 

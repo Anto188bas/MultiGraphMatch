@@ -18,7 +18,7 @@ public class QueryNode {
 
     private HashMap<String, QueryCondition> simpleConditions;
     private HashMap<String, QueryCondition> complexConditions;
-    private IntArraySet whereConditionsCompatibilityDomain;
+    private IntArrayList whereConditionsCompatibilityDomain;
 
 
     public QueryNode(NodePattern node_pattern, String name, NodesLabelsManager nodesLabelsManager) {
@@ -86,7 +86,7 @@ public class QueryNode {
     public void clean() {
         this.simpleConditions = new HashMap<>();
         this.complexConditions = new HashMap<>();
-        this.whereConditionsCompatibilityDomain = new IntArraySet();
+        this.whereConditionsCompatibilityDomain = new IntArrayList();
     }
 
     // GETTER METHOD
@@ -106,7 +106,7 @@ public class QueryNode {
         return complexConditions;
     }
 
-    public IntArraySet getWhereConditionsCompatibilityDomain() {
+    public IntArrayList getWhereConditionsCompatibilityDomain() {
         return whereConditionsCompatibilityDomain;
     }
 
@@ -115,11 +115,11 @@ public class QueryNode {
     }
 
     // SETTER
-    public void setWhereConditionsCompatibilityDomain(IntArraySet whereConditionsCompatibilityDomain) {
+    public void setWhereConditionsCompatibilityDomain(IntArrayList whereConditionsCompatibilityDomain) {
         if (this.whereConditionsCompatibilityDomain == null || this.whereConditionsCompatibilityDomain.size() == 0)
             this.whereConditionsCompatibilityDomain = whereConditionsCompatibilityDomain;
         else {
-            this.whereConditionsCompatibilityDomain = Utils.intArraySetIntersection(this.whereConditionsCompatibilityDomain, whereConditionsCompatibilityDomain);
+            this.whereConditionsCompatibilityDomain = Utils.intArrayListIntersection(this.whereConditionsCompatibilityDomain, whereConditionsCompatibilityDomain);
         }
     }
 

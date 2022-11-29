@@ -1,6 +1,7 @@
 package target_graph.managers;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -16,7 +17,7 @@ public class PropertiesManager {
     private final Object2IntOpenHashMap<String> mapPropertyStringToPropertyId;
     private final Int2ObjectOpenHashMap<String> mapPropertyIdToPropertyString;
 
-    private final Int2ObjectOpenHashMap<Object2ObjectOpenHashMap<Object, IntArraySet>> mapPropertyIdToValues;
+    private final Int2ObjectOpenHashMap<Object2ObjectOpenHashMap<Object, IntArrayList>> mapPropertyIdToValues;
 
     public PropertiesManager(String idsColumnName) {
         this.idsColumnName = idsColumnName;
@@ -62,10 +63,10 @@ public class PropertiesManager {
 
             Object value = elementRow.getObject(property);
 
-            Object2ObjectOpenHashMap<Object,IntArraySet> mapValueToElementIds = mapPropertyIdToValues.get(propertyId);
+            Object2ObjectOpenHashMap<Object,IntArrayList> mapValueToElementIds = mapPropertyIdToValues.get(propertyId);
 
             if (!mapValueToElementIds.containsKey(value)) {
-                mapValueToElementIds.put(value, new IntArraySet());
+                mapValueToElementIds.put(value, new IntArrayList());
             }
 
             mapValueToElementIds.get(value).add(elementId);
@@ -100,7 +101,7 @@ public class PropertiesManager {
         return mapPropertyIdToPropertyString;
     }
 
-    public Int2ObjectOpenHashMap<Object2ObjectOpenHashMap<Object, IntArraySet>> getMapPropertyIdToValues() {
+    public Int2ObjectOpenHashMap<Object2ObjectOpenHashMap<Object, IntArrayList>> getMapPropertyIdToValues() {
         return mapPropertyIdToValues;
     }
 }

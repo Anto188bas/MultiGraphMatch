@@ -29,7 +29,7 @@ public class QueryEdge {
     private HashMap<String, QueryCondition> simpleConditions;
     private HashMap<String, QueryCondition> complexConditions;
 
-    private IntArraySet whereConditionsCompatibilityDomain;
+    private IntArrayList whereConditionsCompatibilityDomain;
 
     public QueryEdge(RelationshipPattern edgePattern, EdgesLabelsManager edgesLabelsManager) {
         properties = new HashMap<>();
@@ -109,7 +109,7 @@ public class QueryEdge {
     public void clean() {
         this.simpleConditions = new HashMap<>();
         this.complexConditions = new HashMap<>();
-        this.whereConditionsCompatibilityDomain = new IntArraySet();
+        this.whereConditionsCompatibilityDomain = new IntArrayList();
     }
 
     // ADD CONDITION
@@ -126,11 +126,11 @@ public class QueryEdge {
         edge_name = "r" + id;
     }
 
-    public void setWhereConditionsCompatibilityDomain(IntArraySet whereConditionsCompatibilityDomain) {
+    public void setWhereConditionsCompatibilityDomain(IntArrayList whereConditionsCompatibilityDomain) {
         if (this.whereConditionsCompatibilityDomain == null || this.whereConditionsCompatibilityDomain.size() == 0)
             this.whereConditionsCompatibilityDomain = whereConditionsCompatibilityDomain;
         else {
-            this.whereConditionsCompatibilityDomain = Utils.intArraySetIntersection(this.whereConditionsCompatibilityDomain, whereConditionsCompatibilityDomain);
+            this.whereConditionsCompatibilityDomain = Utils.intArrayListIntersection(this.whereConditionsCompatibilityDomain, whereConditionsCompatibilityDomain);
         }
     }
 
@@ -159,7 +159,7 @@ public class QueryEdge {
         return properties;
     }
 
-    public IntArraySet getWhereConditionsCompatibilityDomain() {
+    public IntArrayList getWhereConditionsCompatibilityDomain() {
         return whereConditionsCompatibilityDomain;
     }
 

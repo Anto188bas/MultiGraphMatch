@@ -1,19 +1,20 @@
 package target_graph.graph;
 
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.*;
 import target_graph.managers.EdgesLabelsManager;
 import target_graph.managers.NodesLabelsManager;
 import target_graph.managers.PropertiesManager;
 import tech.tablesaw.api.IntColumn;
 import tech.tablesaw.api.Row;
+import tech.tablesaw.api.StringColumn;
 import tech.tablesaw.api.Table;
+import tech.tablesaw.columns.Column;
+import tech.tablesaw.index.*;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 class TargetUtils {
     public static void initNodeLabelsDegrees(Int2ObjectOpenHashMap<Int2IntOpenHashMap> mapNodeIdToLabelsDegrees, int node) {
@@ -86,7 +87,7 @@ public class TargetGraph {
         this.idsColumnName = idsColumnName;
         this.labelsColumnName = labelsColumnName;
 
-
+        System.out.println("Elaborating nodes...");
         // Nodes
         for (int i = 0; i < nodesTables.length; i++) {
             Table currentTable = nodesTables[i];
@@ -95,15 +96,61 @@ public class TargetGraph {
 
             nodesPropertiesManager.addProperties(properties);
 
+            // Properties
+            for(String property : properties) {
+                int propertyId = nodesPropertiesManager.getMapPropertyStringToPropertyId().getInt(property);
+                Column currentColumn = currentTable.column(property);
+                Index index = null;
+
+                switch(currentColumn.type().name()) {
+                    case "INTEGER":
+                        index = new IntIndex(currentTable.intColumn(property));
+
+                        for(Object value: currentColumn.unique()) {
+                            IntArrayList idList = new IntArrayList((List<Integer>) currentTable.where(((IntIndex) index).get((Integer) value)).column("id").asList());
+                           nodesPropertiesManager.getMapPropertyIdToValues().get(propertyId).put(value, idList);
+                        }
+
+                        break;
+                    case "FLOAT":
+                        index = new FloatIndex(currentTable.floatColumn(property));
+
+                        for(Object value: currentColumn.unique()) {
+                            IntArrayList idList = new IntArrayList((List<Integer>) currentTable.where(((FloatIndex) index).get((Float) value)).column("id").asList());
+                            nodesPropertiesManager.getMapPropertyIdToValues().get(propertyId).put(value, idList);
+                        }
+
+                        break;
+                    case "DOUBLE":
+                        index = new DoubleIndex(currentTable.doubleColumn(property));
+
+                        for(Object value: currentColumn.unique()) {
+                            IntArrayList idList = new IntArrayList((List<Integer>) currentTable.where(((DoubleIndex) index).get((Double) value)).column("id").asList());
+                            nodesPropertiesManager.getMapPropertyIdToValues().get(propertyId).put(value, idList);
+                        }
+
+                        break;
+                    case "STRING":
+                        index = new StringIndex(currentTable.stringColumn(property));
+
+                        for(Object value: currentColumn.unique()) {
+                            IntArrayList idList = new IntArrayList((List<Integer>) currentTable.where(((StringIndex) index).get((String) value)).column("id").asList());
+                            nodesPropertiesManager.getMapPropertyIdToValues().get(propertyId).put(value, idList);
+                        }
+                        break;
+                }
+            }
+
+            // Labels
             currentTable.forEach(row -> {
                 int id = row.getInt(this.idsColumnName);
                 String labelSetString = row.getString(this.labelsColumnName);
 
                 nodesLabelsManager.addElement(id, labelSetString);
-                nodesPropertiesManager.addElement(row, properties, -1);
             });
         }
 
+        System.out.println("Elaborating edges...");
         // Edges
         Int2ObjectOpenHashMap<Int2IntOpenHashMap> mapNodeIdToLabelsDegrees = new Int2ObjectOpenHashMap<>();
 

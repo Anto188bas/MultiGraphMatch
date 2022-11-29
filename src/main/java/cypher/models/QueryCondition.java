@@ -214,7 +214,7 @@ public class QueryCondition {
         }
     }
 
-    public IntArraySet getEqualsTo(String propertyName, Object expressionValue, Object2IntOpenHashMap<String> mapNodeNameToID, Object2IntOpenHashMap<String> mapEdgeNameToID) {
+    public IntArrayList getEqualsTo(String propertyName, Object expressionValue, Object2IntOpenHashMap<String> mapNodeNameToID, Object2IntOpenHashMap<String> mapEdgeNameToID) {
         PropertiesManager propertiesManager;
         if (mapNodeNameToID.containsKey(this.node_param.getElementName())) { // CONDITION ON NODE
             propertiesManager = targetGraph.getNodesPropertiesManager();
@@ -227,25 +227,25 @@ public class QueryCondition {
         }
 
         int propertyId = propertiesManager.getMapPropertyStringToPropertyId().getInt(propertyName);
-        IntArraySet idList = propertiesManager.getMapPropertyIdToValues().get(propertyId).get(expressionValue);
+        IntArrayList idList = propertiesManager.getMapPropertyIdToValues().get(propertyId).get(expressionValue);
 
         if (idList == null) {
-            idList = new IntArraySet();
+            idList = new IntArrayList();
         }
 
         return idList;
     }
 
 
-    public IntArraySet getDomain(QueryStructure queryStructure) {
+    public IntArrayList getDomain(QueryStructure queryStructure) {
         String propertyName = this.getNode_param().getElementKey();
         Object expressionValue = this.getExpr_value();
         Table selectedTable = this.conditionCheck.getSelectedTable();
         String columnType = selectedTable.column(propertyName).type().name();
         Object index = this.getConditionCheck().getMapPropertyNameToIndex().get(propertyName);
 
-        IntArraySet idList = null;
-        IntArraySet tmpIdList;
+        IntArrayList idList = null;
+        IntArrayList tmpIdList;
 
         String operation = this.getOperation();
 
@@ -269,25 +269,25 @@ public class QueryCondition {
 
                     switch (operation) {
                         case "GreaterThan":
-                            idList = new IntArraySet((List<Integer>) selectedTable.where(((IntIndex) index).greaterThan((Integer) expressionValue)).column("id").asList());
+                            idList = new IntArrayList((List<Integer>) selectedTable.where(((IntIndex) index).greaterThan((Integer) expressionValue)).column("id").asList());
 
                             if (this.isNegation()) {
-                                IntArraySet fullIdList = new IntArraySet((List<Integer>) selectedTable.column("id").asList());
-                                idList = Utils.intArraySetDifference(fullIdList, idList);
+                                IntArrayList fullIdList = new IntArrayList((List<Integer>) selectedTable.column("id").asList());
+                                idList = Utils.intArrayListDifference(fullIdList, idList);
                             }
 
                             break;
 
 
                         case "GreaterThanOrEqual":
-                            idList = new IntArraySet((List<Integer>) selectedTable.where(((IntIndex) index).greaterThan((Integer) expressionValue)).column("id").asList());
-                            tmpIdList = new IntArraySet((List<Integer>) selectedTable.where(((IntIndex) index).get((Integer) expressionValue)).column("id").asList());
+                            idList = new IntArrayList((List<Integer>) selectedTable.where(((IntIndex) index).greaterThan((Integer) expressionValue)).column("id").asList());
+                            tmpIdList = new IntArrayList((List<Integer>) selectedTable.where(((IntIndex) index).get((Integer) expressionValue)).column("id").asList());
 
-                            idList = Utils.intArraySetUnion(idList, tmpIdList);
+                            idList = Utils.intArrayListUnion(idList, tmpIdList);
 
                             if (this.isNegation()) {
-                                IntArraySet fullIdList = new IntArraySet((List<Integer>) selectedTable.column("id").asList());
-                                idList = Utils.intArraySetDifference(fullIdList, idList);
+                                IntArrayList fullIdList = new IntArrayList((List<Integer>) selectedTable.column("id").asList());
+                                idList = Utils.intArrayListDifference(fullIdList, idList);
                             }
 
                             break;
@@ -296,31 +296,31 @@ public class QueryCondition {
                             idList = getEqualsTo(propertyName, expressionValue, mapNodeNameToID, mapEdgeNameToID);
 
                             if (this.isNegation()) {
-                                IntArraySet fullIdList = new IntArraySet((List<Integer>) selectedTable.column("id").asList());
-                                idList = Utils.intArraySetDifference(fullIdList, idList);
+                                IntArrayList fullIdList = new IntArrayList((List<Integer>) selectedTable.column("id").asList());
+                                idList = Utils.intArrayListDifference(fullIdList, idList);
                             }
 
                             break;
 
                         case "LessThan":
-                            idList = new IntArraySet((List<Integer>) selectedTable.where(((IntIndex) index).lessThan((Integer) expressionValue)).column("id").asList());
+                            idList = new IntArrayList((List<Integer>) selectedTable.where(((IntIndex) index).lessThan((Integer) expressionValue)).column("id").asList());
 
                             if (this.isNegation()) {
-                                IntArraySet fullIdList = new IntArraySet((List<Integer>) selectedTable.column("id").asList());
-                                idList = Utils.intArraySetDifference(fullIdList, idList);
+                                IntArrayList fullIdList = new IntArrayList((List<Integer>) selectedTable.column("id").asList());
+                                idList = Utils.intArrayListDifference(fullIdList, idList);
                             }
 
                             break;
 
                         case "LessThanOrEqual":
-                            idList = new IntArraySet((List<Integer>) selectedTable.where(((IntIndex) index).lessThan((Integer) expressionValue)).column("id").asList());
-                            tmpIdList = new IntArraySet((List<Integer>) selectedTable.where(((IntIndex) index).get((Integer) expressionValue)).column("id").asList());
+                            idList = new IntArrayList((List<Integer>) selectedTable.where(((IntIndex) index).lessThan((Integer) expressionValue)).column("id").asList());
+                            tmpIdList = new IntArrayList((List<Integer>) selectedTable.where(((IntIndex) index).get((Integer) expressionValue)).column("id").asList());
 
-                            idList = Utils.intArraySetUnion(idList, tmpIdList);
+                            idList = Utils.intArrayListUnion(idList, tmpIdList);
 
                             if (this.isNegation()) {
-                                IntArraySet fullIdList = new IntArraySet((List<Integer>) selectedTable.column("id").asList());
-                                idList = Utils.intArraySetDifference(fullIdList, idList);
+                                IntArrayList fullIdList = new IntArrayList((List<Integer>) selectedTable.column("id").asList());
+                                idList = Utils.intArrayListDifference(fullIdList, idList);
                             }
 
                             break;
@@ -346,24 +346,24 @@ public class QueryCondition {
 
                     switch (this.operation) {
                         case "GreaterThan":
-                            idList = new IntArraySet((List<Integer>) selectedTable.where(((DoubleIndex) index).greaterThan((Double) expressionValue)).column("id").asList());
+                            idList = new IntArrayList((List<Integer>) selectedTable.where(((DoubleIndex) index).greaterThan((Double) expressionValue)).column("id").asList());
 
                             if (this.isNegation()) {
-                                IntArraySet fullIdList = new IntArraySet((List<Integer>) selectedTable.column("id").asList());
-                                idList = Utils.intArraySetDifference(fullIdList, idList);
+                                IntArrayList fullIdList = new IntArrayList((List<Integer>) selectedTable.column("id").asList());
+                                idList = Utils.intArrayListDifference(fullIdList, idList);
                             }
 
                             break;
 
                         case "GreaterThanOrEqual":
-                            idList = new IntArraySet((List<Integer>) selectedTable.where(((DoubleIndex) index).greaterThan((Double) expressionValue)).column("id").asList());
-                            tmpIdList = new IntArraySet((List<Integer>) selectedTable.where(((DoubleIndex) index).get((Double) expressionValue)).column("id").asList());
+                            idList = new IntArrayList((List<Integer>) selectedTable.where(((DoubleIndex) index).greaterThan((Double) expressionValue)).column("id").asList());
+                            tmpIdList = new IntArrayList((List<Integer>) selectedTable.where(((DoubleIndex) index).get((Double) expressionValue)).column("id").asList());
 
-                            idList = Utils.intArraySetUnion(idList, tmpIdList);
+                            idList = Utils.intArrayListUnion(idList, tmpIdList);
 
                             if (this.isNegation()) {
-                                IntArraySet fullIdList = new IntArraySet((List<Integer>) selectedTable.column("id").asList());
-                                idList = Utils.intArraySetDifference(fullIdList, idList);
+                                IntArrayList fullIdList = new IntArrayList((List<Integer>) selectedTable.column("id").asList());
+                                idList = Utils.intArrayListDifference(fullIdList, idList);
                             }
 
                             break;
@@ -372,31 +372,31 @@ public class QueryCondition {
                             idList = getEqualsTo(propertyName, expressionValue, mapNodeNameToID, mapEdgeNameToID);
 
                             if (this.isNegation()) {
-                                IntArraySet fullIdList = new IntArraySet((List<Integer>) selectedTable.column("id").asList());
-                                idList = Utils.intArraySetDifference(fullIdList, idList);
+                                IntArrayList fullIdList = new IntArrayList((List<Integer>) selectedTable.column("id").asList());
+                                idList = Utils.intArrayListDifference(fullIdList, idList);
                             }
 
                             break;
 
                         case "LessThan":
-                            idList = new IntArraySet((List<Integer>) selectedTable.where(((DoubleIndex) index).lessThan((Double) expressionValue)).column("id").asList());
+                            idList = new IntArrayList((List<Integer>) selectedTable.where(((DoubleIndex) index).lessThan((Double) expressionValue)).column("id").asList());
 
                             if (this.isNegation()) {
-                                IntArraySet fullIdList = new IntArraySet((List<Integer>) selectedTable.column("id").asList());
-                                idList = Utils.intArraySetDifference(fullIdList, idList);
+                                IntArrayList fullIdList = new IntArrayList((List<Integer>) selectedTable.column("id").asList());
+                                idList = Utils.intArrayListDifference(fullIdList, idList);
                             }
 
                             break;
 
                         case "LessThanOrEqual":
-                            idList = new IntArraySet((List<Integer>) selectedTable.where(((DoubleIndex) index).lessThan((Double) expressionValue)).column("id").asList());
-                            tmpIdList = new IntArraySet((List<Integer>) selectedTable.where(((DoubleIndex) index).get((Double) expressionValue)).column("id").asList());
+                            idList = new IntArrayList((List<Integer>) selectedTable.where(((DoubleIndex) index).lessThan((Double) expressionValue)).column("id").asList());
+                            tmpIdList = new IntArrayList((List<Integer>) selectedTable.where(((DoubleIndex) index).get((Double) expressionValue)).column("id").asList());
 
-                            idList = Utils.intArraySetUnion(idList, tmpIdList);
+                            idList = Utils.intArrayListUnion(idList, tmpIdList);
 
                             if (this.isNegation()) {
-                                IntArraySet fullIdList = new IntArraySet((List<Integer>) selectedTable.column("id").asList());
-                                idList = Utils.intArraySetDifference(fullIdList, idList);
+                                IntArrayList fullIdList = new IntArrayList((List<Integer>) selectedTable.column("id").asList());
+                                idList = Utils.intArrayListDifference(fullIdList, idList);
                             }
 
                             break;
@@ -423,24 +423,24 @@ public class QueryCondition {
 
                     switch (this.operation) {
                         case "GreaterThan":
-                            idList = new IntArraySet((List<Integer>) selectedTable.where(((FloatIndex) index).greaterThan((Float) expressionValue)).column("id").asList());
+                            idList = new IntArrayList((List<Integer>) selectedTable.where(((FloatIndex) index).greaterThan((Float) expressionValue)).column("id").asList());
 
                             if (this.isNegation()) {
-                                IntArraySet fullIdList = new IntArraySet((List<Integer>) selectedTable.column("id").asList());
-                                idList = Utils.intArraySetDifference(fullIdList, idList);
+                                IntArrayList fullIdList = new IntArrayList((List<Integer>) selectedTable.column("id").asList());
+                                idList = Utils.intArrayListDifference(fullIdList, idList);
                             }
 
                             break;
 
                         case "GreaterThanOrEqual":
-                            idList = new IntArraySet((List<Integer>) selectedTable.where(((FloatIndex) index).greaterThan((Float) expressionValue)).column("id").asList());
-                            tmpIdList = new IntArraySet((List<Integer>) selectedTable.where(((FloatIndex) index).get((Float) expressionValue)).column("id").asList());
+                            idList = new IntArrayList((List<Integer>) selectedTable.where(((FloatIndex) index).greaterThan((Float) expressionValue)).column("id").asList());
+                            tmpIdList = new IntArrayList((List<Integer>) selectedTable.where(((FloatIndex) index).get((Float) expressionValue)).column("id").asList());
 
-                            idList = Utils.intArraySetUnion(idList, tmpIdList);
+                            idList = Utils.intArrayListUnion(idList, tmpIdList);
 
                             if (this.isNegation()) {
-                                IntArraySet fullIdList = new IntArraySet((List<Integer>) selectedTable.column("id").asList());
-                                idList = Utils.intArraySetDifference(fullIdList, idList);
+                                IntArrayList fullIdList = new IntArrayList((List<Integer>) selectedTable.column("id").asList());
+                                idList = Utils.intArrayListDifference(fullIdList, idList);
                             }
 
                             break;
@@ -449,31 +449,31 @@ public class QueryCondition {
                             idList = getEqualsTo(propertyName, expressionValue, mapNodeNameToID, mapEdgeNameToID);
 
                             if (this.isNegation()) {
-                                IntArraySet fullIdList = new IntArraySet((List<Integer>) selectedTable.column("id").asList());
-                                idList = Utils.intArraySetDifference(fullIdList, idList);
+                                IntArrayList fullIdList = new IntArrayList((List<Integer>) selectedTable.column("id").asList());
+                                idList = Utils.intArrayListDifference(fullIdList, idList);
                             }
 
                             break;
 
                         case "LessThan":
-                            idList = new IntArraySet((List<Integer>) selectedTable.where(((FloatIndex) index).lessThan((Float) expressionValue)).column("id").asList());
+                            idList = new IntArrayList((List<Integer>) selectedTable.where(((FloatIndex) index).lessThan((Float) expressionValue)).column("id").asList());
 
                             if (this.isNegation()) {
-                                IntArraySet fullIdList = new IntArraySet((List<Integer>) selectedTable.column("id").asList());
-                                idList = Utils.intArraySetDifference(fullIdList, idList);
+                                IntArrayList fullIdList = new IntArrayList((List<Integer>) selectedTable.column("id").asList());
+                                idList = Utils.intArrayListDifference(fullIdList, idList);
                             }
 
                             break;
 
                         case "LessThanOrEqual":
-                            idList = new IntArraySet((List<Integer>) selectedTable.where(((FloatIndex) index).lessThan((Float) expressionValue)).column("id").asList());
-                            tmpIdList = new IntArraySet((List<Integer>) selectedTable.where(((FloatIndex) index).get((Float) expressionValue)).column("id").asList());
+                            idList = new IntArrayList((List<Integer>) selectedTable.where(((FloatIndex) index).lessThan((Float) expressionValue)).column("id").asList());
+                            tmpIdList = new IntArrayList((List<Integer>) selectedTable.where(((FloatIndex) index).get((Float) expressionValue)).column("id").asList());
 
-                            idList = Utils.intArraySetUnion(idList, tmpIdList);
+                            idList = Utils.intArrayListUnion(idList, tmpIdList);
 
                             if (this.isNegation()) {
-                                IntArraySet fullIdList = new IntArraySet((List<Integer>) selectedTable.column("id").asList());
-                                idList = Utils.intArraySetDifference(fullIdList, idList);
+                                IntArrayList fullIdList = new IntArrayList((List<Integer>) selectedTable.column("id").asList());
+                                idList = Utils.intArrayListDifference(fullIdList, idList);
                             }
 
                             break;
@@ -502,39 +502,39 @@ public class QueryCondition {
                             idList = getEqualsTo(propertyName, expressionValue, mapNodeNameToID, mapEdgeNameToID);
 
                             if (this.isNegation()) {
-                                IntArraySet fullIdList = new IntArraySet((List<Integer>) selectedTable.column("id").asList());
-                                idList = Utils.intArraySetDifference(fullIdList, idList);
+                                IntArrayList fullIdList = new IntArrayList((List<Integer>) selectedTable.column("id").asList());
+                                idList = Utils.intArrayListDifference(fullIdList, idList);
                             }
 
                             break;
 
                         case "StartsWith":
-                            idList = new IntArraySet((List<Integer>) selectedTable.where(selectedTable.stringColumn(propertyName).eval(value -> value.startsWith((String) expressionValue))).column("id").asList());
+                            idList = new IntArrayList((List<Integer>) selectedTable.where(selectedTable.stringColumn(propertyName).eval(value -> value.startsWith((String) expressionValue))).column("id").asList());
 
                             if (this.isNegation()) {
-                                IntArraySet fullIdList = new IntArraySet((List<Integer>) selectedTable.column("id").asList());
-                                idList = Utils.intArraySetDifference(fullIdList, idList);
+                                IntArrayList fullIdList = new IntArrayList((List<Integer>) selectedTable.column("id").asList());
+                                idList = Utils.intArrayListDifference(fullIdList, idList);
                             }
 
                             break;
 
                         case "EndsWith":
-                            idList = new IntArraySet((List<Integer>) selectedTable.where(selectedTable.stringColumn(propertyName).eval(value -> value.endsWith((String) expressionValue))).column("id").asList());
+                            idList = new IntArrayList((List<Integer>) selectedTable.where(selectedTable.stringColumn(propertyName).eval(value -> value.endsWith((String) expressionValue))).column("id").asList());
 
                             if (this.isNegation()) {
-                                IntArraySet fullIdList = new IntArraySet((List<Integer>) selectedTable.column("id").asList());
-                                idList = Utils.intArraySetDifference(fullIdList, idList);
+                                IntArrayList fullIdList = new IntArrayList((List<Integer>) selectedTable.column("id").asList());
+                                idList = Utils.intArrayListDifference(fullIdList, idList);
                             }
 
 
                             break;
 
                         case "Contains":
-                            idList = new IntArraySet((List<Integer>) selectedTable.where(selectedTable.stringColumn(propertyName).eval(value -> value.contains((String) expressionValue))).column("id").asList());
+                            idList = new IntArrayList((List<Integer>) selectedTable.where(selectedTable.stringColumn(propertyName).eval(value -> value.contains((String) expressionValue))).column("id").asList());
 
                             if (this.isNegation()) {
-                                IntArraySet fullIdList = new IntArraySet((List<Integer>) selectedTable.column("id").asList());
-                                idList = Utils.intArraySetDifference(fullIdList, idList);
+                                IntArrayList fullIdList = new IntArrayList((List<Integer>) selectedTable.column("id").asList());
+                                idList = Utils.intArrayListDifference(fullIdList, idList);
                             }
 
                             break;
