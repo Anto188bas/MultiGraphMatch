@@ -30,7 +30,7 @@ public class TestSimple {
 
         // TARGET BITMATRIX
         TargetBitmatrix target_bitmatrix = new TargetBitmatrix();
-        target_bitmatrix.createBitset(targetGraph.getSrcDstAggregation(), targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager());
+        target_bitmatrix.createBitset(targetGraph.getGraphPaths(), targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager());
 
         // QUERIES READING
         for (int i = 0; i < queries.length; i++) {

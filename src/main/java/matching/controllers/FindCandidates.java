@@ -2,6 +2,7 @@ package matching.controllers;
 
 import cypher.models.QueryEdge;
 import cypher.models.QueryStructure;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import matching.models.MatchingData;
 import ordering.EdgeDirection;
@@ -39,7 +40,7 @@ public class FindCandidates {
         int t_src = matchingData.solution_nodes[q_src];
         int t_dst = matchingData.solution_nodes[q_dst];
 
-        ArrayList<Triplet<Integer, Integer, Integer>> edges_submap = new ArrayList<>();
+        ArrayList<Triplet<Integer, Integer, Int2ObjectOpenHashMap<IntArrayList>>> edges_submap = new ArrayList<>();
         int[] cols;
         // A. t_dst IS MATCHED
         if (t_src == -1) {
@@ -100,7 +101,7 @@ public class FindCandidates {
         } else {
             // 1. EDGE FROM q_src TO q_dst (OUTBOUND)
             if (direction == EdgeDirection.OUT) {
-                Triplet<Integer, Integer, Integer> triplet = graphPaths.getBySRCandDST(t_src, t_dst);
+                Triplet<Integer, Integer, Int2ObjectOpenHashMap<IntArrayList>> triplet = graphPaths.getBySRCandDST(t_src, t_dst);
 
                 if (triplet != null) {
                     edges_submap.add(triplet);
@@ -108,14 +109,14 @@ public class FindCandidates {
             }
             // 2. EDGE FROM q_dst TO q_src (INBOUND)
             else if (direction == EdgeDirection.IN) {
-                Triplet<Integer, Integer, Integer> triplet = graphPaths.getBySRCandDST(t_dst, t_src);
+                Triplet<Integer, Integer, Int2ObjectOpenHashMap<IntArrayList>> triplet = graphPaths.getBySRCandDST(t_dst, t_src);
                 if (triplet != null) {
                     edges_submap.add(triplet);
                 }
             }
             // 3. UNDIRECTED CASE          (BOTH)
             else {
-                Triplet<Integer, Integer, Integer> triplet = graphPaths.getBySRCandDST(t_src, t_dst);
+                Triplet<Integer, Integer, Int2ObjectOpenHashMap<IntArrayList>> triplet = graphPaths.getBySRCandDST(t_src, t_dst);
                 if (triplet != null) {
                     edges_submap.add(triplet);
                 }
@@ -139,7 +140,7 @@ public class FindCandidates {
         QueryEdge queryEdge = query.getQuery_edge(edge_id);
         EdgeDirection direction = states.map_edge_to_direction[edge_id];
         IntArrayList edge_type = queryEdge.getEdge_label();
-        ArrayList<Triplet<Integer, Integer, Integer>> edges_submap = new ArrayList<>();
+        ArrayList<Triplet<Integer, Integer, Int2ObjectOpenHashMap<IntArrayList>>> edges_submap = new ArrayList<>();
         int q_node = q_src;
 
         // q_src = t_src AND q_dst = t_dst

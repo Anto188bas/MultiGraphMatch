@@ -69,9 +69,6 @@ public class TargetGraph {
     private final Table[] nodesTables;
     private final Table[] edgesTables;
 
-    // TODO: remove it!
-    private Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntOpenHashSet[]>> srcDstAggregation;
-
     public TargetGraph(Table[] nodesTables, Table[] edgesTables, String idsColumnName, String labelsColumnName) {
         graphPaths = new GraphPaths();
 
@@ -158,9 +155,8 @@ public class TargetGraph {
         AtomicInteger pairKeyCount = new AtomicInteger(0);
 
         Int2ObjectOpenHashMap<Int2IntOpenHashMap> mapPairToKey = new Int2ObjectOpenHashMap<>();
-        Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> mapKeyToEdgeList = new Int2ObjectOpenHashMap<>();
+        Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>>> mapKeyToEdgeList = new Int2ObjectOpenHashMap<>();
 
-        Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntOpenHashSet[]>> srcDstAggregation = new Int2ObjectOpenHashMap<>();
         for (int i = 0; i < edgesTables.length; i++) {
             Table currentTable = edgesTables[i];
             List<String> header = currentTable.columnNames();
@@ -179,7 +175,7 @@ public class TargetGraph {
                 List<String> properties = header.stream().filter(colName -> !colName.equals(this.edgeLabelsColumnName) && !colName.equals(sourcesColumnName) && !colName.equals(destinationsColumnName)).toList();
                 edgesPropertiesManager.addProperties(properties);
                 // Add all the edges
-                currentTable.forEach(row -> addEdge(row, header, row.getString(header.get(labelsColumnNumber)), edgeIdCount, edgeIdColumn, mapPairToKey, mapKeyToEdgeList, pairKeyCount, srcDstAggregation, mapNodeIdToLabelsDegrees, properties));
+                currentTable.forEach(row -> addEdge(row, header, row.getString(header.get(labelsColumnNumber)), edgeIdCount, edgeIdColumn, mapKeyToEdgeList, pairKeyCount, mapNodeIdToLabelsDegrees, properties));
                 // We remove sources, destinations and label sets
                 currentTable.removeColumns(header.get(this.edgeSourceColumnNumber), header.get(this.edgeDestinationColumnNumber), this.edgeLabelsColumnName);
             } else { // Labels aren't defined
@@ -187,7 +183,7 @@ public class TargetGraph {
                 List<String> properties = header.stream().filter(colName -> !colName.equals(this.edgeLabelsColumnName) && !colName.equals(sourcesColumnName) && !colName.equals(destinationsColumnName)).toList();
                 edgesPropertiesManager.addProperties(properties);
                 // Add all the edges
-                currentTable.forEach(row -> addEdge(row, header, "none", edgeIdCount, edgeIdColumn, mapPairToKey, mapKeyToEdgeList, pairKeyCount, srcDstAggregation, mapNodeIdToLabelsDegrees, properties));
+                currentTable.forEach(row -> addEdge(row, header, "none", edgeIdCount, edgeIdColumn, mapKeyToEdgeList, pairKeyCount, mapNodeIdToLabelsDegrees, properties));
                 // We remove sources and destinations
                 currentTable.removeColumns(header.get(this.edgeSourceColumnNumber), header.get(this.edgeDestinationColumnNumber));
             }
@@ -195,8 +191,7 @@ public class TargetGraph {
             currentTable.addColumns(edgeIdColumn);
         }
 
-        this.srcDstAggregation = srcDstAggregation;
-        this.graphPaths = new GraphPaths(mapPairToKey, mapKeyToEdgeList, this.edgesLabelsManager.getMapIntLabelToStringLabel().size(), mapKeyToEdgeList.size(), mapNodeIdToLabelsDegrees);
+        this.graphPaths = new GraphPaths(mapKeyToEdgeList, this.edgesLabelsManager.getMapIntLabelToStringLabel().size(), mapKeyToEdgeList.size(), mapNodeIdToLabelsDegrees);
     }
 
     private int getEdgeLabelsColumnId(List<String> colNames) {
@@ -209,7 +204,7 @@ public class TargetGraph {
         return -1;
     }
 
-    private void addEdge(Row row, List<String> header, String labelString, AtomicInteger edgeIdCount, IntColumn edgeIdColumn, Int2ObjectOpenHashMap<Int2IntOpenHashMap> mapPairToKey, Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> mapKeyToEdgeList, AtomicInteger pairKeyCount, Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntOpenHashSet[]>> srcDstAggregation, Int2ObjectOpenHashMap<Int2IntOpenHashMap> mapNodeIdToLabelsDegrees, List<String> properties) {
+    private void addEdge(Row row, List<String> header, String labelString, AtomicInteger edgeIdCount, IntColumn edgeIdColumn, Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>>> mapKeyToEdgeList, AtomicInteger pairKeyCount, Int2ObjectOpenHashMap<Int2IntOpenHashMap> mapNodeIdToLabelsDegrees, List<String> properties) {
         // Source and Destination IDs
         int src = Integer.parseInt(row.getString(header.get(this.edgeSourceColumnNumber)));
         int dst = Integer.parseInt(row.getString(header.get(this.edgeDestinationColumnNumber)));
@@ -221,29 +216,23 @@ public class TargetGraph {
         // Edge label ID
         int labelId = edgesLabelsManager.addElement(edgeId, labelString);
 
-        // This is used for the bit-matrix
-        TargetUtils.add_color_for_aggregation(src, dst, labelId, srcDstAggregation);
-
         // This is used for the degree of each node for each label
         TargetUtils.initNodeLabelsDegrees(mapNodeIdToLabelsDegrees, src);
         TargetUtils.initNodeLabelsDegrees(mapNodeIdToLabelsDegrees, dst);
 
-        // Each pair (src, dst) is identified by a key.
-        // We use this key to get all the (directed) edges between src and dst.
+        // Each pair (src, dst) is used to get all the (directed) edges between src and dst.
         // These edges are grouped by their label.
-        int pairKey;
+        Int2ObjectOpenHashMap<IntArrayList> mapLabelToEdgeList;
 
-        if (!mapPairToKey.containsKey(src)) mapPairToKey.put(src, new Int2IntOpenHashMap());
+        if (!mapKeyToEdgeList.containsKey(src)) mapKeyToEdgeList.put(src, new Int2ObjectOpenHashMap());
 
-        if (!mapPairToKey.get(src).containsKey(dst)) {
-            pairKey = pairKeyCount.getAndIncrement();
-            mapPairToKey.get(src).put(dst, pairKey);
-            mapKeyToEdgeList.put(pairKey, new Int2ObjectOpenHashMap<>());
+        if (!mapKeyToEdgeList.get(src).containsKey(dst)) {
+            mapLabelToEdgeList = new Int2ObjectOpenHashMap<>();
+            mapKeyToEdgeList.get(src).put(dst, mapLabelToEdgeList);
         } else {
-            pairKey = mapPairToKey.get(src).get(dst);
+            mapLabelToEdgeList = mapKeyToEdgeList.get(src).get(dst);
         }
 
-        Int2ObjectOpenHashMap<IntArrayList> mapLabelToEdgeList = mapKeyToEdgeList.get(pairKey);
         if (!mapLabelToEdgeList.containsKey(labelId)) mapLabelToEdgeList.put(labelId, new IntArrayList());
         mapLabelToEdgeList.get(labelId).add(edgeId);
 
@@ -286,9 +275,4 @@ public class TargetGraph {
     public PropertiesManager getEdgesPropertiesManager() {
         return edgesPropertiesManager;
     }
-
-    public Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntOpenHashSet[]>> getSrcDstAggregation() {
-        return srcDstAggregation;
-    }
-
 }

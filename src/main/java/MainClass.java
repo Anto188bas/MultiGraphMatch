@@ -36,8 +36,9 @@ public class MainClass {
         TargetGraph targetGraph = new TargetGraph(nodesTables, edgesTables, "id", "labels");
 
         // TARGET BITMATRIX
+        System.out.println("Creating the target Bit Matrix...");
         TargetBitmatrix target_bitmatrix = new TargetBitmatrix();
-        target_bitmatrix.createBitset(targetGraph.getSrcDstAggregation(), targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager());
+        target_bitmatrix.createBitset(targetGraph.getGraphPaths(), targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager());
 
         // QUERIES READING
         List<String> queries = FileManager.query_reading(configuration);

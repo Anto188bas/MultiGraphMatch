@@ -25,7 +25,7 @@ public class TestPaths {
 
         // TARGET BITMATRIX
         TargetBitmatrix target_bitmatrix = new TargetBitmatrix();
-        target_bitmatrix.createBitset(targetGraph.getSrcDstAggregation(), targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager());
+        target_bitmatrix.createBitset(targetGraph.getGraphPaths(), targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager());
 
         // QUERY
         String query_test = "MATCH (n1:P)<-[:F*2..2]-(n0:P), (n0:P) -[:C]-> (n2:P) RETURN n0,n1,n2";

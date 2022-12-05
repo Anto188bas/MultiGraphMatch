@@ -1,10 +1,7 @@
 package utility;
 
 import cypher.models.QueryStructure;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntArraySet;
-import it.unimi.dsi.fastutil.ints.IntCollection;
-import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.ints.*;
 import ordering.EdgeDirection;
 import ordering.EdgeOrdering;
 import state_machine.StateStructures;
@@ -65,19 +62,7 @@ public class Utils {
          */
 //        System.setOut(new PrintStream(new BufferedOutputStream(new FileOutputStream("output.txt")), true));
         System.out.println("TARGET GRAPH");
-        graphPaths.getMap_pair_to_key().forEach((src, map) -> {
-            map.forEach((dst, key) -> {
-                System.out.print("(SRC: " + src +", DST: " + dst + ") -> {");
-                IntArrayList[] edgeList = graphPaths.getMap_key_to_edge_list()[key];
-                for(int color = 0; color < edgeList.length; color++) {
-                    int finalColor = color;
-                    edgeList[color].forEach((IntConsumer) (edge) -> {
-                        System.out.print("( " + edge + ":C" + finalColor + "), " );
-                    });
-                }
-                System.out.print("}\n");
-            });
-        });
+        System.out.println(graphPaths.toString());
 
         System.out.println("QUERY NODES");
         query_obj.getQuery_nodes().forEach((id, node) -> {

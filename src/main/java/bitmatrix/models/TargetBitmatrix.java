@@ -1,8 +1,10 @@
 package bitmatrix.models;
 
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import target_graph.graph.GraphPaths;
 import target_graph.managers.EdgesLabelsManager;
 import target_graph.managers.NodesLabelsManager;
 
@@ -18,11 +20,11 @@ public class TargetBitmatrix extends BitMatrix {
     }
 
     // BITMATRIX EDGES SETTING
-    private void edge_part_configuration(BitSet bit_mtx_row, IntOpenHashSet[] dir_colors, int offset_1, int offset_2) {
+    private void edge_part_configuration(BitSet bit_mtx_row, int[] outColors, int[] inColors, int offset_1, int offset_2) {
         // OUT EDGE
-        if (dir_colors[0] != null) for (int color : dir_colors[0]) bit_mtx_row.set(offset_1 + offset_2 + color);
+        if (outColors != null) for (int color : outColors) bit_mtx_row.set(offset_1 + offset_2 + color);
         // IN EDGES
-        if (dir_colors[1] != null) for (int color : dir_colors[1]) bit_mtx_row.set(offset_1 + color);
+        if (inColors != null) for (int color : inColors) bit_mtx_row.set(offset_1 + color);
     }
     @Override
     public int add_src_dst_singleRow(int src, int dst, BitSet row) {
@@ -49,27 +51,40 @@ public class TargetBitmatrix extends BitMatrix {
 
 
     // NEW SOLUTION (TABLE)
-    public void createBitset(Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntOpenHashSet[]>> src_dst_colors, NodesLabelsManager nodesLabelsManager, EdgesLabelsManager edgesLabelsManager) {
+    public void createBitset(GraphPaths graphPaths, NodesLabelsManager nodesLabelsManager, EdgesLabelsManager edgesLabelsManager) {
         int numOfDifferentNodesLabels = nodesLabelsManager.getMapIntLabelToStringLabel().size();
         int numOfDifferentEdgesLabels = edgesLabelsManager.getMapIntLabelToStringLabel().size();
         int bitSetSize = setStartDirectedPosition(numOfDifferentNodesLabels, numOfDifferentEdgesLabels, true);
 
-        src_dst_colors.int2ObjectEntrySet().fastForEach(src_dsts -> {
-            // SELECTED SRC NODE
-            int src = src_dsts.getIntKey();
-            src_dsts.getValue().int2ObjectEntrySet().fastForEach(dst_colors -> {
-                // SELECTED DST NODE
-                int dst = dst_colors.getIntKey();
-                BitSet bit_mtx_row = new BitSet(bitSetSize);
-                // SRC LABELS CONFIGURATION.    0 TO len(NODE_LABELS) - 1
-                node_part_configuration(bit_mtx_row, nodesLabelsManager.getMapElementIdToLabelSet().get(src), 0);
-                // DST LABELS CONFIGURATION
-                node_part_configuration(bit_mtx_row, nodesLabelsManager.getMapElementIdToLabelSet().get(dst), super.getStart_directed_pos()[3]);
-                // EDGE PART CONFIGURATION
-                edge_part_configuration(bit_mtx_row, dst_colors.getValue(), numOfDifferentNodesLabels, numOfDifferentEdgesLabels);
-                // SRC-DST-ROW ASSOCIATION
-                add_src_dst_singleRow(src_dsts.getIntKey(), dst_colors.getIntKey(), bit_mtx_row);
-                add_src_dst_singleRow(dst_colors.getIntKey(), src_dsts.getIntKey(), super.getSpeculateRow(bit_mtx_row));
+        Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>>> mapKeyToEdgeList =  graphPaths.getMap_key_to_edge_list();
+
+        mapKeyToEdgeList.int2ObjectEntrySet().forEach(entry -> {
+            int n1 = entry.getIntKey();
+            Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> n1Map = entry.getValue();
+
+            n1Map.int2ObjectEntrySet().forEach(n1Entry -> {
+                int n2 = n1Entry.getIntKey();
+
+                // To avoid duplicates
+                if((n1 < n2) || ( n1 > n2 && (!mapKeyToEdgeList.containsKey(n2) || (mapKeyToEdgeList.containsKey(n2) && !mapKeyToEdgeList.get(n2).containsKey(n1))))) {
+                    int[] outColors = n1Entry.getValue().keySet().toIntArray();
+
+                    int[] inColors = null;
+                    if(mapKeyToEdgeList.containsKey(n2) && mapKeyToEdgeList.get(n2).containsKey(n1)) {
+                        inColors = mapKeyToEdgeList.get(n2).get(n1).keySet().toIntArray();
+                    }
+                    // BIT SET
+                    BitSet bit_mtx_row = new BitSet(bitSetSize);
+                    // SRC LABELS CONFIGURATION.    0 TO len(NODE_LABELS) - 1
+                    node_part_configuration(bit_mtx_row, nodesLabelsManager.getMapElementIdToLabelSet().get(n1), 0);
+                    // DST LABELS CONFIGURATION
+                    node_part_configuration(bit_mtx_row, nodesLabelsManager.getMapElementIdToLabelSet().get(n2), super.getStart_directed_pos()[3]);
+                    // EDGE PART CONFIGURATION
+                    edge_part_configuration(bit_mtx_row, outColors, inColors, numOfDifferentNodesLabels, numOfDifferentEdgesLabels);
+                    // SRC-DST-ROW ASSOCIATION
+                    add_src_dst_singleRow(n1, n2, bit_mtx_row);
+                    add_src_dst_singleRow(n2, n1, super.getSpeculateRow(bit_mtx_row));
+                }
             });
         });
     }

@@ -39,7 +39,7 @@ public class TestWhereMultiThread {
 
         // TARGET BITMATRIX
         TargetBitmatrix target_bitmatrix = new TargetBitmatrix();
-        target_bitmatrix.createBitset(targetGraph.getSrcDstAggregation(), targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager());
+        target_bitmatrix.createBitset(targetGraph.getGraphPaths(), targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager());
 
         // QUERIES READING
         List<String> queries = FileManager.query_reading(configuration);
