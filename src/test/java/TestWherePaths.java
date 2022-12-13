@@ -28,9 +28,6 @@ public class TestWherePaths {
         // TARGET GRAPH
         TargetGraph targetGraph = new TargetGraph(nodesTables, edgesTables, "id", "labels");
 
-        // TARGET BITMATRIX
-        TargetBitmatrix target_bitmatrix = new TargetBitmatrix();
-        target_bitmatrix.createBitset(targetGraph.getGraphPaths(), targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager());
 
         // QUERY
 //        String query_test           = "MATCH (n1:Person)-[r1:college]->(n2:Person), (n3:Person) -[r2:college]-> (n2:Person) WHERE (n1.name <> n2.name AND NOT n1.name IN [\"Antonio\", \"Paolo\"]) OR (n2.name <> \"Franco\" AND n1.age > 18) RETURN n1,n2,n3";
@@ -82,9 +79,9 @@ public class TestWherePaths {
                     OutData outData = new OutData();
                     MatchingBase matchingMachine;
                     if (complexConditions.size() == 0) { // No complex conditions
-                        matchingMachine = new MatchingPathSimple(outData, query_t, false, false, Long.MAX_VALUE, targetGraph, target_bitmatrix, simpleConditions);
+                        matchingMachine = new MatchingPathSimple(outData, query_t, false, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions);
                     } else { // Complex conditions
-                        matchingMachine = new MatchingPathWhere(outData, query_t, false, false, Long.MAX_VALUE, targetGraph, target_bitmatrix, simpleConditions, complexConditions);
+                        matchingMachine = new MatchingPathWhere(outData, query_t, false, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions, complexConditions);
                     }
                     matchingMachine.matching();
                     sharedMemory.add(outData.occurrences);
@@ -120,9 +117,9 @@ public class TestWherePaths {
                 OutData outData = new OutData();
                 MatchingBase matchingMachine;
                 if (complexConditions.size() == 0) { // No complex conditions
-                    matchingMachine = new MatchingPathSimple(outData, query_t, true, false, Long.MAX_VALUE, targetGraph, target_bitmatrix, simpleConditions);
+                    matchingMachine = new MatchingPathSimple(outData, query_t, true, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions);
                 } else { // Complex conditions
-                    matchingMachine = new MatchingPathWhere(outData, query_t, true, false, Long.MAX_VALUE, targetGraph, target_bitmatrix, simpleConditions, complexConditions);
+                    matchingMachine = new MatchingPathWhere(outData, query_t, true, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions, complexConditions);
                 }
 
                 outData = matchingMachine.matching();
@@ -136,7 +133,7 @@ public class TestWherePaths {
             query.parser(query_test, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager(), nodesTables, edgesTables, Optional.empty());
 
             OutData outData = new OutData();
-            MatchingPathSimple matchingMachine = new MatchingPathSimple(outData, query, true, false, Long.MAX_VALUE, targetGraph, target_bitmatrix, new ObjectArrayList<>());
+            MatchingPathSimple matchingMachine = new MatchingPathSimple(outData, query, true, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), new ObjectArrayList<>());
             outData = matchingMachine.matching();
 
             totalTime = outData.getTotalTime();

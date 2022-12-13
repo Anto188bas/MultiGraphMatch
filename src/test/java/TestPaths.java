@@ -23,10 +23,6 @@ public class TestPaths {
         // TARGET GRAPH
         TargetGraph targetGraph = new TargetGraph(nodesTables, edgesTables, "id", "labels");
 
-        // TARGET BITMATRIX
-        TargetBitmatrix target_bitmatrix = new TargetBitmatrix();
-        target_bitmatrix.createBitset(targetGraph.getGraphPaths(), targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager());
-
         // QUERY
         String query_test = "MATCH (n1:P)<-[:F*2..2]-(n0:P), (n0:P) -[:C]-> (n2:P) RETURN n0,n1,n2";
         System.out.println(query_test);
@@ -36,7 +32,7 @@ public class TestPaths {
 
         OutData outData = new OutData();
 
-        MatchingPathSimple matchingMachine = new MatchingPathSimple(outData, query_obj, true, false, Long.MAX_VALUE, targetGraph, target_bitmatrix, new ObjectArrayList<>());
+        MatchingPathSimple matchingMachine = new MatchingPathSimple(outData, query_obj, true, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), new ObjectArrayList<>());
         outData = matchingMachine.matching();
 
         double totalTime = outData.getTotalTime();

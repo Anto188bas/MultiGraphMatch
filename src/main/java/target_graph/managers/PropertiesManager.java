@@ -2,22 +2,21 @@ package target_graph.managers;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import tech.tablesaw.api.Row;
 
 import java.util.List;
 
-public class PropertiesManager {
-    private final String idsColumnName;
-    private final ObjectArraySet<String> propertySet;
-    private final Object2IntOpenHashMap<String> mapPropertyStringToPropertyId;
-    private final Int2ObjectOpenHashMap<String> mapPropertyIdToPropertyString;
+public class PropertiesManager  {
+    private String idsColumnName;
+    private ObjectArraySet<String> propertySet;
+    private Object2IntOpenHashMap<String> mapPropertyStringToPropertyId;
+    private Int2ObjectOpenHashMap<String> mapPropertyIdToPropertyString;
+    private Int2ObjectOpenHashMap<Object2ObjectOpenHashMap<Object, IntArrayList>> mapPropertyIdToValues;
 
-    private final Int2ObjectOpenHashMap<Object2ObjectOpenHashMap<Object, IntArrayList>> mapPropertyIdToValues;
+    public PropertiesManager() {}
 
     public PropertiesManager(String idsColumnName) {
         this.idsColumnName = idsColumnName;
@@ -103,5 +102,9 @@ public class PropertiesManager {
 
     public Int2ObjectOpenHashMap<Object2ObjectOpenHashMap<Object, IntArrayList>> getMapPropertyIdToValues() {
         return mapPropertyIdToValues;
+    }
+
+    public String getIdsColumnName() {
+        return idsColumnName;
     }
 }

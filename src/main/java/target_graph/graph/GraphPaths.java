@@ -1,30 +1,21 @@
 package target_graph.graph;
 
 import it.unimi.dsi.fastutil.ints.*;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import org.javatuples.Pair;
 import org.javatuples.Triplet;
-
 import java.util.ArrayList;
 
 
 public class GraphPaths {
     // src => dst => color => {edges}
     private final Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>>> map_key_to_edge_list;
-    private final int num_pairs;
-    private final int num_edge_colors;
     private final Int2ObjectOpenHashMap<Int2IntOpenHashMap> map_node_color_degrees;
 
     public GraphPaths() {
         this.map_key_to_edge_list = null;
-        this.num_pairs = 0;
-        this.num_edge_colors = 0;
         this.map_node_color_degrees = null;
     }
 
-    public GraphPaths(Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>>>  map_key_to_edge_list, int num_edge_colors, int num_pairs, Int2ObjectOpenHashMap<Int2IntOpenHashMap> map_node_color_degrees) {
-        this.num_pairs = num_pairs;
-        this.num_edge_colors = num_edge_colors;
+    public GraphPaths(Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>>>  map_key_to_edge_list, Int2ObjectOpenHashMap<Int2IntOpenHashMap> map_node_color_degrees) {
         this.map_key_to_edge_list = map_key_to_edge_list;
         this.map_node_color_degrees = map_node_color_degrees;
     }

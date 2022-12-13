@@ -1,20 +1,29 @@
 package target_graph.graph;
 
+import bitmatrix.models.TargetBitmatrix;
+import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.unimi.dsi.fastutil.ints.*;
+import reading.FileManager;
 import target_graph.managers.EdgesLabelsManager;
 import target_graph.managers.NodesLabelsManager;
 import target_graph.managers.PropertiesManager;
 import tech.tablesaw.api.IntColumn;
 import tech.tablesaw.api.Row;
-import tech.tablesaw.api.StringColumn;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.columns.Column;
 import tech.tablesaw.index.*;
 
-import java.util.Arrays;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 class TargetUtils {
     public static void initNodeLabelsDegrees(Int2ObjectOpenHashMap<Int2IntOpenHashMap> mapNodeIdToLabelsDegrees, int node) {
@@ -51,23 +60,24 @@ class TargetUtils {
     }
 }
 
+@JsonFilter("targetFilter")
 public class TargetGraph {
-    private final String idsColumnName;
-    private final String labelsColumnName;
-    private final int edgeSourceColumnNumber = 0;
-    private final int edgeDestinationColumnNumber = 1;
-    private final String edgeLabelsColumnName = "type";
-
+    private String idsColumnName;
+    private String labelsColumnName;
+    private int edgeSourceColumnNumber = 0;
+    private int edgeDestinationColumnNumber = 1;
+    private String edgeLabelsColumnName = "type";
     GraphPaths graphPaths;
-
-
     private NodesLabelsManager nodesLabelsManager;
     private EdgesLabelsManager edgesLabelsManager;
     private PropertiesManager nodesPropertiesManager;
     private PropertiesManager edgesPropertiesManager;
 
-    private final Table[] nodesTables;
-    private final Table[] edgesTables;
+    private Table[] nodesTables;
+    private Table[] edgesTables;
+    private TargetBitmatrix targetBitmatrix;
+
+    public TargetGraph() {}
 
     public TargetGraph(Table[] nodesTables, Table[] edgesTables, String idsColumnName, String labelsColumnName) {
         graphPaths = new GraphPaths();
@@ -156,6 +166,7 @@ public class TargetGraph {
 
         Int2ObjectOpenHashMap<Int2IntOpenHashMap> mapPairToKey = new Int2ObjectOpenHashMap<>();
         Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>>> mapKeyToEdgeList = new Int2ObjectOpenHashMap<>();
+        Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntOpenHashSet[]>> srcDstAggregation = new Int2ObjectOpenHashMap<>();
 
         for (int i = 0; i < edgesTables.length; i++) {
             Table currentTable = edgesTables[i];
@@ -175,7 +186,7 @@ public class TargetGraph {
                 List<String> properties = header.stream().filter(colName -> !colName.equals(this.edgeLabelsColumnName) && !colName.equals(sourcesColumnName) && !colName.equals(destinationsColumnName)).toList();
                 edgesPropertiesManager.addProperties(properties);
                 // Add all the edges
-                currentTable.forEach(row -> addEdge(row, header, row.getString(header.get(labelsColumnNumber)), edgeIdCount, edgeIdColumn, mapKeyToEdgeList, pairKeyCount, mapNodeIdToLabelsDegrees, properties));
+                currentTable.forEach(row -> addEdge(row, header, row.getString(header.get(labelsColumnNumber)), edgeIdCount, edgeIdColumn, mapKeyToEdgeList, pairKeyCount, mapNodeIdToLabelsDegrees, properties, srcDstAggregation));
                 // We remove sources, destinations and label sets
                 currentTable.removeColumns(header.get(this.edgeSourceColumnNumber), header.get(this.edgeDestinationColumnNumber), this.edgeLabelsColumnName);
             } else { // Labels aren't defined
@@ -183,7 +194,7 @@ public class TargetGraph {
                 List<String> properties = header.stream().filter(colName -> !colName.equals(this.edgeLabelsColumnName) && !colName.equals(sourcesColumnName) && !colName.equals(destinationsColumnName)).toList();
                 edgesPropertiesManager.addProperties(properties);
                 // Add all the edges
-                currentTable.forEach(row -> addEdge(row, header, "none", edgeIdCount, edgeIdColumn, mapKeyToEdgeList, pairKeyCount, mapNodeIdToLabelsDegrees, properties));
+                currentTable.forEach(row -> addEdge(row, header, "none", edgeIdCount, edgeIdColumn, mapKeyToEdgeList, pairKeyCount, mapNodeIdToLabelsDegrees, properties, srcDstAggregation));
                 // We remove sources and destinations
                 currentTable.removeColumns(header.get(this.edgeSourceColumnNumber), header.get(this.edgeDestinationColumnNumber));
             }
@@ -191,7 +202,39 @@ public class TargetGraph {
             currentTable.addColumns(edgeIdColumn);
         }
 
-        this.graphPaths = new GraphPaths(mapKeyToEdgeList, this.edgesLabelsManager.getMapIntLabelToStringLabel().size(), mapKeyToEdgeList.size(), mapNodeIdToLabelsDegrees);
+        this.graphPaths = new GraphPaths(mapKeyToEdgeList, mapNodeIdToLabelsDegrees);
+
+        System.out.println("Creating the target Bit Matrix...");
+        this.targetBitmatrix = new TargetBitmatrix();
+        targetBitmatrix.createBitset(srcDstAggregation, this.getNodesLabelsManager(), this.getEdgesLabelsManager());
+    }
+
+    public static TargetGraph read(String path) throws IOException, ClassNotFoundException {
+        Path elaboratedDirectory = Paths.get(path, "elaborated");
+        Path graphDirectory = Paths.get(elaboratedDirectory.toString(), "graph", "graph.json");
+        Path nodesDirectory = Paths.get(elaboratedDirectory.toString(), "nodes");
+        Path edgesDirectory = Paths.get(elaboratedDirectory.toString(), "edges");
+        Path matrixDirectory = Paths.get(elaboratedDirectory.toString(), "matrix");
+
+        ObjectMapper mapper = new ObjectMapper();
+        // Target Graph
+        TargetGraph graph = mapper.readValue(graphDirectory.toFile(), TargetGraph.class);
+
+        // Tables
+        graph.nodesTables = FileManager.files_reading(nodesDirectory.toString(), ',');
+        graph.edgesTables = FileManager.files_reading(edgesDirectory.toString(), ',');
+
+        // Bitmatrix
+        TargetBitmatrix bitmatrix = mapper.readValue(Paths.get(matrixDirectory.toString(), "matrix.json").toFile(), TargetBitmatrix.class);
+        FileInputStream fi = new FileInputStream(Paths.get(matrixDirectory.toString(), "bitsetList.ser").toFile());
+        ObjectInputStream oi = new ObjectInputStream(fi);
+
+        ArrayList<BitSet> bitsetList = (ArrayList<BitSet>) oi.readObject();
+        bitmatrix.setBitmatrix(bitsetList);
+
+        graph.setTargetBitmatrix(bitmatrix);
+
+        return graph;
     }
 
     private int getEdgeLabelsColumnId(List<String> colNames) {
@@ -204,7 +247,7 @@ public class TargetGraph {
         return -1;
     }
 
-    private void addEdge(Row row, List<String> header, String labelString, AtomicInteger edgeIdCount, IntColumn edgeIdColumn, Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>>> mapKeyToEdgeList, AtomicInteger pairKeyCount, Int2ObjectOpenHashMap<Int2IntOpenHashMap> mapNodeIdToLabelsDegrees, List<String> properties) {
+    private void addEdge(Row row, List<String> header, String labelString, AtomicInteger edgeIdCount, IntColumn edgeIdColumn, Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>>> mapKeyToEdgeList, AtomicInteger pairKeyCount, Int2ObjectOpenHashMap<Int2IntOpenHashMap> mapNodeIdToLabelsDegrees, List<String> properties, Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntOpenHashSet[]>> srcDstAggregation) {
         // Source and Destination IDs
         int src = Integer.parseInt(row.getString(header.get(this.edgeSourceColumnNumber)));
         int dst = Integer.parseInt(row.getString(header.get(this.edgeDestinationColumnNumber)));
@@ -215,6 +258,9 @@ public class TargetGraph {
 
         // Edge label ID
         int labelId = edgesLabelsManager.addElement(edgeId, labelString);
+
+        // This is used for the bit-matrix
+        TargetUtils.add_color_for_aggregation(src, dst, labelId, srcDstAggregation);
 
         // This is used for the degree of each node for each label
         TargetUtils.initNodeLabelsDegrees(mapNodeIdToLabelsDegrees, src);
@@ -254,8 +300,7 @@ public class TargetGraph {
 
         return sb.toString();
     }
-    // Getter
-
+    // Getters and Setters
     public GraphPaths getGraphPaths() {
         return graphPaths;
     }
@@ -274,5 +319,41 @@ public class TargetGraph {
 
     public PropertiesManager getEdgesPropertiesManager() {
         return edgesPropertiesManager;
+    }
+
+    public String getIdsColumnName() {
+        return idsColumnName;
+    }
+
+    public String getLabelsColumnName() {
+        return labelsColumnName;
+    }
+
+    public int getEdgeSourceColumnNumber() {
+        return edgeSourceColumnNumber;
+    }
+
+    public int getEdgeDestinationColumnNumber() {
+        return edgeDestinationColumnNumber;
+    }
+
+    public String getEdgeLabelsColumnName() {
+        return edgeLabelsColumnName;
+    }
+
+    public Table[] getNodesTables() {
+        return nodesTables;
+    }
+
+    public Table[] getEdgesTables() {
+        return edgesTables;
+    }
+
+    public TargetBitmatrix getTargetBitmatrix() {
+        return targetBitmatrix;
+    }
+
+    public void setTargetBitmatrix(TargetBitmatrix targetBitmatrix) {
+        this.targetBitmatrix = targetBitmatrix;
     }
 }

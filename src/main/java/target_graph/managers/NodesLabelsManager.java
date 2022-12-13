@@ -9,7 +9,9 @@ public class NodesLabelsManager {
     private Object2IntOpenHashMap<String> mapStringLabelToIntLabel;
     private Int2ObjectOpenHashMap<String> mapIntLabelToStringLabel;
     private Int2ObjectOpenHashMap<int[]> mapElementIdToLabelSet;
-    private final int offset;
+    private Integer offset;
+
+    public NodesLabelsManager() {}
 
     /**
      * Class constructor. This class is used to manage labels for nodes.
@@ -84,6 +86,10 @@ public class NodesLabelsManager {
 
     public Int2ObjectOpenHashMap<int[]> getMapElementIdToLabelSet() {
         return mapElementIdToLabelSet;
+    }
+
+    public int getOffset() {
+        return offset;
     }
 
 }

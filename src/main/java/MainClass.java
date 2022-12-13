@@ -35,11 +35,6 @@ public class MainClass {
         // TARGET GRAPH
         TargetGraph targetGraph = new TargetGraph(nodesTables, edgesTables, "id", "labels");
 
-        // TARGET BITMATRIX
-        System.out.println("Creating the target Bit Matrix...");
-        TargetBitmatrix target_bitmatrix = new TargetBitmatrix();
-        target_bitmatrix.createBitset(targetGraph.getGraphPaths(), targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager());
-
         // QUERIES READING
         List<String> queries = FileManager.query_reading(configuration);
         final Duration tout = Duration.ofSeconds(configuration.timeout);
@@ -87,9 +82,9 @@ public class MainClass {
                                 OutData outData = new OutData();
                                 MatchingBase matchingMachine;
                                 if (complexConditions.size() == 0) { // No complex conditions
-                                    matchingMachine = new MatchingSimple(outData, query_t, false, false, Long.MAX_VALUE, targetGraph, target_bitmatrix, simpleConditions);
+                                    matchingMachine = new MatchingSimple(outData, query_t, false, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions);
                                 } else { // Complex conditions
-                                    matchingMachine = new MatchingWhere(outData, query_t, false, false, Long.MAX_VALUE, targetGraph, target_bitmatrix, simpleConditions, complexConditions);
+                                    matchingMachine = new MatchingWhere(outData, query_t, false, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions, complexConditions);
                                 }
                                 matchingMachine.matching();
                                 sharedMemory.add(outData.occurrences);
@@ -125,9 +120,9 @@ public class MainClass {
                             OutData outData = new OutData();
                             MatchingBase matchingMachine;
                             if (complexConditions.size() == 0) { // No complex conditions
-                                matchingMachine = new MatchingSimple(outData, query_t, true, false, Long.MAX_VALUE, targetGraph, target_bitmatrix, simpleConditions);
+                                matchingMachine = new MatchingSimple(outData, query_t, true, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions);
                             } else { // Complex conditions
-                                matchingMachine = new MatchingWhere(outData, query_t, true, false, Long.MAX_VALUE, targetGraph, target_bitmatrix, simpleConditions, complexConditions);
+                                matchingMachine = new MatchingWhere(outData, query_t, true, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions, complexConditions);
                             }
 
                             outData = matchingMachine.matching();
@@ -141,7 +136,7 @@ public class MainClass {
                         query.parser(query_test, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager(), nodesTables, edgesTables, Optional.empty());
 
                         OutData outData = new OutData();
-                        MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, targetGraph, target_bitmatrix, new ObjectArrayList<>());
+                        MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), new ObjectArrayList<>());
                         outData = matchingMachine.matching();
 
                         totalTime = outData.getTotalTime();
@@ -162,10 +157,18 @@ public class MainClass {
             });
             try {
                 handler.get(tout.getSeconds(), TimeUnit.SECONDS);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 handler.cancel(true);
+                e.printStackTrace();
                 System.err.println("timeout");
-                System.exit(-1);
+            }
+
+            try {
+                exec.shutdownNow();
+                boolean res = exec.awaitTermination(1, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         });
 

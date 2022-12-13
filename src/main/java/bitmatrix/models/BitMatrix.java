@@ -2,8 +2,6 @@ package bitmatrix.models;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import tech.tablesaw.api.IntColumn;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -11,9 +9,7 @@ import java.util.BitSet;
 
 public abstract class BitMatrix {
     private final Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> table; // btx_id -> src -> {dst, ...}
-
-
-    private final ArrayList<BitSet> bitmatrix;
+    private ArrayList<BitSet> bitmatrix;
     private int[] start_directed_pos;
     private int[] start_reverse_pos;
 
@@ -129,5 +125,11 @@ public abstract class BitMatrix {
     public void add_src_dst_multipleRows(int src, int dst, ArrayList<BitSet> rows) {
         for (BitSet row : rows)
             add_src_dst_singleRow(src, dst, row);
+    }
+
+    // Setters
+
+    public void setBitmatrix(ArrayList<BitSet> bitmatrix) {
+        this.bitmatrix = bitmatrix;
     }
 }

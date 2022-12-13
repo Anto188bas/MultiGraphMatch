@@ -1,4 +1,3 @@
-import bitmatrix.models.TargetBitmatrix;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import matching.controllers.MatchingSimple;
@@ -28,10 +27,6 @@ public class TestSimple {
         // TARGET GRAPH
         TargetGraph targetGraph = new TargetGraph(nodesTables, edgesTables, "id", "labels");
 
-        // TARGET BITMATRIX
-        TargetBitmatrix target_bitmatrix = new TargetBitmatrix();
-        target_bitmatrix.createBitset(targetGraph.getGraphPaths(), targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager());
-
         // QUERIES READING
         for (int i = 0; i < queries.length; i++) {
             String query_test = queries[i];
@@ -41,7 +36,7 @@ public class TestSimple {
             query.parser(query_test, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager(), nodesTables, edgesTables, Optional.empty());
 
             OutData outData = new OutData();
-            MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, targetGraph, target_bitmatrix, new ObjectArrayList<>());
+            MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), new ObjectArrayList<>());
             outData = matchingMachine.matching();
 
             double totalTime = outData.getTotalTime();

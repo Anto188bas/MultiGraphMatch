@@ -8,7 +8,9 @@ public class EdgesLabelsManager {
     private Object2IntOpenHashMap<String> mapStringLabelToIntLabel;
     private Int2ObjectOpenHashMap<String> mapIntLabelToStringLabel;
     private Int2IntOpenHashMap mapElementIdToLabel;
-    private final int offset;
+    private Integer offset;
+
+    public EdgesLabelsManager() {}
 
     /**
      * Class constructor. This class is used to manage labels for edges.
@@ -76,5 +78,9 @@ public class EdgesLabelsManager {
 
     public Int2IntOpenHashMap getMapElementIdToLabel() {
         return mapElementIdToLabel;
+    }
+
+    public Integer getOffset() {
+        return offset;
     }
 }
