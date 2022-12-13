@@ -119,9 +119,17 @@ public class FileManager {
         return tables;
     }
 
+    //TODO: REMOVE!!!
     public static List<String> query_reading(Configuration configuration) throws IOException {
         String path = configuration.query_file + "/query.txt";
         List<String> lines = Files.readAllLines(Path.of(path));
+        return lines;
+    }
+
+    //TODO: adapt to read all files from directory
+    public static List<String> readQueries(String path) throws IOException {
+        String filePath = path + "/query.txt";
+        List<String> lines = Files.readAllLines(Path.of(filePath));
         return lines;
     }
 

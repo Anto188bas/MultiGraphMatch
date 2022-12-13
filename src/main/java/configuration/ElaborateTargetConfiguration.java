@@ -21,7 +21,7 @@ public class ElaborateTargetConfiguration {
     }
 
     private void printHelp(String parameter) {
-        String help = "Usage: java -jar ElaborateTarget.jar -n <nodesFolder> -e <edgesFolder> -o <outDirectory>\n\n";
+        String help = "Usage: java -cp GraphMatchingRI.jar ElaborateTarget -n <nodesFolder> -e <edgesFolder> -o <outDirectory>\n\n";
         help += "REQUIRED PARAMETERS:\n";
         help += "-n\tTarget nodes directory\n";
         help += "-e\tTarget edges directory\n";

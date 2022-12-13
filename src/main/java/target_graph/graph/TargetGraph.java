@@ -3,6 +3,9 @@ package target_graph.graph;
 import bitmatrix.models.TargetBitmatrix;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ser.FilterProvider;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import it.unimi.dsi.fastutil.ints.*;
 import reading.FileManager;
 import target_graph.managers.EdgesLabelsManager;
@@ -14,14 +17,13 @@ import tech.tablesaw.api.Table;
 import tech.tablesaw.columns.Column;
 import tech.tablesaw.index.*;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
+import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -207,6 +209,64 @@ public class TargetGraph {
         System.out.println("Creating the target Bit Matrix...");
         this.targetBitmatrix = new TargetBitmatrix();
         targetBitmatrix.createBitset(srcDstAggregation, this.getNodesLabelsManager(), this.getEdgesLabelsManager());
+    }
+
+    public void write(String path) throws IOException {
+        Path outDirectory = Paths.get(path);
+        Path elaboratedDirectory = Paths.get(outDirectory.toString(), "elaborated");
+        Path graphDirectory = Paths.get(elaboratedDirectory.toString(), "graph");
+        Path nodesDirectory = Paths.get(elaboratedDirectory.toString(), "nodes");
+        Path edgesDirectory = Paths.get(elaboratedDirectory.toString(), "edges");
+        Path matrixDirectory = Paths.get(elaboratedDirectory.toString(), "matrix");
+
+        if (elaboratedDirectory.toFile().exists() && elaboratedDirectory.toFile().isDirectory()) {
+            System.out.println("Elaborated directory already exists, deleting it...");
+            Files.walk(elaboratedDirectory)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
+
+        elaboratedDirectory.toFile().mkdirs();
+        graphDirectory.toFile().mkdirs();
+        nodesDirectory.toFile().mkdirs();
+        edgesDirectory.toFile().mkdirs();
+        matrixDirectory.toFile().mkdirs();
+
+        System.out.println("Writing target graph to " + graphDirectory + "...");
+        graphDirectory = Paths.get(graphDirectory.toString(), "graph.json");
+
+        SimpleBeanPropertyFilter targetFilter = SimpleBeanPropertyFilter
+                .serializeAllExcept("targetBitmatrix", "nodesTables", "edgesTables");
+        FilterProvider targetFilters = new SimpleFilterProvider()
+                .addFilter("targetFilter", targetFilter);
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.writer(targetFilters).writeValue(graphDirectory.toFile(), this);
+
+        System.out.println("Writing nodes to " + nodesDirectory + "...");
+        for(Table table: nodesTables) {
+            table.write().csv(Paths.get(nodesDirectory.toString(), table.name()).toString());
+        }
+
+        System.out.println("Writing edges to " + edgesDirectory + "...");
+        for(Table table: edgesTables) {
+            table.write().csv(Paths.get(edgesDirectory.toString(), table.name()).toString());
+        }
+
+        System.out.println("Writing matrix to " + matrixDirectory + "...");
+        SimpleBeanPropertyFilter matrixFilter = SimpleBeanPropertyFilter
+                .serializeAllExcept("bitmatrix");
+        FilterProvider filters = new SimpleFilterProvider()
+                .addFilter("matrixFilter", matrixFilter);
+        mapper.writer(filters).writeValue(Paths.get(matrixDirectory.toString(), "matrix.json").toFile(), this.getTargetBitmatrix());
+
+
+        FileOutputStream f = new FileOutputStream(Paths.get(matrixDirectory.toString(), "bitsetList.ser").toFile());
+        ObjectOutputStream o = new ObjectOutputStream(f);
+        o.writeObject(this.getTargetBitmatrix().getBitmatrix());
+        o.close();
+        f.close();
     }
 
     public static TargetGraph read(String path) throws IOException, ClassNotFoundException {
