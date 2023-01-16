@@ -61,12 +61,12 @@ public class MatchingWhere extends MatchingBase {
 
         // MATCHING
         outData.matching_time = System.currentTimeMillis();
-        outData.num_occurrences = matching_procedure();
+        matching_procedure();
         report();
         return outData;
     }
 
-    private long matching_procedure() {
+    private void matching_procedure() {
         NodesPair firstPair = this.query.getMap_edge_to_endpoints().get(states.map_state_to_edge[0]);
         int q_src = firstPair.getFirstEndpoint();
         int q_dst = firstPair.getSecondEndpoint();
@@ -130,7 +130,6 @@ public class MatchingWhere extends MatchingBase {
                 }
             }
         }
-        return numTotalOccs;
     }
 
     private boolean checkWhereCond() {
@@ -226,6 +225,8 @@ public class MatchingWhere extends MatchingBase {
 
         if (allConditionsVerified) {
             doWhereCheck = false;
+        } else {
+            doWhereCheck = true;
         }
 
         return canBeTrue;

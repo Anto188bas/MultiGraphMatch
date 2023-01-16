@@ -5,9 +5,9 @@ import cypher.controller.WhereConditionExtraction;
 import cypher.models.QueryCondition;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import matching.controllers.JustOrdering;
 import matching.controllers.MatchingBase;
 import matching.controllers.MatchingSimple;
 import matching.controllers.MatchingWhere;
@@ -17,12 +17,11 @@ import target_graph.graph.TargetGraph;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.*;
 
-public class TestMatching {
+public class OrderingTest {
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         // CONFIGURATION
         MatchingConfiguration configuration = new MatchingConfiguration(args);
@@ -43,8 +42,8 @@ public class TestMatching {
             final Future<Double> handler = exec.submit(new Callable<Double>() {
                 @Override
                 public Double call() throws Exception {
-                    double totalTime;
-                    long numOccurrences;
+                    double totalTime = 0d;
+                    long numOccurrences = 0;
 
                     WhereConditionExtraction where_managing = new WhereConditionExtraction();
                     where_managing.where_condition_extraction(query_test);
@@ -55,14 +54,15 @@ public class TestMatching {
 
                         Int2ObjectOpenHashMap<ObjectArrayList<QueryCondition>> mapOrPropositionToConditionSet = where_managing.getMapOrPropositionToConditionSet();
 
-                        if (mapOrPropositionToConditionSet.size() > 1) { // Multi-Thread (at least one OR)
+                        if (mapOrPropositionToConditionSet.size() > 0) { // Multi-Thread (at least one OR)
+                            System.out.println("---- AT LEAST ONE OR PROPOSITION ----");
                             double time = System.currentTimeMillis();
 
                             QueryStructure query_t = new QueryStructure(targetGraph);
                             query_t.parser(query_test, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager(), targetGraph.getNodesTables(), targetGraph.getEdgesTables(), Optional.of(where_managing));
 
-                            OutData outData = new OutData();
                             for (int orIndex = 0; orIndex < mapOrPropositionToConditionSet.size(); orIndex++) {
+                                System.out.println("\tOR PROPOSITION " + (orIndex + 1) + "/" + mapOrPropositionToConditionSet.size());
                                 query_t.clean();
 
                                 ObjectArrayList<QueryCondition> simpleConditions = new ObjectArrayList<>();
@@ -76,22 +76,18 @@ public class TestMatching {
                                     }
                                 }
 
+                                OutData outData = new OutData();
+                                JustOrdering matchingMachine = new JustOrdering(outData, query_t, false, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions);
 
-                                MatchingBase matchingMachine;
-                                if (complexConditions.size() == 0) { // No complex conditions
-                                    matchingMachine = new MatchingSimple(outData, query_t, false, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions);
-                                } else { // Complex conditions
-                                    matchingMachine = new MatchingWhere(outData, query_t, false, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions, complexConditions);
-                                }
                                 matchingMachine.matching();
                             }
 
-
                             time = (System.currentTimeMillis() - time) / 1000;
                             totalTime = time;
-                            numOccurrences = outData.occurrences.size();
-                            System.out.println("FINAL NUMBER OF OCCURRENCES: " + numOccurrences + "\tTIME: " + totalTime);
                         } else { // Single-Thread (only AND)
+                            System.out.println("---- NO OR PROPOSITIONS ----");
+                            double time = System.currentTimeMillis();
+
                             QueryStructure query_t = new QueryStructure(targetGraph);
                             query_t.parser(query_test, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager(), targetGraph.getNodesTables(), targetGraph.getEdgesTables(), Optional.of(where_managing));
 
@@ -109,40 +105,19 @@ public class TestMatching {
                             }
 
                             OutData outData = new OutData();
-                            MatchingBase matchingMachine;
-                            if (complexConditions.size() == 0) { // No complex conditions
-                                matchingMachine = new MatchingSimple(outData, query_t, true, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions);
-                            } else { // Complex conditions
-                                matchingMachine = new MatchingWhere(outData, query_t, true, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions, complexConditions);
-                            }
+                            JustOrdering matchingMachine = new JustOrdering(outData, query_t, false, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions);
+
+                            matchingMachine.matching();
 
                             outData = matchingMachine.matching();
-
-                            totalTime = outData.getTotalTime();
-                            numOccurrences = outData.num_occurrences;
-                            System.out.println("FINAL NUMBER OF OCCURRENCES: " + numOccurrences + "\tTIME: " + totalTime);
+                            time = (System.currentTimeMillis() - time) / 1000;
+                            totalTime = time;
                         }
-                    } else { // No WHERE CONDITIONS
-                        QueryStructure query = new QueryStructure(targetGraph);
-                        query.parser(query_test, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager(), targetGraph.getNodesTables(), targetGraph.getEdgesTables(), Optional.empty());
-
-                        OutData outData = new OutData();
-                        MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), new ObjectArrayList<>());
-                        outData = matchingMachine.matching();
-
-                        totalTime = outData.getTotalTime();
-                        numOccurrences = outData.num_occurrences;
-                        System.out.println("FINAL NUMBER OF OCCURRENCES: " + numOccurrences + "\tTIME: " + totalTime);
+                    } else {
+                        System.err.println("ERROR: No Where Conditions!!!");
+                        System.exit(-1);
                     }
 
-                    // SAVING
-                    if (configuration.outFile != null) {
-                        try {
-                            FileManager.saveToCSV(query_test, configuration.outFile, totalTime, numOccurrences);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
                     return totalTime;
                 }
             });

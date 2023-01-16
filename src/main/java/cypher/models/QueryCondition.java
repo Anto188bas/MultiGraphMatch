@@ -227,7 +227,7 @@ public class QueryCondition {
         }
 
         int propertyId = propertiesManager.getMapPropertyStringToPropertyId().getInt(propertyName);
-        IntArrayList idList = propertiesManager.getMapPropertyIdToValues().get(propertyId).get(expressionValue);
+        IntArrayList idList = propertiesManager.getMapPropertyIdToValues().get(propertyId).get(expressionValue.toString());
 
         if (idList == null) {
             idList = new IntArrayList();

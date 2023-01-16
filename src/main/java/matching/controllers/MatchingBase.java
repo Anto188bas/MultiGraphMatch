@@ -38,8 +38,6 @@ public abstract class MatchingBase {
     public int si;
     public int psi;
 
-    public int numTotalOccs;
-
     public MatchingBase(OutData outData, QueryStructure query, boolean justCount, boolean distinct, long numMaxOccs, TargetGraph targetGraph, TargetBitmatrix target_bitmatrix) {
         this.outData = outData;
         this.query = query;
@@ -47,7 +45,6 @@ public abstract class MatchingBase {
         this.distinct = distinct;
         this.numMaxOccs = numMaxOccs;
         this.target_bitmatrix = target_bitmatrix;
-        this.numTotalOccs = 0;
         this.states = new StateStructures();
         this.targetGraph = targetGraph;
     }
@@ -181,13 +178,20 @@ public abstract class MatchingBase {
     }
 
     public void newOccurrenceFound() {
-        numTotalOccs++;
         if (!justCount || distinct) {
             outData.occurrences.add(Arrays.toString(matchingData.solution_edges));
-        }
-        if (numTotalOccs == numMaxOccs) {
-            report();
-            System.exit(0);
+
+            if (outData.occurrences.size() == numMaxOccs) {
+                report();
+                System.exit(0);
+            }
+        } else {
+            outData.num_occurrences++;
+
+            if (outData.num_occurrences == numMaxOccs) {
+                report();
+                System.exit(0);
+            }
         }
         psi = si;
     }

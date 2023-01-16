@@ -7,12 +7,8 @@ import ordering.EdgeOrdering;
 import state_machine.StateStructures;
 import target_graph.graph.GraphPaths;
 
-import java.io.BufferedOutputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.util.Arrays;
-import java.util.function.IntConsumer;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class Utils {
     public static IntArraySet intArraySetUnion(IntArraySet a, IntArraySet b) {
@@ -61,8 +57,8 @@ public class Utils {
          * LOG
          */
 //        System.setOut(new PrintStream(new BufferedOutputStream(new FileOutputStream("output.txt")), true));
-        System.out.println("TARGET GRAPH");
-        System.out.println(graphPaths.toString());
+//        System.out.println("TARGET GRAPH");
+//        System.out.println(graphPaths.toString());
 
         System.out.println("QUERY NODES");
         query_obj.getQuery_nodes().forEach((id, node) -> {
@@ -76,22 +72,27 @@ public class Utils {
 
         System.out.println("PAIRS DOMAINS");
         query_obj.getPairs().forEach((pair) -> {
-            System.out.print("P: " + pair + "\tDOMAIN (FS): ");
+//            System.out.print("P: " + pair + "\tDOMAIN (FS): ");
+            AtomicLong size = new AtomicLong(0l);
             pair.getFirst_second().forEach((key, list) -> {
-                for (int dst : list) {
-                    System.out.print("[" + key + ", " + dst + "], ");
-                }
+                size.addAndGet(list.size());
+//                for (int dst : list) {
+//                    System.out.print("[" + key + ", " + dst + "], ");
+//
+//                }
 
             });
+            System.out.println("P: " + pair + "\tDOMAIN SIZE: " + size.get());
 
-            System.out.print("\tDOMAIN (SF): ");
 
-            pair.getSecond_first().forEach((key, list) -> {
-                for (int dst : list) {
-                    System.out.print("[" + key + ", " + dst + "], ");
-                }
-            });
-            System.out.print("\n");
+//            System.out.print("\tDOMAIN (SF): ");
+//
+//            pair.getSecond_first().forEach((key, list) -> {
+//                for (int dst : list) {
+//                    System.out.print("[" + key + ", " + dst + "], ");
+//                }
+//            });
+//            System.out.print("\n");
         });
 //
 //        System.out.println("NODES DOMAINS");
@@ -104,15 +105,15 @@ public class Utils {
         System.out.println("PARIS ORDERING");
         System.out.println(edgeOrdering.getPairs_ordering());
 
-//        System.out.println("ORDERING DETAILS");
-//        for (int i = 0; i < states.map_state_to_first_endpoint.length; i++) {
-//            int edge = states.map_state_to_edge[i];
-//            int src = states.map_state_to_first_endpoint[i];
-//            int dst = states.map_state_to_second_endpoint[i];
-//            int matchedNode = states.map_state_to_unmatched_node[i];
-//            EdgeDirection direction = states.map_edge_to_direction[i];
-//            System.out.println("STATE: " + i + "\tSRC: " + src + "\tDST: " + dst + "\tEDGE: " + edge + "\tDIRECTION: " + direction + "\tUN-MATCHED_NODE: " + matchedNode);
-//        }
+        System.out.println("ORDERING DETAILS");
+        for (int i = 0; i < states.map_state_to_first_endpoint.length; i++) {
+            int edge = states.map_state_to_edge[i];
+            int src = states.map_state_to_first_endpoint[i];
+            int dst = states.map_state_to_second_endpoint[i];
+            int matchedNode = states.map_state_to_unmatched_node[i];
+            EdgeDirection direction = states.map_edge_to_direction[i];
+            System.out.println("STATE: " + i + "\tSRC: " + src + "\tDST: " + dst + "\tEDGE: " + edge + "\tDIRECTION: " + direction + "\tUN-MATCHED_NODE: " + matchedNode);
+        }
     }
 
     public static void printSymmetryConditions(IntArrayList[] nodes_symmetry, IntArrayList[] edges_symmetry) {

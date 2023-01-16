@@ -5,7 +5,7 @@ import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 
-public class EdgeOrdering {
+public class DebugOrdering {
     private ObjectArraySet<NodesPair> selected_pairs;
     private ObjectArraySet<NodesPair> unselected_pairs;
     private Int2ObjectOpenHashMap<IntArraySet> map_endpoints_to_edges;
@@ -23,7 +23,7 @@ public class EdgeOrdering {
     private int[] map_state_to_unmapped_nodes;
     private ObjectArraySet<NodesPair> pairs_ordering;
 
-    public EdgeOrdering(QueryStructure query_structure) {
+    public DebugOrdering(QueryStructure query_structure) {
         this.query_structure = query_structure;
 
         this.computePairsOrdering();
@@ -62,6 +62,7 @@ public class EdgeOrdering {
     }
 
     private void computePairsOrdering() {
+        System.out.println("\t\tComputing pairs ordering...");
         //************************************************************* PRE PROCESSING *************************************************************//
         edges_ordering = new IntArrayList();
         // NODES
@@ -98,61 +99,35 @@ public class EdgeOrdering {
         //******************************************************************************************************************************************//
 
         //*************************************************************** FIRST PAIR ***************************************************************//
+        System.out.println("\t\tFIRST PAIR");
         nodes_ordering = new IntArrayList();
         map_state_to_unmapped_nodes = new int[edge_keys.size()];
 
         state_index = 0;
         NodesPair query_pair_to_add = null;
 
-        IntSet nodesHavingWhereClauses = new IntArraySet();
+        // We search the node with the higher degree
+        IntArrayList max_nodes = new IntArrayList();
+        int max_degree = 0;
 
-        for(int key : node_keys){
-            if(query_structure.getQuery_nodes().get(key).getSimpleConditions().size() > 0){
-                nodesHavingWhereClauses.add(key);
+        for (int key : node_keys) {
+            System.out.println("\t\t\tNode " + key + " has degree " + nodes_degree.get(key) + "...");
+            int current_degree = nodes_degree.get(key);
+
+            if (current_degree > max_degree) {
+                max_degree = current_degree;
+                max_nodes = new IntArrayList();
+                max_nodes.push(key);
+            } else if (current_degree == max_degree) {
+                max_nodes.push(key);
             }
         }
 
-        IntArrayList selected_nodes = new IntArrayList();
-//        if (false) {
-//        if (nodesHavingWhereClauses.size() == 0) {
-
-            // We search the node with the higher degree
-
-            int max_degree = 0;
-
-            for (int key : node_keys) {
-                int current_degree = nodes_degree.get(key);
-
-                if (current_degree > max_degree) {
-                    max_degree = current_degree;
-                    selected_nodes = new IntArrayList();
-                    selected_nodes.push(key);
-                } else if (current_degree == max_degree) {
-                    selected_nodes.push(key);
-                }
-            }
-//        } else {
-//            // We search the node with the minumum number of candidates
-//            int min_cardinality = Integer.MAX_VALUE;
-//
-//            for (int key : nodesHavingWhereClauses) {
-//                int current_cardinality = query_structure.getQuery_nodes().get(key).getWhereConditionsCompatibilityDomain().size();
-//
-//                if (current_cardinality < min_cardinality) {
-//                    min_cardinality = current_cardinality;
-//                    selected_nodes = new IntArrayList();
-//                    selected_nodes.push(key);
-//                } else if (current_cardinality == min_cardinality) {
-//                    selected_nodes.push(key);
-//                }
-//            }
-//        }
-
-        // There can be multiple nodes with the same max degree (or with the same min domains cardinality).
+        // There can be multiple nodes with the same max degree.
         // For each node having max-degree we consider his neighborhood.
         // We compute the score between the node and all its neighbours.
         Int2DoubleOpenHashMap map_pair_to_score = new Int2DoubleOpenHashMap();
-        for (int node : selected_nodes) {
+        for (int node : max_nodes) {
             IntArraySet neighborhood = map_node_to_neighborhood.get(node);
 
             for (int neighbour : neighborhood) {
@@ -170,17 +145,21 @@ public class EdgeOrdering {
 
         for (NodesPair pair : unselected_pairs) {
             double current_score = map_pair_to_score.get(pair.getId().intValue());
+            System.out.println("\t\t\tPairs " + pair + " has score " + current_score + "...");
+
 
             if (current_score > max_score) {
                 max_score = current_score;
                 query_pair_to_add = pair;
             }
         }
+        System.out.println("\t\t\tFirst pair selected:  " + query_pair_to_add +  "...");
         addPairToTheOrdering(query_pair_to_add);
         //******************************************************************************************************************************************//
 
         //************************************************************* RESIDUAL PAIRS *************************************************************//
         // Residual pairs ordering
+        System.out.println("\t\tRESIDUAL PAIRS");
         while (!unselected_pairs.isEmpty()) {
             ObjectArraySet<NodesPair> ordered_pairs_neighborhood = new ObjectArraySet<>();
 
@@ -247,7 +226,7 @@ public class EdgeOrdering {
 
                 for (NodesPair current_pair : ordered_pairs_neighborhood) {
                     double current_score = map_pair_to_simplified_score.get(current_pair.getId().intValue());
-
+                    System.out.println("\t\t\tPairs " + current_pair + " has score " + current_score + "...");
                     if (current_score > max_score) {
                         max_score = current_score;
                         max_pairs = new ObjectArrayList<>();
@@ -255,9 +234,8 @@ public class EdgeOrdering {
                     } else if (current_score == max_score) {
                         max_pairs.push(current_pair);
                     }
-
                 }
-
+                System.out.println("\t\t\tSelected pair:  " + max_pairs.get(0) +  "...");
                 addPairToTheOrdering(max_pairs.get(0));
             }
         }
