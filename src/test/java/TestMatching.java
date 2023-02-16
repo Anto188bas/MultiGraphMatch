@@ -5,9 +5,7 @@ import cypher.controller.WhereConditionExtraction;
 import cypher.models.QueryCondition;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import matching.controllers.MatchingBase;
 import matching.controllers.MatchingSimple;
 import matching.controllers.MatchingWhere;
@@ -17,7 +15,6 @@ import target_graph.graph.TargetGraph;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.*;
@@ -87,7 +84,8 @@ public class TestMatching {
                             }
 
 
-                            time = (System.currentTimeMillis() - time) / 1000;
+//                            time = (System.currentTimeMillis() - time) / 1000;
+                            time += outData.getTotalTime();
                             totalTime = time;
                             numOccurrences = outData.occurrences.size();
                             System.out.println("FINAL NUMBER OF OCCURRENCES: " + numOccurrences + "\tTIME: " + totalTime);

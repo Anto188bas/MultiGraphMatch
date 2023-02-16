@@ -7,6 +7,7 @@ import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import matching.models.MatchingData;
 import matching.models.OutData;
 import matching.models.PathsMatchingData;
 import ordering.NodesPair;
@@ -50,7 +51,7 @@ public class MatchingSimple extends MatchingBase {
         numQueryEdges = query.getQuery_edges().size();
 
         // MATCHING DATA
-        matchingData = new PathsMatchingData(query);
+        matchingData = new MatchingData(query);
 
         // FIRST QUERY NODE
         outData.matching_time = System.currentTimeMillis();

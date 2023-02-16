@@ -63,7 +63,7 @@ public class WhereConditionExtraction {
     public void normal_form_computing() {
         PlParser normal_parser = new PlParser();
         String new_where = origin2custom_characters(origin, replacement, this.where_string);
-        new_where = new_where.replace(" AND ", "&&").replace(" OR ", "||").replace("XOR", "^^");
+        new_where = new_where.replace(" AND ", "&&").replace(" OR ", "||").replace("XOR", "^^").replace(" ", "_SPACE_");
         PlFormula formula = normal_parser.parseFormula(new StringReader(new_where)).toDnf();
         String[] condvals = new String[formula.getLiterals().size()];
         AtomicInteger count = new AtomicInteger();
@@ -72,6 +72,7 @@ public class WhereConditionExtraction {
         this.conditions.addAll(List.of(condvals));
         new_where = origin2custom_characters(replacement, new_origin, formula.toString());
         this.disj_where_cond = new_where;
+        this.disj_where_cond = this.disj_where_cond.replace("_SPACE_", " ");
     }
 
 
