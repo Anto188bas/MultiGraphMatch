@@ -29,6 +29,7 @@ public class TestMatching {
         TargetGraph targetGraph = TargetGraph.read(configuration.targetDirectory);
         System.out.println("Done!");
 
+
         // QUERIES READING
         List<String> queries = FileManager.readQueries(configuration.queriesDirectory);
         final Duration tout = Duration.ofSeconds(configuration.timeout);
@@ -53,7 +54,7 @@ public class TestMatching {
                         Int2ObjectOpenHashMap<ObjectArrayList<QueryCondition>> mapOrPropositionToConditionSet = where_managing.getMapOrPropositionToConditionSet();
 
                         if (mapOrPropositionToConditionSet.size() > 1) { // Multi-Thread (at least one OR)
-                            double time = System.currentTimeMillis();
+                            double time = 0d;
 
                             QueryStructure query_t = new QueryStructure(targetGraph);
                             query_t.parser(query_test, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager(), targetGraph.getNodesTables(), targetGraph.getEdgesTables(), Optional.of(where_managing));

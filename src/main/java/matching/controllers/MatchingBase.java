@@ -179,7 +179,8 @@ public abstract class MatchingBase {
 
     public void newOccurrenceFound() {
         if (!justCount || distinct) {
-            outData.occurrences.add(Arrays.toString(matchingData.solution_edges));
+//            outData.occurrences.addOrGet(Arrays.toString(matchingData.solution_edges));
+            outData.occurrences.put(Arrays.toString(matchingData.solution_nodes), 1);
 
             if (outData.occurrences.size() == numMaxOccs) {
                 report();
