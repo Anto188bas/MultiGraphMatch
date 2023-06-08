@@ -2,6 +2,8 @@ package target_graph.managers;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntArraySet;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
@@ -14,7 +16,9 @@ public class PropertiesManager  {
     private ObjectArraySet<String> propertySet;
     private Object2IntOpenHashMap<String> mapPropertyStringToPropertyId;
     private Int2ObjectOpenHashMap<String> mapPropertyIdToPropertyString;
-    private Int2ObjectOpenHashMap<Object2ObjectOpenHashMap<Object, IntArrayList>> mapPropertyIdToValues;
+
+    // private Int2ObjectOpenHashMap<Object2ObjectOpenHashMap<Object, IntArrayList>> mapPropertyIdToValues;
+    private Int2ObjectOpenHashMap<Object2ObjectOpenHashMap<Object, IntOpenHashSet>> mapPropertyIdToValues;
 
     public PropertiesManager() {}
 
@@ -62,10 +66,12 @@ public class PropertiesManager  {
 
             Object value = elementRow.getObject(property);
 
-            Object2ObjectOpenHashMap<Object,IntArrayList> mapValueToElementIds = mapPropertyIdToValues.get(propertyId);
+            // Object2ObjectOpenHashMap<Object,IntArrayList> mapValueToElementIds = mapPropertyIdToValues.get(propertyId);
+            var mapValueToElementIds = mapPropertyIdToValues.get(propertyId);
 
             if (!mapValueToElementIds.containsKey(value)) {
-                mapValueToElementIds.put(value, new IntArrayList());
+                // mapValueToElementIds.put(value, new IntArrayList());
+                mapValueToElementIds.put(value, new IntOpenHashSet());
             }
 
             mapValueToElementIds.get(value).add(elementId);
@@ -100,9 +106,17 @@ public class PropertiesManager  {
         return mapPropertyIdToPropertyString;
     }
 
+    /*
     public Int2ObjectOpenHashMap<Object2ObjectOpenHashMap<Object, IntArrayList>> getMapPropertyIdToValues() {
         return mapPropertyIdToValues;
     }
+    */
+
+
+    public Int2ObjectOpenHashMap<Object2ObjectOpenHashMap<Object, IntOpenHashSet>> getMapPropertyIdToValues() {
+        return mapPropertyIdToValues;
+    }
+
 
     public String getIdsColumnName() {
         return idsColumnName;

@@ -183,7 +183,7 @@ class QueryAnalyzer {
         info.numConditions = simpleConditions.size();
         info.numNodesWithConditions = (int) query.getQuery_nodes().values().stream().filter(node -> (node.getSimpleConditions().size() > 0 || node.getComplexConditions().size() > 0)).count();
         info.nodesWithConditions = new ObjectArrayList<>(query.getQuery_nodes().values().stream().filter(node -> (node.getSimpleConditions().size() > 0 || node.getComplexConditions().size() > 0)).map(node -> node.getNode_name()).collect(Collectors.toList()));
-        info.domainSizes = new IntArrayList(query.getQuery_nodes().values().stream().mapToInt(node -> node.getWhereConditionsCompatibilityDomain().size()).toArray());
+        // info.domainSizes = new IntArrayList(query.getQuery_nodes().values().stream().mapToInt(node -> node.getWhereConditionsCompatibilityDomain().size()).toArray());
 
         return info;
     }

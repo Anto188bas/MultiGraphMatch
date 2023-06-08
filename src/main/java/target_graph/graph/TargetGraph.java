@@ -21,10 +21,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 class TargetUtils {
@@ -116,7 +113,8 @@ public class TargetGraph {
                         index = new IntIndex(currentTable.intColumn(property));
 
                         for(Object value: currentColumn.unique()) {
-                            IntArrayList idList = new IntArrayList((List<Integer>) currentTable.where(((IntIndex) index).get((Integer) value)).column("id").asList());
+                            // IntArrayList idList = new IntArrayList((List<Integer>) currentTable.where(((IntIndex) index).get((Integer) value)).column("id").asList());
+                           var idList = new IntOpenHashSet((List<Integer>) currentTable.where(((IntIndex) index).get((Integer) value)).column("id").asList());
                            nodesPropertiesManager.getMapPropertyIdToValues().get(propertyId).put(value, idList);
                         }
 
@@ -125,7 +123,8 @@ public class TargetGraph {
                         index = new FloatIndex(currentTable.floatColumn(property));
 
                         for(Object value: currentColumn.unique()) {
-                            IntArrayList idList = new IntArrayList((List<Integer>) currentTable.where(((FloatIndex) index).get((Float) value)).column("id").asList());
+                            // IntArrayList idList = new IntArrayList((List<Integer>) currentTable.where(((FloatIndex) index).get((Float) value)).column("id").asList());
+                            var idList = new IntOpenHashSet((List<Integer>) currentTable.where(((FloatIndex) index).get((Float) value)).column("id").asList());
                             nodesPropertiesManager.getMapPropertyIdToValues().get(propertyId).put(value, idList);
                         }
 
@@ -134,7 +133,8 @@ public class TargetGraph {
                         index = new DoubleIndex(currentTable.doubleColumn(property));
 
                         for(Object value: currentColumn.unique()) {
-                            IntArrayList idList = new IntArrayList((List<Integer>) currentTable.where(((DoubleIndex) index).get((Double) value)).column("id").asList());
+                            // IntArrayList idList = new IntArrayList((List<Integer>) currentTable.where(((DoubleIndex) index).get((Double) value)).column("id").asList());
+                            var idList = new IntOpenHashSet((List<Integer>) currentTable.where(((DoubleIndex) index).get((Double) value)).column("id").asList());
                             nodesPropertiesManager.getMapPropertyIdToValues().get(propertyId).put(value, idList);
                         }
 
@@ -143,7 +143,8 @@ public class TargetGraph {
                         index = new StringIndex(currentTable.stringColumn(property));
 
                         for(Object value: currentColumn.unique()) {
-                            IntArrayList idList = new IntArrayList((List<Integer>) currentTable.where(((StringIndex) index).get((String) value)).column("id").asList());
+                            // IntArrayList idList = new IntArrayList((List<Integer>) currentTable.where(((StringIndex) index).get((String) value)).column("id").asList());
+                            var idList = new IntOpenHashSet((List<Integer>) currentTable.where(((StringIndex) index).get((String) value)).column("id").asList());
                             nodesPropertiesManager.getMapPropertyIdToValues().get(propertyId).put(value, idList);
                         }
                         break;

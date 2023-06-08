@@ -8,6 +8,7 @@ import target_graph.managers.EdgesLabelsManager;
 import target_graph.managers.NodesLabelsManager;
 
 import java.util.BitSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @JsonFilter("matrixFilter")
 public class TargetBitmatrix extends BitMatrix {

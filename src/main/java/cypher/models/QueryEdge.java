@@ -3,6 +3,7 @@ package cypher.models;
 import cypher.controller.PropertiesUtility;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import org.opencypher.v9_0.expressions.Expression;
 import org.opencypher.v9_0.expressions.LogicalVariable;
 import org.opencypher.v9_0.expressions.Range;
@@ -29,7 +30,8 @@ public class QueryEdge {
     private HashMap<String, QueryCondition> simpleConditions;
     private HashMap<String, QueryCondition> complexConditions;
 
-    private IntArrayList whereConditionsCompatibilityDomain;
+    // private IntArrayList whereConditionsCompatibilityDomain;
+    private IntOpenHashSet whereConditionsCompatibilityDomain;
 
     public QueryEdge(RelationshipPattern edgePattern, EdgesLabelsManager edgesLabelsManager) {
         properties = new HashMap<>();
@@ -109,7 +111,8 @@ public class QueryEdge {
     public void clean() {
         this.simpleConditions = new HashMap<>();
         this.complexConditions = new HashMap<>();
-        this.whereConditionsCompatibilityDomain = new IntArrayList();
+        // this.whereConditionsCompatibilityDomain = new IntArrayList();
+        this.whereConditionsCompatibilityDomain = new IntOpenHashSet();
     }
 
     // ADD CONDITION
@@ -126,11 +129,21 @@ public class QueryEdge {
         edge_name = "r" + id;
     }
 
+    /*
     public void setWhereConditionsCompatibilityDomain(IntArrayList whereConditionsCompatibilityDomain) {
         if (this.whereConditionsCompatibilityDomain == null || this.whereConditionsCompatibilityDomain.size() == 0)
             this.whereConditionsCompatibilityDomain = whereConditionsCompatibilityDomain;
         else {
             this.whereConditionsCompatibilityDomain = Utils.intArrayListIntersection(this.whereConditionsCompatibilityDomain, whereConditionsCompatibilityDomain);
+        }
+    }
+    */
+
+    public void setWhereConditionsCompatibilityDomain(IntOpenHashSet whereConditionsCompatibilityDomain) {
+        if (this.whereConditionsCompatibilityDomain == null || this.whereConditionsCompatibilityDomain.size() == 0)
+            this.whereConditionsCompatibilityDomain = whereConditionsCompatibilityDomain;
+        else {
+            this.whereConditionsCompatibilityDomain = Utils.intArraySetIntersection(this.whereConditionsCompatibilityDomain, whereConditionsCompatibilityDomain);
         }
     }
 
@@ -159,7 +172,13 @@ public class QueryEdge {
         return properties;
     }
 
+    /*
     public IntArrayList getWhereConditionsCompatibilityDomain() {
+        return whereConditionsCompatibilityDomain;
+    }
+     */
+
+    public IntOpenHashSet getWhereConditionsCompatibilityDomain() {
         return whereConditionsCompatibilityDomain;
     }
 

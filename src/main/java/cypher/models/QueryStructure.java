@@ -390,6 +390,22 @@ public class QueryStructure {
         }
     }
 
+    public void populateCandidateSets(Int2ObjectOpenHashMap<IntArrayList> first_second, Int2ObjectOpenHashMap<IntArrayList> second_first, Int2ObjectOpenHashMap<Int2IntOpenHashMap> target_map_node_color_degrees, int firstTargetNode, IntSet secondTargetNodeList, int firstQueryNode, int secondQueryNode) {
+        IntIterator iterator = secondTargetNodeList.iterator();
+        while (iterator.hasNext()) {
+            int secondTargetNode = iterator.nextInt();
+
+            // DEGREE CHECK
+            if (!degree_comparison(firstTargetNode, firstQueryNode, secondTargetNode, secondQueryNode, target_map_node_color_degrees))
+                continue;
+
+            if (!first_second.containsKey(firstTargetNode)) first_second.put(firstTargetNode, new IntArrayList());
+            if (!second_first.containsKey(secondTargetNode)) second_first.put(secondTargetNode, new IntArrayList());
+            first_second.get(firstTargetNode).add(secondTargetNode);
+            second_first.get(secondTargetNode).add(firstTargetNode);
+        }
+    }
+
     public void populateCandidateSets(Int2ObjectOpenHashMap<IntArrayList> first_second, Int2ObjectOpenHashMap<IntArrayList> second_first, Int2ObjectOpenHashMap<Int2IntOpenHashMap> target_map_node_color_degrees, IntArrayList firstTargetNodeList, int secondTargetNode, int firstQueryNode, int secondQueryNode) {
         IntIterator iterator = firstTargetNodeList.iterator();
         while (iterator.hasNext()) {
@@ -446,8 +462,8 @@ public class QueryStructure {
                     Int2ObjectOpenHashMap<IntArrayList> dstMap = reversed_target_bitmatrix_table.get(targetId);
 
                     for (int dst : dstKeySet) {
-                        IntArrayList srcMap = dstMap.get(dst);
-                        populateCandidateSets(first_second, second_first, target_map_node_color_degrees, srcMap, dst, c1, c2);
+                       IntArrayList srcMap = dstMap.get(dst);
+                       populateCandidateSets(first_second, second_first, target_map_node_color_degrees, srcMap, dst, c1, c2);
                     }
                 }
             }
@@ -507,13 +523,13 @@ public class QueryStructure {
 
             // DIRECTED POPULATION
             filtered_domain_population(query_bitmatrix_table, target_bitmatrix_table, reversed_target_bitmatrix_table, compatibility, first_second, second_first, src, dst, target_map_node_color_degrees);
-
             pair.setCompatibilityDomain(first_second, second_first);
         }
         //TODO: compute nodes domains only if there are paths
 //        computeNodesDomains();
     }
 
+    /*
     protected void computeNodesDomains() {
         for (int nodeID : query_nodes.keySet()) {
             IntArrayList domain = new IntArrayList();
@@ -534,6 +550,7 @@ public class QueryStructure {
             map_node_to_domain.put(nodeID, domain);
         }
     }
+    */
 
     public EdgeDirection getDirection(int src, int dst, int edgeId) {
         QueryEdge edge = this.query_edges.get(edgeId);

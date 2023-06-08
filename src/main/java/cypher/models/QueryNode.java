@@ -3,6 +3,8 @@ package cypher.models;
 import cypher.controller.PropertiesUtility;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import org.opencypher.v9_0.expressions.*;
 import scala.Option;
 import target_graph.managers.NodesLabelsManager;
@@ -18,7 +20,9 @@ public class QueryNode {
 
     private HashMap<String, QueryCondition> simpleConditions;
     private HashMap<String, QueryCondition> complexConditions;
-    private IntArrayList whereConditionsCompatibilityDomain;
+
+    // private IntArrayList whereConditionsCompatibilityDomain;
+    private IntOpenHashSet whereConditionsCompatibilityDomain;
 
 
     public QueryNode(NodePattern node_pattern, String name, NodesLabelsManager nodesLabelsManager) {
@@ -86,7 +90,8 @@ public class QueryNode {
     public void clean() {
         this.simpleConditions = new HashMap<>();
         this.complexConditions = new HashMap<>();
-        this.whereConditionsCompatibilityDomain = new IntArrayList();
+        // this.whereConditionsCompatibilityDomain = new IntArrayList();
+        this.whereConditionsCompatibilityDomain = new IntOpenHashSet();
     }
 
     // GETTER METHOD
@@ -106,8 +111,14 @@ public class QueryNode {
         return complexConditions;
     }
 
+    /*
     public IntArrayList getWhereConditionsCompatibilityDomain() {
-        return whereConditionsCompatibilityDomain;
+         return whereConditionsCompatibilityDomain;
+    }
+    */
+
+    public IntOpenHashSet getWhereConditionsCompatibilityDomain() {
+         return whereConditionsCompatibilityDomain;
     }
 
     public String getNode_name() {
@@ -115,6 +126,7 @@ public class QueryNode {
     }
 
     // SETTER
+    /*
     public void setWhereConditionsCompatibilityDomain(IntArrayList whereConditionsCompatibilityDomain) {
         if (this.whereConditionsCompatibilityDomain == null || this.whereConditionsCompatibilityDomain.size() == 0)
             this.whereConditionsCompatibilityDomain = whereConditionsCompatibilityDomain;
@@ -122,6 +134,18 @@ public class QueryNode {
             this.whereConditionsCompatibilityDomain = Utils.intArrayListIntersection(this.whereConditionsCompatibilityDomain, whereConditionsCompatibilityDomain);
         }
     }
+    */
+
+
+    public void setWhereConditionsCompatibilityDomain(IntOpenHashSet whereConditionsCompatibilityDomain) {
+        if (this.whereConditionsCompatibilityDomain == null || this.whereConditionsCompatibilityDomain.size() == 0)
+            this.whereConditionsCompatibilityDomain = whereConditionsCompatibilityDomain;
+        else {
+            // this.whereConditionsCompatibilityDomain = Utils.intArrayListIntersection(this.whereConditionsCompatibilityDomain, whereConditionsCompatibilityDomain);
+            this.whereConditionsCompatibilityDomain = Utils.intArraySetIntersection(this.whereConditionsCompatibilityDomain, whereConditionsCompatibilityDomain);
+        }
+    }
+
 
     // TO STRING
     @Override

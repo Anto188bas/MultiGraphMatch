@@ -8,11 +8,12 @@ import state_machine.StateStructures;
 import target_graph.graph.GraphPaths;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class Utils {
-    public static IntArraySet intArraySetUnion(IntArraySet a, IntArraySet b) {
-        IntArraySet result = a.clone();
+    public static IntOpenHashSet intArraySetUnion(IntOpenHashSet a, IntOpenHashSet b) {
+        IntOpenHashSet result = a.clone();
         result.addAll(b);
 
         return result;
@@ -25,8 +26,8 @@ public class Utils {
         return result;
     }
 
-    public static IntArraySet intArraySetDifference(IntArraySet a, IntArraySet b) {
-        IntArraySet result = a.clone();
+    public static IntOpenHashSet intArraySetDifference(IntOpenHashSet a, IntOpenHashSet b) {
+        IntOpenHashSet result = a.clone();
         result.removeAll(b);
 
         return result;
@@ -39,8 +40,9 @@ public class Utils {
         return result;
     }
 
-    public static IntArraySet intArraySetIntersection(IntArraySet a, IntArraySet b) {
-        IntArraySet result = a.clone();
+
+    public static IntOpenHashSet intArraySetIntersection(IntOpenHashSet a, IntOpenHashSet b) {
+        var result = a.clone();
         result.retainAll(b);
 
         return result;
@@ -49,9 +51,9 @@ public class Utils {
     public static IntArrayList intArrayListIntersection(IntArrayList a, IntArrayList b) {
         IntArrayList result = a.clone();
         result.retainAll(b);
-
         return result;
     }
+
     public static void printDebugInfo(GraphPaths graphPaths, QueryStructure query_obj, StateStructures states, EdgeOrdering edgeOrdering)  {
         /**
          * LOG
@@ -122,8 +124,35 @@ public class Utils {
     }
 
     public static IntArrayList intersection(IntCollection a, IntCollection b) {
-        IntArrayList result = new IntArrayList();
+        if (a.size() == 0) return new IntArrayList();
 
+        int size_a = a.size();
+        int size_b = b.size();
+
+        IntArrayList result;
+        IntIterator iterator;
+        IntCollection tmp;
+        int next;
+        if (size_a > size_b) {
+            result = new IntArrayList(size_b);
+            iterator = b.iterator();
+            tmp = a;
+        } else {
+            result = new IntArrayList(size_a);
+            iterator = a.iterator();
+            tmp = b;
+        }
+        while (iterator.hasNext()){
+            next = iterator.nextInt();
+            if(tmp.contains(next))
+                result.add(next);
+        }
+
+        return result;
+
+
+        /*
+        IntArrayList result = new IntArrayList();
         IntIterator iterator = b.iterator();
         while (iterator.hasNext()) {
             int next = iterator.nextInt();
@@ -133,5 +162,6 @@ public class Utils {
         }
 
         return result;
+        */
     }
 }
