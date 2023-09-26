@@ -477,8 +477,8 @@ public class QueryStructure {
 
                     for (int src : srcKeySet) {
                         IntArrayList dstMap = srcMap.get(src);
-                        IntArrayList tmpDstMap = Utils.intersection(dstMap, this.query_nodes.get(c2).getWhereConditionsCompatibilityDomain());
-                        populateCandidateSets(first_second, second_first, target_map_node_color_degrees, src, tmpDstMap, c1, c2);
+                        IntCollection tmpDstMap = Utils.intersection(dstMap, this.query_nodes.get(c2).getWhereConditionsCompatibilityDomain());
+                        populateCandidateSets(first_second, second_first, target_map_node_color_degrees, src, new IntArrayList(tmpDstMap), c1, c2);
                     }
                 }
             }

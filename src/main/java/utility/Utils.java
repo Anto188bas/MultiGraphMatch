@@ -123,30 +123,23 @@ public class Utils {
         System.out.println("EDGES SYMMETRY: " + Arrays.toString(edges_symmetry)) ;
     }
 
-    public static IntArrayList intersection(IntCollection a, IntCollection b) {
-        if (a.size() == 0) return new IntArrayList();
+    public static IntOpenHashSet intersection(IntCollection a, IntCollection b) {
+        if (a.size() == 0 || b.size() == 0) return new IntOpenHashSet();
 
         int size_a = a.size();
         int size_b = b.size();
 
-        IntArrayList result;
-        IntIterator iterator;
+        IntOpenHashSet result;
         IntCollection tmp;
-        int next;
+
         if (size_a > size_b) {
-            result = new IntArrayList(size_b);
-            iterator = b.iterator();
+            result = new IntOpenHashSet(b);
             tmp = a;
         } else {
-            result = new IntArrayList(size_a);
-            iterator = a.iterator();
+            result = new IntOpenHashSet(a);
             tmp = b;
         }
-        while (iterator.hasNext()){
-            next = iterator.nextInt();
-            if(tmp.contains(next))
-                result.add(next);
-        }
+        result.retainAll(tmp);
 
         return result;
 
