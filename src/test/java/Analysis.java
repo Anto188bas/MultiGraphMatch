@@ -8,6 +8,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import matching.controllers.WhereUtils;
+import out.OutElaborationFiles;
 import reading.FileManager;
 import target_graph.graph.TargetGraph;
 import tech.tablesaw.api.Table;
@@ -35,12 +36,13 @@ public class Analysis {
 
         // PATH
         System.out.println("Reading target graph...");
+        OutElaborationFiles outData = new OutElaborationFiles();
 
         Table[] nodesTables = FileManager.files_reading(configuration.nodes_main_directory, ',');
         Table[] edgesTables = FileManager.files_reading(configuration.edges_main_directory, ',');
 
         // TARGET GRAPH
-        TargetGraph targetGraph = new TargetGraph(nodesTables, edgesTables, "id", "labels");
+        TargetGraph targetGraph = new TargetGraph(nodesTables, edgesTables, "id", "labels", outData);
 
         // QUERIES READING
         System.out.println("Reading queries...");

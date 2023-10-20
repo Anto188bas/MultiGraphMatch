@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import it.unimi.dsi.fastutil.ints.*;
+import matching.models.OutData;
+import out.OutElaborationFiles;
 import reading.FileManager;
 import target_graph.managers.EdgesLabelsManager;
 import target_graph.managers.NodesLabelsManager;
@@ -78,7 +80,7 @@ public class TargetGraph {
 
     public TargetGraph() {}
 
-    public TargetGraph(Table[] nodesTables, Table[] edgesTables, String idsColumnName, String labelsColumnName) {
+    public TargetGraph(Table[] nodesTables, Table[] edgesTables, String idsColumnName, String labelsColumnName, OutElaborationFiles outData) {
         graphPaths = new GraphPaths();
 
         this.nodesLabelsManager = new NodesLabelsManager(0);
@@ -95,6 +97,7 @@ public class TargetGraph {
 
         System.out.println("Elaborating nodes...");
         // Nodes
+        double startTime = System.nanoTime();
         for (int i = 0; i < nodesTables.length; i++) {
             Table currentTable = nodesTables[i];
 
@@ -159,9 +162,11 @@ public class TargetGraph {
                 nodesLabelsManager.addElement(id, labelSetString);
             });
         }
+        outData.nodesElaborationTime = (System.nanoTime() - startTime) / Math.pow(10, 9);
 
         System.out.println("Elaborating edges...");
         // Edges
+        startTime=System.nanoTime();
         Int2ObjectOpenHashMap<Int2IntOpenHashMap> mapNodeIdToLabelsDegrees = new Int2ObjectOpenHashMap<>();
 
         AtomicInteger edgeIdCount = new AtomicInteger(0);
@@ -204,12 +209,15 @@ public class TargetGraph {
             // We add the edge ID column
             currentTable.addColumns(edgeIdColumn);
         }
+        outData.edgesElaborationTime = (System.nanoTime() - startTime) / Math.pow(10, 9);
 
         this.graphPaths = new GraphPaths(mapKeyToEdgeList, mapNodeIdToLabelsDegrees);
 
         System.out.println("Creating the target Bit Matrix...");
+        startTime = System.nanoTime();
         this.targetBitmatrix = new TargetBitmatrix();
         targetBitmatrix.createBitset(srcDstAggregation, this.getNodesLabelsManager(), this.getEdgesLabelsManager());
+        outData.bitMatrixTime = (System.nanoTime() - startTime) / Math.pow(10,9);
     }
 
     public void write(String path) throws IOException {

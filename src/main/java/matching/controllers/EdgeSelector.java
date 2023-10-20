@@ -40,7 +40,8 @@ public class EdgeSelector {
         }
         return condCheck;
     }
-
+    // =================================================================================================================
+    // =================================================================================================================
     // 1A. TYPE VECTOR IS EMPTY
     public static void no_types_case(ArrayList<Triplet<Integer, Integer, Int2ObjectOpenHashMap<IntArrayList>>> candidates, MatchingData matchingData, IntArrayList[] nodes_symmetry, IntArrayList listCandidates, int q_node, int[] cols, GraphPaths graphPaths) {
         // NOTE: cols_name has size 1 if the query is directed, otherwise 2. it contains the column name
@@ -64,6 +65,50 @@ public class EdgeSelector {
         }
     }
 
+    // 1.A --> TODO: NEW SOLUTION 04/10/2023 [NO EDGE TYPE AND SRC-DSTs]
+    public static void no_types_src(
+         IntArrayList   candidates,     MatchingData matchingData,
+         IntArrayList[] nodes_symmetry, IntArrayList listCandidates,
+         GraphPaths     graphPaths,
+         int q_dst,
+         int t_src
+    ){
+        for (int t_dst: candidates){
+            if (!matchingData.matchedNodes.contains(t_dst) && nodeCondCheck(q_dst, t_dst, matchingData, nodes_symmetry)){
+                for(IntArrayList color_edges: graphPaths.getMap_key_to_edge_list().get(t_src).get(t_dst).values()){
+                    for (int idEdge: color_edges){
+                        if (matchingData.matchedEdges.contains(idEdge)) continue;
+                        listCandidates.add(idEdge);
+                        listCandidates.add(t_dst);
+                    }
+                }
+            }
+        }
+    }
+
+
+    // 1A. --> TODO: NEW SOLUTION 04/10/2023 [NO EDGE TYPE AND SRCs-DST]
+    public static void no_types_dst(
+         IntArrayList   candidates,     MatchingData matchingData,
+         IntArrayList[] nodes_symmetry, IntArrayList listCandidates,
+         GraphPaths     graphPaths,
+         int q_src,
+         int t_dst
+    ){
+        for (int t_src: candidates){
+            if (!matchingData.matchedNodes.contains(t_src) && nodeCondCheck(q_src, t_src, matchingData, nodes_symmetry)){
+                for(IntArrayList color_edges: graphPaths.getMap_key_to_edge_list().get(t_src).get(t_dst).values()){
+                    for (int idEdge: color_edges){
+                        if (matchingData.matchedEdges.contains(idEdge)) continue;
+                        listCandidates.add(idEdge);
+                        listCandidates.add(t_src);
+                    }
+                }
+            }
+        }
+    }
+    // =================================================================================================================
+    // =================================================================================================================
     // 1B. TYPE VECTOR IS EMPTY (FIRST NODE)
     public static void no_type_case(ArrayList<Triplet<Integer, Integer, Int2ObjectOpenHashMap<IntArrayList>>> candidates, int q_node, GraphPaths graphPaths, MatchingData matchingData, IntArrayList[] nodes_symmetry, IntArrayList listCandidates) {
         candidates.forEach(triple -> {
@@ -81,6 +126,27 @@ public class EdgeSelector {
         });
     }
 
+
+    // 1B --> TODO: NEW SOLUTION 04/10/2023 [NO EDGE TYPE AND SRC-DST] FIRST NODE
+    public static void no_types_first(
+         MatchingData matchingData,   IntArrayList[] nodes_symmetry,
+         IntArrayList listCandidates, GraphPaths     graphPaths,
+         int q_src,
+         int t_src,
+         int t_dst
+    ){
+        if (!nodeCondCheck(q_src, t_src, matchingData, nodes_symmetry)) return;
+        for (IntArrayList edges : graphPaths.getMap_key_to_edge_list().get(t_src).get(t_dst).values()){
+            for (int idEdge : edges) {
+                listCandidates.add(idEdge);
+                listCandidates.add(t_dst);
+                listCandidates.add(t_src);
+            }
+
+        }
+    }
+    // =================================================================================================================
+    // =================================================================================================================
     // 2A. TYPE VECTOR IS SET
     public static void types_case(ArrayList<Triplet<Integer, Integer, Int2ObjectOpenHashMap<IntArrayList>>> candidates, MatchingData matchingData, IntArrayList[] nodes_symmetry, IntArrayList listCandidates, int q_node, int[] cols, GraphPaths graphPaths, QueryEdge query_edge) {
         for (int i = 0; i < cols.length; i++) {
@@ -104,6 +170,98 @@ public class EdgeSelector {
         }
     }
 
+
+    // 2A --> TODO: NEW SOLUTION 04/10/2023 [SRC-DSTs]
+    public static void types_src(
+         IntArrayList   candidates,     MatchingData matchingData,
+         IntArrayList[] nodes_symmetry, IntArrayList listCandidates,
+         GraphPaths     graphPaths,
+         int q_dst,
+         int t_src,
+         int type
+    ){
+        for(int t_dst: candidates){
+            if (!matchingData.matchedNodes.contains(t_dst) && nodeCondCheck(q_dst, t_dst, matchingData, nodes_symmetry)) {
+                for(int idEdge: graphPaths.getMap_key_to_edge_list().get(t_src).get(t_dst).get(type)){
+                    if (matchingData.matchedEdges.contains(idEdge)) continue;
+                    listCandidates.add(idEdge);
+                    listCandidates.add(t_dst);
+                }
+            }
+        }
+    }
+
+    // 2A --> TODO: NEW SOLUTION 04/10/2023 [SRC-DSTs MULTIPLE TYPE]
+    public static void types_src(
+            IntArrayList   candidates,     MatchingData matchingData,
+            IntArrayList[] nodes_symmetry, IntArrayList listCandidates,
+            GraphPaths     graphPaths,
+            int q_dst,
+            int t_src,
+            IntArrayList   types
+    ){
+        for(int t_dst: candidates){
+            if (!matchingData.matchedNodes.contains(t_dst) && nodeCondCheck(q_dst, t_dst, matchingData, nodes_symmetry)) {
+                for (int type: types) {
+                    var types_edges = graphPaths.getMap_key_to_edge_list().get(t_src).get(t_dst);
+                    if(types_edges.containsKey(type))
+                        for (int idEdge : graphPaths.getMap_key_to_edge_list().get(t_src).get(t_dst).get(type)) {
+                            if (matchingData.matchedEdges.contains(idEdge)) continue;
+                            listCandidates.add(idEdge);
+                            listCandidates.add(t_dst);
+                        }
+                }
+            }
+        }
+    }
+
+    // 2A --> TODO: NEW SOLUTION 04/10/2023 [SRCs-DST]
+    public static void types_dst(
+         IntArrayList   candidates,     MatchingData matchingData,
+         IntArrayList[] nodes_symmetry, IntArrayList listCandidates,
+         GraphPaths     graphPaths,
+         int q_src,
+         int t_dst,
+         int type
+    ){
+        for(int t_src: candidates){
+            if (!matchingData.matchedNodes.contains(t_src) && nodeCondCheck(q_src, t_src, matchingData, nodes_symmetry)) {
+                for(int idEdge: graphPaths.getMap_key_to_edge_list().get(t_src).get(t_dst).get(type)){
+                    if (matchingData.matchedEdges.contains(idEdge)) continue;
+                    listCandidates.add(idEdge);
+                    listCandidates.add(t_src);
+                }
+            }
+        }
+    }
+
+    // 2A --> TODO: NEW SOLUTION 04/10/2023 [SRCs-DST MULTIPLE TYPE]
+    public static void types_dst(
+            IntArrayList   candidates,     MatchingData matchingData,
+            IntArrayList[] nodes_symmetry, IntArrayList listCandidates,
+            GraphPaths     graphPaths,
+            int q_src,
+            int t_dst,
+            IntArrayList   types
+    ){
+        for(int t_src: candidates){
+            if (!matchingData.matchedNodes.contains(t_src) && nodeCondCheck(q_src, t_src, matchingData, nodes_symmetry)) {
+                for(int type: types) {
+                    var types_edges = graphPaths.getMap_key_to_edge_list().get(t_src).get(t_dst);
+                    if(types_edges.containsKey(type)){
+                        for (int idEdge : graphPaths.getMap_key_to_edge_list().get(t_src).get(t_dst).get(type)) {
+                            if (matchingData.matchedEdges.contains(idEdge)) continue;
+                            listCandidates.add(idEdge);
+                            listCandidates.add(t_src);
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+    // =================================================================================================================
+    // =================================================================================================================
     // 2B. TYPE VECTOR IS SET (FIRST NODE)
     public static void types_case(ArrayList<Triplet<Integer, Integer, Int2ObjectOpenHashMap<IntArrayList>>> candidates, int query_node, GraphPaths graphPaths, MatchingData matchingData, IntArrayList[] nodes_symmetry, IntArrayList listCandidates, QueryEdge query_edge, int t_src, int t_dst) {
         if (nodeCondCheck(query_node, t_src, matchingData, nodes_symmetry)) {
@@ -124,7 +282,49 @@ public class EdgeSelector {
         }
     }
 
+    // 2B --> TODO: NEW SOLUTION 04/10/2023 [SRC-DSTs FIRST NODE]
+    public static void type_first(
+         MatchingData matchingData,   IntArrayList[] nodes_symmetry,
+         IntArrayList listCandidates, GraphPaths     graphPaths,
+         int q_src,
+         int t_src,
+         int t_dst,
+         int type
+    ){
+         if (nodeCondCheck(q_src, t_src, matchingData, nodes_symmetry)) {
+             for(int idEdge: graphPaths.getMap_key_to_edge_list().get(t_src).get(t_dst).get(type)){
+                 if (matchingData.matchedEdges.contains(idEdge)) continue;
+                 listCandidates.add(idEdge);
+                 listCandidates.add(t_dst);
+                 listCandidates.add(t_src);
+             }
+         }
+    }
 
+    public static void type_first(
+            MatchingData matchingData,   IntArrayList[] nodes_symmetry,
+            IntArrayList listCandidates, GraphPaths     graphPaths,
+            int q_src,
+            int t_src,
+            int t_dst,
+            IntArrayList types
+    ){
+        if (nodeCondCheck(q_src, t_src, matchingData, nodes_symmetry)) {
+            for (int type: types) {
+                var colors_edges = graphPaths.getMap_key_to_edge_list().get(t_src).get(t_dst);
+                if (colors_edges.containsKey(type)) {
+                    for (int idEdge : graphPaths.getMap_key_to_edge_list().get(t_src).get(t_dst).get(type)) {
+                        if (matchingData.matchedEdges.contains(idEdge)) continue;
+                        listCandidates.add(idEdge);
+                        listCandidates.add(t_dst);
+                        listCandidates.add(t_src);
+                    }
+                }
+            }
+        }
+    }
+    // =================================================================================================================
+    // =================================================================================================================
     // 3A. BOTH MATCHED AND TYPE VECTOR IS UNSET
     public static void no_types_case_matched_nodes(ArrayList<Triplet<Integer, Integer, Int2ObjectOpenHashMap<IntArrayList>>> candidates, MatchingData matchingData, IntArrayList[] edges_symmetry, IntArrayList listCandidates, GraphPaths graphPaths, StateStructures states, int q_edge) {
         candidates.forEach(triplet -> {
@@ -138,6 +338,27 @@ public class EdgeSelector {
         });
     }
 
+    // TODO NEW SOLUTION 04/10/2023 [SRC-DST]
+    public static void no_types_matched_nodes(
+         MatchingData matchingData,  IntArrayList[] edges_symmetry,
+         StateStructures states   ,  GraphPaths     graphPaths,
+         IntArrayList listCandidates,
+         int t_src,
+         int t_dst,
+         int q_edge
+    ){
+         if (graphPaths.getMap_key_to_edge_list().get(t_src).containsKey(t_dst)){
+             for (IntArrayList edges : graphPaths.getMap_key_to_edge_list().get(t_src).get(t_dst).values()) {
+                 for (int idEdge : edges) {
+                     if (!matchingData.matchedEdges.contains(idEdge) && condCheckEdges(q_edge, idEdge, matchingData, edges_symmetry, states))
+                         listCandidates.add(idEdge);
+                 }
+             }
+         }
+
+    }
+    // =================================================================================================================
+    // =================================================================================================================
     // 4A. BOTH MATCHED AND TYPE VECTOR IS UNSET
     public static void type_case_matched_nodes(ArrayList<Triplet<Integer, Integer, Int2ObjectOpenHashMap<IntArrayList>>> candidates, MatchingData matchingData, IntArrayList[] edges_symmetry, IntArrayList listCandidates, GraphPaths graphPaths, StateStructures states, int q_edge, QueryEdge query_edge) {
         candidates.forEach(triplet -> {
@@ -152,5 +373,30 @@ public class EdgeSelector {
                 }
             }
         });
+    }
+
+    // TODO NEW SOLUTION 04/10/2023 [SRC-DST]
+    public static void types_matched_nodes(
+            MatchingData    matchingData  ,  IntArrayList[] edges_symmetry,
+            StateStructures states        ,  GraphPaths     graphPaths,
+            IntArrayList    listCandidates,
+            int t_src,
+            int t_dst,
+            int q_edge,
+            IntArrayList types
+    ){
+        if (graphPaths.getMap_key_to_edge_list().get(t_src).containsKey(t_dst)){
+            var colors_edges = graphPaths.getMap_key_to_edge_list().get(t_src).get(t_dst);
+            for(int type: types) {
+                if (colors_edges.containsKey(type)) {
+                    for (IntArrayList edges : graphPaths.getMap_key_to_edge_list().get(t_src).get(t_dst).values()) {
+                        for (int idEdge : edges) {
+                            if (!matchingData.matchedEdges.contains(idEdge) && condCheckEdges(q_edge, idEdge, matchingData, edges_symmetry, states))
+                                listCandidates.add(idEdge);
+                        }
+                    }
+                }
+            }
+        }
     }
 }

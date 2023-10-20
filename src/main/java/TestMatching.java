@@ -10,8 +10,10 @@ import matching.controllers.MatchingBase;
 import matching.controllers.MatchingSimple;
 import matching.controllers.MatchingWhere;
 import matching.models.OutData;
+import out.OutElaborationFiles;
 import reading.FileManager;
 import target_graph.graph.TargetGraph;
+import tech.tablesaw.api.Table;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -26,7 +28,16 @@ public class TestMatching {
 
         // PATH
         System.out.println("Reading target graph...");
+
+        /*DA JSON */
         TargetGraph targetGraph = TargetGraph.read(configuration.targetDirectory);
+
+        /* DA FILE ORIGINALI*/
+        //OutElaborationFiles elaborationFiles = new OutElaborationFiles();
+        //Table[] nodesTables = FileManager.files_reading(configuration.targetDirectory + "/nodes", ',');
+        //Table[] edgesTables = FileManager.files_reading(configuration.targetDirectory + "/edges", ',');
+        //TargetGraph targetGraph = new TargetGraph(nodesTables, edgesTables, "id", "labels", elaborationFiles);
+
         System.out.println("Done!");
 
 
@@ -135,9 +146,9 @@ public class TestMatching {
                     }
 
                     // SAVING
-                    if (configuration.outFile != null) {
+                    if (configuration.resultsFile != null) {
                         try {
-                            FileManager.saveToCSV(query_test, configuration.outFile, totalTime, numOccurrences);
+                            FileManager.saveToCSV(query_test, configuration.resultsFile, totalTime, numOccurrences);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }

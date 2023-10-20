@@ -4,6 +4,7 @@ import bitmatrix.models.TargetBitmatrix;
 import cypher.controller.PropositionStatus;
 import cypher.models.*;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import matching.models.MatchingData;
 import matching.models.OutData;
@@ -67,6 +68,21 @@ public class MatchingWhere extends MatchingBase {
     }
 
     private void matching_procedure() {
+        // NEW PART
+        IntOpenHashSet edge_types_lens = new IntOpenHashSet();
+        this.query.getQuery_edges().forEach((id, edge) -> edge_types_lens.add(edge.getEdge_label().size()));
+        FindCandidateParent findCandidate = null;
+        if(edge_types_lens.size() == 1) {
+            int value = edge_types_lens.stream().findFirst().get();
+            findCandidate = switch (value) {
+                case 0  -> new FindCandidatesNoTypes();
+                case 1  -> new FindCandidateSingleType();
+                default -> new FindCandidateMultipleType();
+            };
+        }
+        else findCandidate = new FindCandidateGeneral();
+
+
         NodesPair firstPair = this.query.getMap_edge_to_endpoints().get(states.map_state_to_edge[0]);
         int q_src = firstPair.getFirstEndpoint();
         int q_dst = firstPair.getSecondEndpoint();
@@ -77,7 +93,7 @@ public class MatchingWhere extends MatchingBase {
 
         for (int f_node : firstPair.getFirst_second().keySet()) {
             for (int s_node : firstPair.getFirst_second().get(f_node)) {
-                updateCandidatesForStateZero(q_src, q_dst, f_node, s_node);
+                updateCandidatesForStateZero(q_src, q_dst, f_node, s_node, findCandidate);
 
                 while (matchingData.candidatesIT[0] < matchingData.setCandidates[0].size() - 1) {
                     // STATE ZERO
@@ -87,7 +103,7 @@ public class MatchingWhere extends MatchingBase {
                     if (areWhereConditionsVerified()) {
                         updateMatchingInfoForStateZero();
                         goAhead();
-                        updateCandidatesForStateGraterThanZero();
+                        updateCandidatesForStateGraterThanZero(findCandidate);
 
                         while (si > 0) {
                             // BACK TRACKING ON EDGES
@@ -114,7 +130,7 @@ public class MatchingWhere extends MatchingBase {
                                         newOccurrenceFound();
                                     } else { // GO AHEAD
                                         goAhead();
-                                        updateCandidatesForStateGraterThanZero();
+                                        updateCandidatesForStateGraterThanZero(findCandidate);
                                     }
                                 } else {
                                     psi = si;

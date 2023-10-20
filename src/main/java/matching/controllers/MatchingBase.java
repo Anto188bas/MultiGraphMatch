@@ -144,13 +144,15 @@ public abstract class MatchingBase {
     }
 
 
-    public void updateCandidatesForStateZero(int q_src, int q_dst, int f_node, int s_node) {
-        matchingData.setCandidates[0] = FindCandidates.find_first_candidates(q_src, q_dst, f_node, s_node, states.map_state_to_edge[0], query, targetGraph.getGraphPaths(), matchingData, nodes_symmetry, states);
+    public void updateCandidatesForStateZero(int q_src, int q_dst, int f_node, int s_node, FindCandidateParent finCandidate) {
+        //matchingData.setCandidates[0] = FindCandidates.find_first_candidates(q_src, q_dst, f_node, s_node, states.map_state_to_edge[0], query, targetGraph.getGraphPaths(), matchingData, nodes_symmetry, states);
+        matchingData.setCandidates[0] = finCandidate.find_first_candidates(q_src, q_dst, f_node, s_node, states.map_state_to_edge[0], query, targetGraph.getGraphPaths(), matchingData, nodes_symmetry, states);
         matchingData.candidatesIT[0] = -1;
     }
 
-    public void updateCandidatesForStateGraterThanZero() {
-        matchingData.setCandidates[si] = FindCandidates.find_candidates(targetGraph.getGraphPaths(), query, si, nodes_symmetry, edges_symmetry, states, matchingData);
+    public void updateCandidatesForStateGraterThanZero(FindCandidateParent findCandidate) {
+        //matchingData.setCandidates[si] = FindCandidates.find_candidates(targetGraph.getGraphPaths(), query, si, nodes_symmetry, edges_symmetry, states, matchingData);
+        matchingData.setCandidates[si] = findCandidate.find_candidates(targetGraph.getGraphPaths(), query, si, nodes_symmetry, edges_symmetry, states, matchingData);
         matchingData.candidatesIT[si] = -1;
     }
 

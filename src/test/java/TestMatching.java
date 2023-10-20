@@ -3,6 +3,7 @@ import condition.QueryConditionType;
 import configuration.MatchingConfiguration;
 import cypher.controller.WhereConditionExtraction;
 import cypher.models.QueryCondition;
+import cypher.models.QueryNode;
 import cypher.models.QueryStructure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
