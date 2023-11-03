@@ -1,5 +1,6 @@
 package matching.controllers;
 
+import bitmatrix.models.CompatibilityMap;
 import bitmatrix.models.TargetBitmatrix;
 import cypher.controller.WhereConditionExtraction;
 import cypher.models.QueryCondition;
@@ -21,10 +22,12 @@ import java.awt.desktop.ScreenSleepEvent;
 
 public class MatchingSimple extends MatchingBase {
     ObjectArrayList<QueryCondition> simpleConditions;
+    CompatibilityMap compatibilityMap;
 
-    public MatchingSimple(OutData outData, QueryStructure query, boolean justCount, boolean distinct, long numMaxOccs, TargetGraph targetGraph, TargetBitmatrix target_bitmatrix, ObjectArrayList<QueryCondition> simpleConditions) {
+    public MatchingSimple(OutData outData, QueryStructure query, boolean justCount, boolean distinct, long numMaxOccs, TargetGraph targetGraph, TargetBitmatrix target_bitmatrix, ObjectArrayList<QueryCondition> simpleConditions, CompatibilityMap compatibilityMap) {
         super(outData, query, justCount, distinct, numMaxOccs, targetGraph, target_bitmatrix);
         this.simpleConditions = simpleConditions;
+        this.compatibilityMap = compatibilityMap;
     }
 
     public OutData matching() {
@@ -36,12 +39,12 @@ public class MatchingSimple extends MatchingBase {
         // SIMPLE WHERE CONDITIONS
         if (simpleConditions.size() > 0) {
             WhereUtils.assignSimpleConditionsToNodesAndEdges(simpleConditions, query);
-
             // DOMAINS
             computeFilteredCompatibilityDomains();
         } else {
             // DOMAINS
-            computeCompatibilityDomains();
+            if(this.compatibilityMap != null) computeCompatibilityDomains(this.compatibilityMap);
+            else computeCompatibilityDomains();
         }
 
         // EDGE ORDERING AND STATE OBJECT CREATION

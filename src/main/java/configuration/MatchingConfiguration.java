@@ -4,7 +4,6 @@ public class MatchingConfiguration {
 
     public String targetDirectory;
     public String queriesDirectory;
-
     public String resultsFile;
     public String outFile;
     public int timeout;
@@ -20,11 +19,11 @@ public class MatchingConfiguration {
 
     public void readParameter(String key, String value) {
         switch (key) {
-            case "-g" -> targetDirectory = value;
+            case "-g" -> targetDirectory  = value;
             case "-q" -> queriesDirectory = value;
-            case "-r" -> resultsFile = value;
-            case "-o" -> outFile = value;
-            case "-t" -> timeout = Integer.parseInt(value);
+            case "-r" -> resultsFile      = value;
+            case "-o" -> outFile          = value;
+            case "-t" -> timeout          = Integer.parseInt(value);
             default -> printHelp(key);
         }
     }

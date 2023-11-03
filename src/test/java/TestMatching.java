@@ -1,4 +1,5 @@
 
+import bitmatrix.models.CompatibilityMap;
 import condition.QueryConditionType;
 import configuration.MatchingConfiguration;
 import cypher.controller.WhereConditionExtraction;
@@ -78,7 +79,7 @@ public class TestMatching {
 
                                 MatchingBase matchingMachine;
                                 if (complexConditions.size() == 0) { // No complex conditions
-                                    matchingMachine = new MatchingSimple(outData, query_t, false, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions);
+                                    matchingMachine = new MatchingSimple(outData, query_t, false, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions, null);
                                 } else { // Complex conditions
                                     matchingMachine = new MatchingWhere(outData, query_t, false, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions, complexConditions);
                                 }
@@ -111,7 +112,7 @@ public class TestMatching {
                             OutData outData = new OutData();
                             MatchingBase matchingMachine;
                             if (complexConditions.size() == 0) { // No complex conditions
-                                matchingMachine = new MatchingSimple(outData, query_t, true, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions);
+                                matchingMachine = new MatchingSimple(outData, query_t, true, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions, null);
                             } else { // Complex conditions
                                 matchingMachine = new MatchingWhere(outData, query_t, true, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions, complexConditions);
                             }
@@ -127,7 +128,11 @@ public class TestMatching {
                         query.parser(query_test, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager(), targetGraph.getNodesTables(), targetGraph.getEdgesTables(), Optional.empty());
 
                         OutData outData = new OutData();
-                        MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), new ObjectArrayList<>());
+                        //TODO note, this is the solution by map (testing against bit matrix) if you would like use bit matrix you have to set compatibilityMap = null;
+                        CompatibilityMap compatibilityMap = new CompatibilityMap();
+                        compatibilityMap = null;
+
+                        MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), new ObjectArrayList<>(), compatibilityMap);
                         outData = matchingMachine.matching();
 
                         totalTime = outData.getTotalTime();
@@ -136,9 +141,9 @@ public class TestMatching {
                     }
 
                     // SAVING
-                    if (configuration.outFile != null) {
+                    if (configuration.resultsFile != null) {
                         try {
-                            FileManager.saveToCSV(query_test, configuration.outFile, totalTime, numOccurrences);
+                            FileManager.saveToCSV(query_test, configuration.resultsFile, totalTime, numOccurrences);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }

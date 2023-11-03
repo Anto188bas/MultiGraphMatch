@@ -99,17 +99,18 @@ public class TargetGraph {
         // Nodes
         double startTime = System.nanoTime();
         for (int i = 0; i < nodesTables.length; i++) {
-            Table currentTable = nodesTables[i];
-
-            List<String> properties = currentTable.columnNames().stream().filter(colName -> !colName.equals(this.idsColumnName) && !colName.equals(this.labelsColumnName)).toList();
-
+            Table currentTable     = nodesTables[i];
+            List<String> properties = currentTable.columnNames()
+                .stream()
+                .filter(colName -> !colName.equals(this.idsColumnName) && !colName.equals(this.labelsColumnName))
+                .toList();
             nodesPropertiesManager.addProperties(properties);
 
             // Properties
             for(String property : properties) {
-                int propertyId = nodesPropertiesManager.getMapPropertyStringToPropertyId().getInt(property);
-                Column currentColumn = currentTable.column(property);
-                Index index = null;
+                int propertyId    = nodesPropertiesManager.getMapPropertyStringToPropertyId().getInt(property);
+                var currentColumn = currentTable.column(property);
+                Index index       = null;
 
                 switch(currentColumn.type().name()) {
                     case "INTEGER":

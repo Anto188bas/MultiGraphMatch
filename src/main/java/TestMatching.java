@@ -1,4 +1,5 @@
 
+import bitmatrix.models.CompatibilityMap;
 import condition.QueryConditionType;
 import configuration.MatchingConfiguration;
 import cypher.controller.WhereConditionExtraction;
@@ -10,11 +11,8 @@ import matching.controllers.MatchingBase;
 import matching.controllers.MatchingSimple;
 import matching.controllers.MatchingWhere;
 import matching.models.OutData;
-import out.OutElaborationFiles;
 import reading.FileManager;
 import target_graph.graph.TargetGraph;
-import tech.tablesaw.api.Table;
-
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
@@ -39,8 +37,6 @@ public class TestMatching {
         //TargetGraph targetGraph = new TargetGraph(nodesTables, edgesTables, "id", "labels", elaborationFiles);
 
         System.out.println("Done!");
-
-
         // QUERIES READING
         List<String> queries = FileManager.readQueries(configuration.queriesDirectory);
         final Duration tout = Duration.ofSeconds(configuration.timeout);
@@ -53,6 +49,7 @@ public class TestMatching {
                 @Override
                 public Double call() throws Exception {
                     double totalTime;
+                    double comp_dom_time=0d;
                     long numOccurrences;
 
                     WhereConditionExtraction where_managing = new WhereConditionExtraction();
@@ -88,7 +85,7 @@ public class TestMatching {
 
                                 MatchingBase matchingMachine;
                                 if (complexConditions.size() == 0) { // No complex conditions
-                                    matchingMachine = new MatchingSimple(outData, query_t, false, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions);
+                                    matchingMachine = new MatchingSimple(outData, query_t, false, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions, null);
                                 } else { // Complex conditions
                                     matchingMachine = new MatchingWhere(outData, query_t, false, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions, complexConditions);
                                 }
@@ -121,7 +118,7 @@ public class TestMatching {
                             OutData outData = new OutData();
                             MatchingBase matchingMachine;
                             if (complexConditions.size() == 0) { // No complex conditions
-                                matchingMachine = new MatchingSimple(outData, query_t, true, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions);
+                                matchingMachine = new MatchingSimple(outData, query_t, true, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions, null);
                             } else { // Complex conditions
                                 matchingMachine = new MatchingWhere(outData, query_t, true, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions, complexConditions);
                             }
@@ -137,18 +134,22 @@ public class TestMatching {
                         query.parser(query_test, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager(), targetGraph.getNodesTables(), targetGraph.getEdgesTables(), Optional.empty());
 
                         OutData outData = new OutData();
-                        MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), new ObjectArrayList<>());
+                        CompatibilityMap compatibilityMap = new CompatibilityMap();
+                        compatibilityMap = null;
+
+                        MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), new ObjectArrayList<>(), compatibilityMap);
                         outData = matchingMachine.matching();
 
-                        totalTime = outData.getTotalTime();
+                        totalTime      = outData.getTotalTime();
                         numOccurrences = outData.num_occurrences;
+                        comp_dom_time  = outData.domain_time;
                         System.out.println("FINAL NUMBER OF OCCURRENCES: " + numOccurrences + "\tTIME: " + totalTime);
                     }
 
                     // SAVING
                     if (configuration.resultsFile != null) {
                         try {
-                            FileManager.saveToCSV(query_test, configuration.resultsFile, totalTime, numOccurrences);
+                            FileManager.saveToCSV(query_test, configuration.resultsFile, totalTime, numOccurrences, comp_dom_time);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -172,8 +173,6 @@ public class TestMatching {
                 e.printStackTrace();
             }
         });
-
-
         System.exit(0);
     }
 }

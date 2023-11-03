@@ -1,6 +1,7 @@
 package matching.controllers;
 
 import bitmatrix.controller.BitmatrixManager;
+import bitmatrix.models.CompatibilityMap;
 import bitmatrix.models.QueryBitmatrix;
 import bitmatrix.models.TargetBitmatrix;
 import cypher.models.QueryNode;
@@ -65,6 +66,13 @@ public abstract class MatchingBase {
         query_bitmatrix.createBitset(query, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager());
         Int2ObjectOpenHashMap<IntArrayList> compatibility = BitmatrixManager.bitmatrix_manager(query_bitmatrix, target_bitmatrix);
         query.domains_elaboration(query_bitmatrix.getTable(), target_bitmatrix.getTable(), compatibility, targetGraph.getGraphPaths().getMap_node_color_degrees());
+        outData.domain_time = (System.currentTimeMillis() - outData.domain_time) / 1000;
+    }
+
+    // ONLY TO TEST BITMATRIX WITH ANOTHER TYPE OF CREATION
+    protected void computeCompatibilityDomains(CompatibilityMap compatibilityMap) {
+        outData.domain_time = System.currentTimeMillis();
+        compatibilityMap.pair_creation(targetGraph, query);
         outData.domain_time = (System.currentTimeMillis() - outData.domain_time) / 1000;
     }
 

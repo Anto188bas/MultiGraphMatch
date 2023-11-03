@@ -424,7 +424,6 @@ public class QueryStructure {
 
     private void domain_population(Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> query_bitmatrix_table, Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> target_bitmatrix_table, Int2ObjectOpenHashMap<IntArrayList> compatibility, Int2ObjectOpenHashMap<IntArrayList> first_second, Int2ObjectOpenHashMap<IntArrayList> second_first, int c1, int c2, Int2ObjectOpenHashMap<Int2IntOpenHashMap> target_map_node_color_degrees) {
         IntArrayList queryBtxIdList = getQueryBtxIdList(c1, c2, query_bitmatrix_table);
-
         for(int query_btx_id: queryBtxIdList) {
             for (int targetId : compatibility.get(query_btx_id)) {
                 Int2ObjectOpenHashMap<IntArrayList> srcMap = target_bitmatrix_table.get(targetId);
@@ -441,7 +440,7 @@ public class QueryStructure {
         HashMap<String, QueryCondition> c2Conditions = this.query_nodes.get(c2).getSimpleConditions();
 
         // Case 1: |Conditions(c1)| > 0 && |Conditions(c2)| = 0
-        if (c1Conditions.size() > 0 && c2Conditions.size() == 0) {
+        if (!c1Conditions.isEmpty() && c2Conditions.isEmpty()) {
             for(int query_btx_id: queryBtxIdList) {
                 for (int targetId : compatibility.get(query_btx_id)) {
                     IntCollection srcKeySet = Utils.intersection(target_bitmatrix_table.get(targetId).keySet(), this.query_nodes.get(c1).getWhereConditionsCompatibilityDomain());
@@ -500,18 +499,16 @@ public class QueryStructure {
         for (NodesPair pair : pairs) {
             int src = pair.getFirstEndpoint();
             int dst = pair.getSecondEndpoint();
-
             Int2ObjectOpenHashMap<IntArrayList> first_second = new Int2ObjectOpenHashMap<>();
             Int2ObjectOpenHashMap<IntArrayList> second_first = new Int2ObjectOpenHashMap<>();
-
             // DIRECTED POPULATION
             domain_population(query_bitmatrix_table, target_bitmatrix_table, compatibility, first_second, second_first, src, dst, target_map_node_color_degrees);
-
             pair.setCompatibilityDomain(first_second, second_first);
         }
         //TODO: compute nodes domains only if there are paths
-//        computeNodesDomains();
+       // computeNodesDomains();
     }
+
 
     public void filtered_domains_elaboration(Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> query_bitmatrix_table, Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> target_bitmatrix_table, Int2ObjectOpenHashMap<Int2ObjectOpenHashMap<IntArrayList>> reversed_target_bitmatrix_table, Int2ObjectOpenHashMap<IntArrayList> compatibility, Int2ObjectOpenHashMap<Int2IntOpenHashMap> target_map_node_color_degrees) {
         for (NodesPair pair : pairs) {
