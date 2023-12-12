@@ -6,6 +6,7 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvValidationException;
 import configuration.Configuration;
+import matching.models.OutData;
 import target_graph.TableTypes;
 import tech.tablesaw.api.*;
 import tech.tablesaw.columns.strings.StringColumnType;
@@ -143,6 +144,23 @@ public class FileManager {
     public static void saveToCSV(String query, String path, double time, long num_occurrences, double comp_dom) throws IOException {
         final BufferedWriter writer = new BufferedWriter(new FileWriter(path, true));
         String result = query + "\t" + num_occurrences + "\t" + time + "\t" + comp_dom;
+        writer.write(result + "\n");
+        writer.close();
+    }
+
+    public static void saveToCSV(String query, String path, double time, long num_occurrences, long back_num) throws IOException {
+        final BufferedWriter writer = new BufferedWriter(new FileWriter(path, true));
+        String result = query + "\t" + num_occurrences + "\t" + time + "\t" + back_num;
+        writer.write(result + "\n");
+        writer.close();
+    }
+
+    public static void saveToCSV(String query, String path,OutData outData) throws IOException {
+        double time = outData.getTotalTime();
+        final BufferedWriter writer = new BufferedWriter(new FileWriter(path, true));
+        String result =
+                query + "\t" + outData.num_occurrences + "\t" + time + "\t" + outData.ordering_time + "\t" +
+                outData.symmetry_time + "\t" + outData.domain_time + "\t" + outData.matching_time;
         writer.write(result + "\n");
         writer.close();
     }

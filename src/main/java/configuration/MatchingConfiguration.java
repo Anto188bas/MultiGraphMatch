@@ -7,9 +7,11 @@ public class MatchingConfiguration {
     public String resultsFile;
     public String outFile;
     public int timeout;
+    public long maxOccurrences;
 
     public MatchingConfiguration(String[] args) {
         timeout = 1800;
+        maxOccurrences = Long.MAX_VALUE;
         outFile = null;
         resultsFile = null;
         for (int i = 0; i < args.length; i++)
@@ -24,12 +26,13 @@ public class MatchingConfiguration {
             case "-r" -> resultsFile      = value;
             case "-o" -> outFile          = value;
             case "-t" -> timeout          = Integer.parseInt(value);
+            case "-m" -> maxOccurrences   = Long.parseLong(value);
             default -> printHelp(key);
         }
     }
 
     private void printHelp(String parameter) {
-        String help = "Usage: java -cp GraphMatchingRI.jar TestMatching -g <targetGraphFolder> -q <queriesFolder> -o <outFile> -r <resultsFile>\n\n";
+        String help = "Usage: java -cp GraphMatchingRI_printOreder.jar TestMatching -g <targetGraphFolder> -q <queriesFolder> -o <outFile> -r <resultsFile>\n\n";
         help += "REQUIRED PARAMETERS:\n";
         help += "-g\tTarget graph directory\n";
         help += "-q\tQueries directory\n";

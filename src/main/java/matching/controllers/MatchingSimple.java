@@ -117,6 +117,7 @@ public class MatchingSimple extends MatchingBase {
                         matchingData.candidatesIT[si]++;
 
                         if (shouldBacktrack()) { // BACKTRACKING
+                            // outData.num_backtrack ++;
                             backtrack();
                         } else {  // FORWARD TRACKING ON EDGES
                             // SET NODE AND EDGE TO MATCH

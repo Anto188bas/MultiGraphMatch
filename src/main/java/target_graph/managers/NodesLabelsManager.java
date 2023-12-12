@@ -1,5 +1,6 @@
 package target_graph.managers;
 
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
@@ -9,6 +10,8 @@ public class NodesLabelsManager {
     private Object2IntOpenHashMap<String> mapStringLabelToIntLabel;
     private Int2ObjectOpenHashMap<String> mapIntLabelToStringLabel;
     private Int2ObjectOpenHashMap<int[]> mapElementIdToLabelSet;
+
+    private Int2IntOpenHashMap labels_freq;
     private Integer offset;
 
     public NodesLabelsManager() {}
@@ -21,9 +24,9 @@ public class NodesLabelsManager {
     public NodesLabelsManager(int offset) {
         mapStringLabelToIntLabel = new Object2IntOpenHashMap<>();
         mapIntLabelToStringLabel = new Int2ObjectOpenHashMap<>();
-        mapElementIdToLabelSet = new Int2ObjectOpenHashMap<>();
-
-        this.offset = offset;
+        mapElementIdToLabelSet   = new Int2ObjectOpenHashMap<>();
+        labels_freq              = new Int2IntOpenHashMap();
+        this.offset              = offset;
     }
 
     /**
@@ -45,6 +48,10 @@ public class NodesLabelsManager {
         String[] stringLabels = splitLabels(labelSetString);
         int[] intLabels = Arrays.stream(stringLabels).mapToInt(label -> addLabelIfNotExists(label)).toArray();
         mapElementIdToLabelSet.put(elementId, intLabels);
+        for(int label: intLabels){
+            if(labels_freq.containsKey(label)) labels_freq.put(label, labels_freq.get(label) + 1);
+            else                               labels_freq.put(label, 1);
+        }
     }
 
 
@@ -87,6 +94,8 @@ public class NodesLabelsManager {
     public Int2ObjectOpenHashMap<int[]> getMapElementIdToLabelSet() {
         return mapElementIdToLabelSet;
     }
+
+    public Int2IntOpenHashMap getLabels_freq(){return  labels_freq;}
 
     public int getOffset() {
         return offset;

@@ -11,10 +11,12 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import matching.models.MatchingData;
 import matching.models.OutData;
 import ordering.EdgeOrdering;
+import reading.FileManager;
 import simmetry_condition.SymmetryCondition;
 import state_machine.StateStructures;
 import target_graph.graph.TargetGraph;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 public abstract class MatchingBase {
@@ -65,7 +67,7 @@ public abstract class MatchingBase {
         QueryBitmatrix query_bitmatrix = new QueryBitmatrix();
         query_bitmatrix.createBitset(query, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager());
         Int2ObjectOpenHashMap<IntArrayList> compatibility = BitmatrixManager.bitmatrix_manager(query_bitmatrix, target_bitmatrix);
-        query.domains_elaboration(query_bitmatrix.getTable(), target_bitmatrix.getTable(), compatibility, targetGraph.getGraphPaths().getMap_node_color_degrees());
+        query.domains_elaboration(query_bitmatrix.getTable(), target_bitmatrix.getTable(), compatibility, targetGraph.getGraphPaths().getMap_node_color_degrees(), target_bitmatrix.getReversedTable());
         outData.domain_time = (System.currentTimeMillis() - outData.domain_time) / 1000;
     }
 
@@ -198,7 +200,6 @@ public abstract class MatchingBase {
             }
         } else {
             outData.num_occurrences++;
-
             if (outData.num_occurrences == numMaxOccs) {
                 report();
                 System.exit(0);
@@ -209,11 +210,15 @@ public abstract class MatchingBase {
 
     public void report() {
         outData.matching_time = (System.currentTimeMillis() - outData.matching_time) / 1000;
-//        System.out.println("MATCHING REPORT:");
+        //System.out.println("MATCHING REPORT:");
 //        System.out.println("\t-domain computing time: " + outData.domain_time);
 //        System.out.println("\t-ordering computing time: " + outData.ordering_time);
 //        System.out.println("\t-symmetry computing time: " + outData.symmetry_time);
-//        System.out.println("\t-matching computing time: " + outData.matching_time);
-//        System.out.println("\t-occurrences: " + outData.num_occurrences);
+
+        //System.out.println("\t-matching computing time: " + outData.matching_time);h
+        //System.out.println("\t-occurrences: " + outData.num_occurrences);
+
+        try {FileManager.saveToCSV(outData.query, outData.savingPath, outData.getTotalTime(), outData.num_occurrences);}
+        catch (IOException e) {throw new RuntimeException(e);}
     }
 }

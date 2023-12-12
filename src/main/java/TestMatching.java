@@ -1,4 +1,3 @@
-
 import bitmatrix.models.CompatibilityMap;
 import condition.QueryConditionType;
 import configuration.MatchingConfiguration;
@@ -11,8 +10,11 @@ import matching.controllers.MatchingBase;
 import matching.controllers.MatchingSimple;
 import matching.controllers.MatchingWhere;
 import matching.models.OutData;
+import out.OutElaborationFiles;
 import reading.FileManager;
 import target_graph.graph.TargetGraph;
+import tech.tablesaw.api.Table;
+
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
@@ -28,22 +30,20 @@ public class TestMatching {
         System.out.println("Reading target graph...");
 
         /*DA JSON */
-        TargetGraph targetGraph = TargetGraph.read(configuration.targetDirectory);
+        // TargetGraph targetGraph = TargetGraph.read(configuration.targetDirectory);
 
         /* DA FILE ORIGINALI*/
-        //OutElaborationFiles elaborationFiles = new OutElaborationFiles();
-        //Table[] nodesTables = FileManager.files_reading(configuration.targetDirectory + "/nodes", ',');
-        //Table[] edgesTables = FileManager.files_reading(configuration.targetDirectory + "/edges", ',');
-        //TargetGraph targetGraph = new TargetGraph(nodesTables, edgesTables, "id", "labels", elaborationFiles);
+        OutElaborationFiles elaborationFiles = new OutElaborationFiles();
+        Table[] nodesTables = FileManager.files_reading(configuration.targetDirectory + "/nodes", ',');
+        Table[] edgesTables = FileManager.files_reading(configuration.targetDirectory + "/edges", ',');
+        TargetGraph targetGraph = new TargetGraph(nodesTables, edgesTables, "id", "labels", elaborationFiles);
 
         System.out.println("Done!");
         // QUERIES READING
         List<String> queries = FileManager.readQueries(configuration.queriesDirectory);
         final Duration tout = Duration.ofSeconds(configuration.timeout);
         queries.forEach(query_test -> {
-
             System.out.println(query_test);
-
             ExecutorService exec = Executors.newSingleThreadExecutor();
             final Future<Double> handler = exec.submit(new Callable<Double>() {
                 @Override
@@ -51,6 +51,8 @@ public class TestMatching {
                     double totalTime;
                     double comp_dom_time=0d;
                     long numOccurrences;
+                    long numBack=0L;
+                    OutData outData;
 
                     WhereConditionExtraction where_managing = new WhereConditionExtraction();
                     where_managing.where_condition_extraction(query_test);
@@ -67,7 +69,7 @@ public class TestMatching {
                             QueryStructure query_t = new QueryStructure(targetGraph);
                             query_t.parser(query_test, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager(), targetGraph.getNodesTables(), targetGraph.getEdgesTables(), Optional.of(where_managing));
 
-                            OutData outData = new OutData();
+                            outData = new OutData();
                             for (int orIndex = 0; orIndex < mapOrPropositionToConditionSet.size(); orIndex++) {
                                 query_t.clean();
 
@@ -115,7 +117,7 @@ public class TestMatching {
                                 }
                             }
 
-                            OutData outData = new OutData();
+                            outData = new OutData();
                             MatchingBase matchingMachine;
                             if (complexConditions.size() == 0) { // No complex conditions
                                 matchingMachine = new MatchingSimple(outData, query_t, true, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions, null);
@@ -133,23 +135,27 @@ public class TestMatching {
                         QueryStructure query = new QueryStructure(targetGraph);
                         query.parser(query_test, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager(), targetGraph.getNodesTables(), targetGraph.getEdgesTables(), Optional.empty());
 
-                        OutData outData = new OutData();
+                        outData    = new OutData();
+                        outData.savingPath = configuration.resultsFile;
+                        outData.query      = query_test;
                         CompatibilityMap compatibilityMap = new CompatibilityMap();
-                        compatibilityMap = null;
+                        compatibilityMap   = null;
 
-                        MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), new ObjectArrayList<>(), compatibilityMap);
+                        MatchingSimple matchingMachine = new MatchingSimple(outData, query, true, false, configuration.maxOccurrences, targetGraph, targetGraph.getTargetBitmatrix(), new ObjectArrayList<>(), compatibilityMap);
                         outData = matchingMachine.matching();
 
                         totalTime      = outData.getTotalTime();
                         numOccurrences = outData.num_occurrences;
-                        comp_dom_time  = outData.domain_time;
+                        // comp_dom_time  = outData.domain_time;
+                        // numBack        = outData.num_backtrack;
                         System.out.println("FINAL NUMBER OF OCCURRENCES: " + numOccurrences + "\tTIME: " + totalTime);
                     }
 
                     // SAVING
                     if (configuration.resultsFile != null) {
                         try {
-                            FileManager.saveToCSV(query_test, configuration.resultsFile, totalTime, numOccurrences, comp_dom_time);
+                            //FileManager.saveToCSV(query_test, configuration.resultsFile, totalTime, numOccurrences);
+                            FileManager.saveToCSV(query_test, configuration.resultsFile, outData);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
