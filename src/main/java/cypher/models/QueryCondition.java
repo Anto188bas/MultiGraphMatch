@@ -230,8 +230,9 @@ public class QueryCondition {
 
         int propertyId     = propertiesManager.getMapPropertyStringToPropertyId().getInt(propertyName);
         // IntArrayList idList = propertiesManager.getMapPropertyIdToValues().get(propertyId).get(expressionValue.toString());
-        var idList = propertiesManager.getMapPropertyIdToValues().get(propertyId).get(expressionValue.toString());
-
+        //var idList = propertiesManager.getMapPropertyIdToValues().get(propertyId).get(expressionValue.toString());
+        // TOLTO il tostring
+        var idList = propertiesManager.getMapPropertyIdToValues().get(propertyId).get(expressionValue);
         if (idList == null) {
             // idList = new IntArrayList();
             idList = new IntOpenHashSet();
@@ -274,7 +275,6 @@ public class QueryCondition {
                     }
 
                 } else {
-
                     switch (operation) {
                         case "GreaterThan":
                             // idList = new IntArrayList((List<Integer>) selectedTable.where(((IntIndex) index).greaterThan((Integer) expressionValue)).column("id").asList());
@@ -288,8 +288,6 @@ public class QueryCondition {
                             }
 
                             break;
-
-
                         case "GreaterThanOrEqual":
                             // idList = new IntArrayList((List<Integer>) selectedTable.where(((IntIndex) index).greaterThan((Integer) expressionValue)).column("id").asList());
                             idList    = new IntOpenHashSet((List<Integer>) selectedTable.where(((IntIndex) index).greaterThan((Integer) expressionValue)).column("id").asList());
@@ -304,21 +302,16 @@ public class QueryCondition {
                                 // idList = Utils.intArrayListDifference(fullIdList, idList);
                                 idList = Utils.intArraySetDifference(fullIdList, idList);
                             }
-
                             break;
-
                         case "Equals":
                             idList = getEqualsTo(propertyName, expressionValue, mapNodeNameToID, mapEdgeNameToID);
-
                             if (this.isNegation()) {
                                 // IntArrayList fullIdList = new IntArrayList((List<Integer>) selectedTable.column("id").asList());
                                 IntOpenHashSet fullIdList  = new IntOpenHashSet((List<Integer>) selectedTable.column("id").asList());
                                 // idList = Utils.intArrayListDifference(fullIdList, idList);
                                 idList = Utils.intArraySetDifference(fullIdList, idList);
                             }
-
                             break;
-
                         case "LessThan":
                             // idList = new IntArrayList((List<Integer>) selectedTable.where(((IntIndex) index).lessThan((Integer) expressionValue)).column("id").asList());
                             idList = new IntOpenHashSet((List<Integer>) selectedTable.where(((IntIndex) index).lessThan((Integer) expressionValue)).column("id").asList());
