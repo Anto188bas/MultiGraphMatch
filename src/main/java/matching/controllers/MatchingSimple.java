@@ -86,8 +86,6 @@ public class MatchingSimple extends MatchingBase {
         }
         else findCandidate = new FindCandidateGeneral();
 
-
-
         NodesPair firstPair = this.query.getMap_edge_to_endpoints().get(states.map_state_to_edge[0]);
         int q_src = firstPair.getFirstEndpoint();
         int q_dst = firstPair.getSecondEndpoint();

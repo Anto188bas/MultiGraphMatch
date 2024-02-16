@@ -218,7 +218,7 @@ public abstract class MatchingBase {
         //System.out.println("\t-matching computing time: " + outData.matching_time);h
         //System.out.println("\t-occurrences: " + outData.num_occurrences);
 
-        try {FileManager.saveToCSV(outData.query, outData.savingPath, outData.getTotalTime(), outData.num_occurrences);}
-        catch (IOException e) {throw new RuntimeException(e);}
+        //try {FileManager.saveToCSV(outData.query, outData.savingPath, outData.getTotalTime(), outData.num_occurrences);}
+        //catch (IOException e) {throw new RuntimeException(e);}
     }
 }

@@ -103,18 +103,15 @@ public class TestMatching {
                         } else { // Single-Thread (only AND)
                             QueryStructure query_t = new QueryStructure(targetGraph);
                             query_t.parser(query_test, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager(), targetGraph.getNodesTables(), targetGraph.getEdgesTables(), Optional.of(where_managing));
-
                             int orIndex = 0;
-
-                            ObjectArrayList<QueryCondition> simpleConditions = new ObjectArrayList<>();
+                            ObjectArrayList<QueryCondition> simpleConditions  = new ObjectArrayList<>();
                             ObjectArrayList<QueryCondition> complexConditions = new ObjectArrayList<>();
 
                             for (QueryCondition condition : mapOrPropositionToConditionSet.get(orIndex)) {
-                                if (condition.getType() == QueryConditionType.SIMPLE) {
+                                if (condition.getType() == QueryConditionType.SIMPLE)
                                     simpleConditions.add(condition);
-                                } else {
+                                else
                                     complexConditions.add(condition);
-                                }
                             }
 
                             outData = new OutData();
@@ -124,7 +121,6 @@ public class TestMatching {
                             } else { // Complex conditions
                                 matchingMachine = new MatchingWhere(outData, query_t, true, false, Long.MAX_VALUE, targetGraph, targetGraph.getTargetBitmatrix(), simpleConditions, complexConditions);
                             }
-
                             outData = matchingMachine.matching();
 
                             totalTime = outData.getTotalTime();
@@ -135,7 +131,7 @@ public class TestMatching {
                         QueryStructure query = new QueryStructure(targetGraph);
                         query.parser(query_test, targetGraph.getNodesLabelsManager(), targetGraph.getEdgesLabelsManager(), targetGraph.getNodesTables(), targetGraph.getEdgesTables(), Optional.empty());
 
-                        outData    = new OutData();
+                        outData            = new OutData();
                         outData.savingPath = configuration.resultsFile;
                         outData.query      = query_test;
                         CompatibilityMap compatibilityMap = new CompatibilityMap();

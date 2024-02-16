@@ -34,7 +34,6 @@ public class MatchingWhere extends MatchingBase {
         // SIMPLE WHERE CONDITIONS
         if (simpleConditions.size() > 0) {
             WhereUtils.assignSimpleConditionsToNodesAndEdges(simpleConditions, query);
-
             // DOMAINS
             computeFilteredCompatibilityDomains();
         } else {
